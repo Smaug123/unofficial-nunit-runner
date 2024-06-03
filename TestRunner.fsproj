@@ -6,11 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Filter.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NUnit" Version="4.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PrattParser\PrattParser\PrattParser.fsproj" />
   </ItemGroup>
 
 </Project>

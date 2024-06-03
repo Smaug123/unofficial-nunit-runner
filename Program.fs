@@ -18,6 +18,7 @@ type TestKind =
 
 type SingleTestMethod =
     {
+        // TODO: cope with [<Values>] on the parameters
         Method : MethodInfo
         Kind : TestKind
         Modifiers : Modifier list
@@ -94,16 +95,16 @@ module SingleTestMethod =
 type TestFixture =
     {
         Name : string
-        SetUp : MethodInfo option
-        TearDown : MethodInfo option
+        OneTimeSetUp : MethodInfo option
+        OneTimeTearDown : MethodInfo option
         Tests : SingleTestMethod list
     }
 
     static member Empty (name : string) =
         {
             Name = name
-            SetUp = None
-            TearDown = None
+            OneTimeSetUp = None
+            OneTimeTearDown = None
             Tests = []
         }
 
@@ -168,7 +169,7 @@ module TestFixture =
     let run (tests : TestFixture) : int =
         eprintfn $"Running test fixture: %s{tests.Name} (%i{tests.Tests.Length} tests to run)"
 
-        match tests.SetUp with
+        match tests.OneTimeSetUp with
         | Some su ->
             if not (isNull (su.Invoke (null, [||]))) then
                 failwith "Setup procedure returned non-null"
@@ -194,7 +195,7 @@ module TestFixture =
                 Interlocked.Add (totalTestSuccess, testSuccess.Value) |> ignore<int>
                 eprintfn $"Finished test %s{test.Name} (%i{testSuccess.Value} success)"
         finally
-            match tests.TearDown with
+            match tests.OneTimeTearDown with
             | Some td ->
                 if not (isNull (td.Invoke (null, [||]))) then
                     failwith "TearDown procedure returned non-null"
@@ -208,24 +209,24 @@ module TestFixture =
         ||> Seq.fold (fun state mi ->
             if
                 mi.CustomAttributes
-                |> Seq.exists (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.SetUpAttribute")
+                |> Seq.exists (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.OneTimeSetUpAttribute")
             then
-                match state.SetUp with
+                match state.OneTimeSetUp with
                 | None ->
                     { state with
-                        SetUp = Some mi
+                        OneTimeSetUp = Some mi
                     }
-                | Some _existing -> failwith "Multiple SetUp methods found"
+                | Some _existing -> failwith "Multiple OneTimeSetUp methods found"
             elif
                 mi.CustomAttributes
-                |> Seq.exists (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.TearDownAttribute")
+                |> Seq.exists (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.OneTimeTearDownAttribute")
             then
-                match state.TearDown with
+                match state.OneTimeTearDown with
                 | None ->
                     { state with
-                        TearDown = Some mi
+                        OneTimeTearDown = Some mi
                     }
-                | Some _existing -> failwith "Multiple TearDown methods found"
+                | Some _existing -> failwith "Multiple OneTimeTearDown methods found"
             else
                 match SingleTestMethod.parse mi with
                 | Some test ->
@@ -238,14 +239,16 @@ module TestFixture =
 module Program =
     [<EntryPoint>]
     let main argv =
-        let testDll =
-            match argv with
-            | [| dll |] -> FileInfo dll
+        let testDll, filter =
+            match argv |> List.ofSeq with
+            | [ dll ] -> FileInfo dll, None
+            | [ dll ; "--filter" ; filter ] -> FileInfo dll, Some (FilterIntermediate.parse filter |> Filter.make)
             | _ -> failwith "provide exactly one arg, a test DLL"
 
         let assy = Assembly.LoadFrom testDll.FullName
 
         assy.ExportedTypes
+        // TODO: NUnit nowadays doesn't care if you're a TestFixture or not
         |> Seq.filter (fun ty ->
             ty.CustomAttributes
             |> Seq.exists (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.TestFixtureAttribute")
