@@ -22,73 +22,90 @@ type SingleTestMethod =
         Method : MethodInfo
         Kind : TestKind
         Modifiers : Modifier list
+        Categories : string list
     }
 
     member this.Name = this.Method.Name
 
 [<RequireQualifiedAccess>]
 module SingleTestMethod =
-    let parse (method : MethodInfo) : SingleTestMethod option =
-        let isTest, hasSource, hasData, modifiers =
-            ((false, None, None, []), method.CustomAttributes)
-            ||> Seq.fold (fun (isTest, hasSource, hasData, mods) attr ->
+    let parse (parentCategories : string list) (method : MethodInfo) : SingleTestMethod option =
+        let isTest, hasSource, hasData, modifiers, categories =
+            ((false, None, None, [], []), method.CustomAttributes)
+            ||> Seq.fold (fun (isTest, hasSource, hasData, mods, cats) attr ->
                 match attr.AttributeType.FullName with
                 | "NUnit.Framework.TestAttribute" ->
                     if attr.ConstructorArguments.Count > 0 then
                         failwith "Unexpectedly got arguments to the Test attribute"
 
-                    (true, hasSource, hasData, mods)
+                    (true, hasSource, hasData, mods, cats)
                 | "NUnit.Framework.TestCaseAttribute" ->
                     let args = attr.ConstructorArguments |> Seq.map _.Value |> Seq.toList
 
                     match hasData with
-                    | None -> (isTest, hasSource, Some [ List.ofSeq args ], mods)
-                    | Some existing -> (isTest, hasSource, Some ((List.ofSeq args) :: existing), mods)
+                    | None -> (isTest, hasSource, Some [ List.ofSeq args ], mods, cats)
+                    | Some existing -> (isTest, hasSource, Some ((List.ofSeq args) :: existing), mods, cats)
                 | "NUnit.Framework.TestCaseSourceAttribute" ->
                     let arg = attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>
 
                     match hasSource with
-                    | None -> (isTest, Some arg, hasData, mods)
+                    | None -> (isTest, Some arg, hasData, mods, cats)
                     | Some existing ->
                         failwith
                             $"Unexpectedly got multiple different sources for test %s{method.Name} (%s{existing}, %s{arg})"
                 | "NUnit.Framework.ExplicitAttribute" ->
-                    let reason = attr.ConstructorArguments |> Seq.tryHead |> Option.map unbox<string>
-                    (isTest, hasSource, hasData, (Modifier.Explicit reason) :: mods)
+                    let reason =
+                        attr.ConstructorArguments
+                        |> Seq.tryHead
+                        |> Option.map (_.Value >> unbox<string>)
+
+                    (isTest, hasSource, hasData, (Modifier.Explicit reason) :: mods, cats)
                 | "NUnit.Framework.IgnoreAttribute" ->
-                    let reason = attr.ConstructorArguments |> Seq.tryHead |> Option.map unbox<string>
-                    (isTest, hasSource, hasData, (Modifier.Ignored reason) :: mods)
+                    let reason =
+                        attr.ConstructorArguments
+                        |> Seq.tryHead
+                        |> Option.map (_.Value >> unbox<string>)
+
+                    (isTest, hasSource, hasData, (Modifier.Ignored reason) :: mods, cats)
+                | "NUnit.Framework.CategoryAttribute" ->
+                    let category =
+                        attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>
+
+                    (isTest, hasSource, hasData, mods, category :: cats)
                 | s when s.StartsWith ("NUnit.Framework", StringComparison.Ordinal) ->
                     failwith $"Unrecognised attribute on function %s{method.Name}: %s{attr.AttributeType.FullName}"
-                | _ -> (isTest, hasSource, hasData, mods)
+                | _ -> (isTest, hasSource, hasData, mods, cats)
             )
 
-        match isTest, hasSource, hasData, modifiers with
-        | _, Some _, Some _, _ ->
+        match isTest, hasSource, hasData, modifiers, categories with
+        | _, Some _, Some _, _, _ ->
             failwith $"Test %s{method.Name} unexpectedly has both TestData and TestCaseSource; not currently supported"
-        | false, None, None, [] -> None
-        | _, Some source, None, mods ->
+        | false, None, None, [], _ -> None
+        | _, Some source, None, mods, categories ->
             {
                 Kind = TestKind.Source source
                 Method = method
                 Modifiers = mods
+                Categories = categories @ parentCategories
             }
             |> Some
-        | _, None, Some data, mods ->
+        | _, None, Some data, mods, categories ->
             {
                 Kind = TestKind.Data data
                 Method = method
                 Modifiers = mods
+                Categories = categories @ parentCategories
             }
             |> Some
-        | true, None, None, mods ->
+        | true, None, None, mods, categories ->
             {
                 Kind = TestKind.Single
                 Method = method
                 Modifiers = mods
+                Categories = categories @ parentCategories
             }
             |> Some
-        | false, None, None, mods ->
+        | false, None, None, _ :: _, _ ->
             failwith
                 $"Unexpectedly got test modifiers but no test settings on '%s{method.Name}', which you probably didn't intend."
 
@@ -166,7 +183,29 @@ module TestFixture =
             )
             |> List.ofSeq
 
-    let run (tests : TestFixture) : int =
+    let rec shouldRun (filter : Filter) : TestFixture -> SingleTestMethod -> bool =
+        match filter with
+        | Filter.Not filter ->
+            let inner = shouldRun filter
+            fun a b -> not (inner a b)
+        | Filter.And (a, b) ->
+            let inner1 = shouldRun a
+            let inner2 = shouldRun b
+            fun a b -> inner1 a b && inner2 a b
+        | Filter.Or (a, b) ->
+            let inner1 = shouldRun a
+            let inner2 = shouldRun b
+            fun a b -> inner1 a b || inner2 a b
+        | Filter.Name (Match.Exact m) -> fun _fixture method -> method.Method.Name = m
+        | Filter.Name (Match.Contains m) -> fun _fixture method -> method.Method.Name.Contains m
+        | Filter.FullyQualifiedName (Match.Exact m) -> fun fixture method -> (fixture.Name + method.Method.Name) = m
+        | Filter.FullyQualifiedName (Match.Contains m) ->
+            fun fixture method -> (fixture.Name + method.Method.Name).Contains m
+        | Filter.TestCategory (Match.Contains m) ->
+            fun _fixture method -> method.Categories |> List.exists (fun cat -> cat.Contains m)
+        | Filter.TestCategory (Match.Exact m) -> fun _fixture method -> method.Categories |> List.contains m
+
+    let run (filter : TestFixture -> SingleTestMethod -> bool) (tests : TestFixture) : int =
         eprintfn $"Running test fixture: %s{tests.Name} (%i{tests.Tests.Length} tests to run)"
 
         match tests.OneTimeSetUp with
@@ -180,20 +219,23 @@ module TestFixture =
 
         try
             for test in tests.Tests do
-                eprintfn $"Running test: %s{test.Name}"
-                let testSuccess = ref 0
+                if filter tests test then
+                    eprintfn $"Running test: %s{test.Name}"
+                    let testSuccess = ref 0
 
-                let results = runFixture test
+                    let results = runFixture test
 
-                for result in results do
-                    match result with
-                    | Error exc ->
-                        eprintfn $"Test failed: {exc}"
-                        Interlocked.Increment testFailures |> ignore<int>
-                    | Ok () -> Interlocked.Increment testSuccess |> ignore<int>
+                    for result in results do
+                        match result with
+                        | Error exc ->
+                            eprintfn $"Test failed: {exc}"
+                            Interlocked.Increment testFailures |> ignore<int>
+                        | Ok () -> Interlocked.Increment testSuccess |> ignore<int>
 
-                Interlocked.Add (totalTestSuccess, testSuccess.Value) |> ignore<int>
-                eprintfn $"Finished test %s{test.Name} (%i{testSuccess.Value} success)"
+                    Interlocked.Add (totalTestSuccess, testSuccess.Value) |> ignore<int>
+                    eprintfn $"Finished test %s{test.Name} (%i{testSuccess.Value} success)"
+                else
+                    eprintfn $"Skipping test due to filter: %s{test.Name}"
         finally
             match tests.OneTimeTearDown with
             | Some td ->
@@ -205,6 +247,12 @@ module TestFixture =
         testFailures.Value
 
     let parse (parentType : Type) : TestFixture =
+        let categories =
+            parentType.CustomAttributes
+            |> Seq.filter (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.CategoryAttribute")
+            |> Seq.map (fun attr -> attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>)
+            |> Seq.toList
+
         (TestFixture.Empty parentType.Name, parentType.GetRuntimeMethods ())
         ||> Seq.fold (fun state mi ->
             if
@@ -228,7 +276,7 @@ module TestFixture =
                     }
                 | Some _existing -> failwith "Multiple OneTimeTearDown methods found"
             else
-                match SingleTestMethod.parse mi with
+                match SingleTestMethod.parse categories mi with
                 | Some test ->
                     { state with
                         Tests = test :: state.Tests
@@ -245,6 +293,11 @@ module Program =
             | [ dll ; "--filter" ; filter ] -> FileInfo dll, Some (FilterIntermediate.parse filter |> Filter.make)
             | _ -> failwith "provide exactly one arg, a test DLL"
 
+        let filter =
+            match filter with
+            | Some filter -> TestFixture.shouldRun filter
+            | None -> fun _ _ -> true
+
         let assy = Assembly.LoadFrom testDll.FullName
 
         assy.ExportedTypes
@@ -256,7 +309,7 @@ module Program =
         |> Seq.iter (fun ty ->
             let testFixture = TestFixture.parse ty
 
-            match TestFixture.run testFixture with
+            match TestFixture.run filter testFixture with
             | 0 -> ()
             | i -> eprintfn $"%i{i} tests failed"
         )

@@ -189,6 +189,10 @@ type Filter =
 
 [<RequireQualifiedAccess>]
 module Filter =
+    let private unescape (s : string) : string =
+        // TODO: XML escaping
+        s
+
     let rec make (fi : FilterIntermediate) : Filter =
         match fi with
         | FilterIntermediate.Not x -> Filter.Not (make x)
@@ -200,7 +204,7 @@ module Filter =
         | FilterIntermediate.Equal (key, value) ->
             let value =
                 match value with
-                | FilterIntermediate.String s -> s
+                | FilterIntermediate.String s -> unescape s
                 | _ -> failwith $"malformed filter: found non-string operand on RHS of equality, '%O{value}'"
 
             match key with
@@ -211,7 +215,7 @@ module Filter =
         | FilterIntermediate.Contains (key, value) ->
             let value =
                 match value with
-                | FilterIntermediate.String s -> s
+                | FilterIntermediate.String s -> unescape s
                 | _ -> failwith $"malformed filter: found non-string operand on RHS of containment, '%O{value}'"
 
             match key with
