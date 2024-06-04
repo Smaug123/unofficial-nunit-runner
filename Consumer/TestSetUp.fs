@@ -23,11 +23,13 @@ module TestSetUp =
     [<SetUp>]
     let setUp () =
         haveOneTimeSetUp.Value |> shouldEqual 1
-        Interlocked.Increment setUpTimes |> setUpTimesSeen.Add
+        let newId = Interlocked.Increment setUpTimes
+        lock setUpTimesSeen (fun () -> setUpTimesSeen.Add newId)
 
     [<TearDown>]
     let tearDown () =
-        Interlocked.Increment tearDownTimes |> tearDownTimesSeen.Add
+        let newId = Interlocked.Increment tearDownTimes
+        lock tearDownTimesSeen (fun () -> tearDownTimesSeen.Add newId)
 
     let haveOneTimeTearDown = ref 0
 
