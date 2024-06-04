@@ -34,28 +34,33 @@ type SingleTestMethod =
 
 [<RequireQualifiedAccess>]
 module SingleTestMethod =
-    let parse (parentCategories : string list) (method : MethodInfo) : SingleTestMethod option =
-        let isTest, hasSource, hasData, modifiers, categories, repeat, comb =
-            ((false, None, None, [], [], None, None), method.CustomAttributes)
-            ||> Seq.fold (fun (isTest, hasSource, hasData, mods, cats, repeat, comb) attr ->
+    let parse
+        (parentCategories : string list)
+        (method : MethodInfo)
+        (attrs : CustomAttributeData list)
+        : SingleTestMethod option * CustomAttributeData list
+        =
+        let remaining, isTest, hasSource, hasData, modifiers, categories, repeat, comb =
+            (([], false, None, None, [], [], None, None), attrs)
+            ||> Seq.fold (fun (remaining, isTest, hasSource, hasData, mods, cats, repeat, comb) attr ->
                 match attr.AttributeType.FullName with
                 | "NUnit.Framework.TestAttribute" ->
                     if attr.ConstructorArguments.Count > 0 then
                         failwith "Unexpectedly got arguments to the Test attribute"
 
-                    (true, hasSource, hasData, mods, cats, repeat, comb)
+                    (remaining, true, hasSource, hasData, mods, cats, repeat, comb)
                 | "NUnit.Framework.TestCaseAttribute" ->
                     let args = attr.ConstructorArguments |> Seq.map _.Value |> Seq.toList
 
                     match hasData with
-                    | None -> (isTest, hasSource, Some [ List.ofSeq args ], mods, cats, repeat, comb)
+                    | None -> (remaining, isTest, hasSource, Some [ List.ofSeq args ], mods, cats, repeat, comb)
                     | Some existing ->
-                        (isTest, hasSource, Some ((List.ofSeq args) :: existing), mods, cats, repeat, comb)
+                        (remaining, isTest, hasSource, Some ((List.ofSeq args) :: existing), mods, cats, repeat, comb)
                 | "NUnit.Framework.TestCaseSourceAttribute" ->
                     let arg = attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>
 
                     match hasSource with
-                    | None -> (isTest, Some arg, hasData, mods, cats, repeat, comb)
+                    | None -> (remaining, isTest, Some arg, hasData, mods, cats, repeat, comb)
                     | Some existing ->
                         failwith
                             $"Unexpectedly got multiple different sources for test %s{method.Name} (%s{existing}, %s{arg})"
@@ -65,78 +70,84 @@ module SingleTestMethod =
                         |> Seq.tryHead
                         |> Option.map (_.Value >> unbox<string>)
 
-                    (isTest, hasSource, hasData, (Modifier.Explicit reason) :: mods, cats, repeat, comb)
+                    (remaining, isTest, hasSource, hasData, (Modifier.Explicit reason) :: mods, cats, repeat, comb)
                 | "NUnit.Framework.IgnoreAttribute" ->
                     let reason =
                         attr.ConstructorArguments
                         |> Seq.tryHead
                         |> Option.map (_.Value >> unbox<string>)
 
-                    (isTest, hasSource, hasData, (Modifier.Ignored reason) :: mods, cats, repeat, comb)
+                    (remaining, isTest, hasSource, hasData, (Modifier.Ignored reason) :: mods, cats, repeat, comb)
                 | "NUnit.Framework.CategoryAttribute" ->
                     let category =
                         attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>
 
-                    (isTest, hasSource, hasData, mods, category :: cats, repeat, comb)
+                    (remaining, isTest, hasSource, hasData, mods, category :: cats, repeat, comb)
                 | "NUnit.Framework.RepeatAttribute" ->
                     match repeat with
                     | Some _ -> failwith $"Got RepeatAttribute multiple times on %s{method.Name}"
                     | None ->
 
                     let repeat = attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<int>
-                    (isTest, hasSource, hasData, mods, cats, Some repeat, comb)
+                    (remaining, isTest, hasSource, hasData, mods, cats, Some repeat, comb)
                 | "NUnit.Framework.CombinatorialAttribute" ->
                     match comb with
                     | Some _ ->
                         failwith $"Got CombinatorialAttribute or SequentialAttribute multiple times on %s{method.Name}"
-                    | None -> (isTest, hasSource, hasData, mods, cats, repeat, Some Combinatorial.Combinatorial)
+                    | None ->
+                        (remaining, isTest, hasSource, hasData, mods, cats, repeat, Some Combinatorial.Combinatorial)
                 | "NUnit.Framework.SequentialAttribute" ->
                     match comb with
                     | Some _ ->
                         failwith $"Got CombinatorialAttribute or SequentialAttribute multiple times on %s{method.Name}"
-                    | None -> (isTest, hasSource, hasData, mods, cats, repeat, Some Combinatorial.Sequential)
+                    | None ->
+                        (remaining, isTest, hasSource, hasData, mods, cats, repeat, Some Combinatorial.Sequential)
                 | s when s.StartsWith ("NUnit.Framework", StringComparison.Ordinal) ->
                     failwith $"Unrecognised attribute on function %s{method.Name}: %s{attr.AttributeType.FullName}"
-                | _ -> (isTest, hasSource, hasData, mods, cats, repeat, comb)
+                | _ -> (attr :: remaining, isTest, hasSource, hasData, mods, cats, repeat, comb)
             )
 
-        match isTest, hasSource, hasData, modifiers, categories, repeat, comb with
-        | _, Some _, Some _, _, _, _, _ ->
-            failwith $"Test %s{method.Name} unexpectedly has both TestData and TestCaseSource; not currently supported"
-        | false, None, None, [], _, _, _ -> None
-        | _, Some source, None, mods, categories, repeat, comb ->
-            {
-                Kind = TestKind.Source source
-                Method = method
-                Modifiers = mods
-                Categories = categories @ parentCategories
-                Repeat = repeat
-                Combinatorial = comb
-            }
-            |> Some
-        | _, None, Some data, mods, categories, repeat, comb ->
-            {
-                Kind = TestKind.Data data
-                Method = method
-                Modifiers = mods
-                Categories = categories @ parentCategories
-                Repeat = repeat
-                Combinatorial = comb
-            }
-            |> Some
-        | true, None, None, mods, categories, repeat, comb ->
-            {
-                Kind = TestKind.Single
-                Method = method
-                Modifiers = mods
-                Categories = categories @ parentCategories
-                Repeat = repeat
-                Combinatorial = comb
-            }
-            |> Some
-        | false, None, None, _ :: _, _, _, _ ->
-            failwith
-                $"Unexpectedly got test modifiers but no test settings on '%s{method.Name}', which you probably didn't intend."
+        let test =
+            match isTest, hasSource, hasData, modifiers, categories, repeat, comb with
+            | _, Some _, Some _, _, _, _, _ ->
+                failwith
+                    $"Test %s{method.Name} unexpectedly has both TestData and TestCaseSource; not currently supported"
+            | false, None, None, [], _, _, _ -> None
+            | _, Some source, None, mods, categories, repeat, comb ->
+                {
+                    Kind = TestKind.Source source
+                    Method = method
+                    Modifiers = mods
+                    Categories = categories @ parentCategories
+                    Repeat = repeat
+                    Combinatorial = comb
+                }
+                |> Some
+            | _, None, Some data, mods, categories, repeat, comb ->
+                {
+                    Kind = TestKind.Data data
+                    Method = method
+                    Modifiers = mods
+                    Categories = categories @ parentCategories
+                    Repeat = repeat
+                    Combinatorial = comb
+                }
+                |> Some
+            | true, None, None, mods, categories, repeat, comb ->
+                {
+                    Kind = TestKind.Single
+                    Method = method
+                    Modifiers = mods
+                    Categories = categories @ parentCategories
+                    Repeat = repeat
+                    Combinatorial = comb
+                }
+                |> Some
+            | false, None, None, _ :: _, _, _, _ ->
+                failwith
+                    $"Unexpectedly got test modifiers but no test settings on '%s{method.Name}', which you probably didn't intend."
+
+        test, remaining
 
 type TestFixture =
     {
@@ -391,47 +402,73 @@ module TestFixture =
 
         (TestFixture.Empty parentType.Name, parentType.GetRuntimeMethods ())
         ||> Seq.fold (fun state mi ->
-            if
-                mi.CustomAttributes
-                |> Seq.exists (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.OneTimeSetUpAttribute")
-            then
-                match state.OneTimeSetUp with
-                | None ->
+            ((state, []), mi.CustomAttributes)
+            ||> Seq.fold (fun (state, unrecognisedAttrs) attr ->
+                match attr.AttributeType.FullName with
+                | "NUnit.Framework.OneTimeSetUpAttribute" ->
+                    match state.OneTimeSetUp with
+                    | Some _existing -> failwith "Multiple OneTimeSetUp methods found"
+                    | None ->
+                        { state with
+                            OneTimeSetUp = Some mi
+                        },
+                        unrecognisedAttrs
+                | "NUnit.Framework.OneTimeTearDownAttribute" ->
+                    match state.OneTimeTearDown with
+                    | Some _existing -> failwith "Multiple OneTimeTearDown methods found"
+                    | None ->
+                        { state with
+                            OneTimeTearDown = Some mi
+                        },
+                        unrecognisedAttrs
+                | "NUnit.Framework.TearDownAttribute" ->
                     { state with
-                        OneTimeSetUp = Some mi
-                    }
-                | Some _existing -> failwith "Multiple OneTimeSetUp methods found"
-            elif
-                mi.CustomAttributes
-                |> Seq.exists (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.OneTimeTearDownAttribute")
-            then
-                match state.OneTimeTearDown with
-                | None ->
+                        TearDown = mi :: state.TearDown
+                    },
+                    unrecognisedAttrs
+                | "NUnit.Framework.SetUpAttribute" ->
                     { state with
-                        OneTimeTearDown = Some mi
-                    }
-                | Some _existing -> failwith "Multiple OneTimeTearDown methods found"
-            elif
-                mi.CustomAttributes
-                |> Seq.exists (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.TearDownAttribute")
-            then
-                { state with
-                    TearDown = mi :: state.TearDown
-                }
-            elif
-                mi.CustomAttributes
-                |> Seq.exists (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.SetUpAttribute")
-            then
-                { state with
-                    SetUp = mi :: state.SetUp
-                }
-            else
-                match SingleTestMethod.parse categories mi with
-                | Some test ->
-                    { state with
-                        Tests = test :: state.Tests
-                    }
-                | None -> state
+                        SetUp = mi :: state.SetUp
+                    },
+                    unrecognisedAttrs
+                | "NUnit.Framework.TestFixtureSetUpAttribute" ->
+                    failwith "TestFixtureSetUp is not supported (upstream has deprecated it; use OneTimeSetUp)"
+                | "NUnit.Framework.TestFixtureTearDownAttribute" ->
+                    failwith "TestFixtureTearDown is not supported (upstream has deprecated it; use OneTimeTearDown)"
+                | "NUnit.Framework.RetryAttribute" ->
+                    failwith "RetryAttribute is not supported. Don't write flaky tests."
+                | "NUnit.Framework.RandomAttribute" ->
+                    failwith "RandomAttribute is not supported. Use a property-based testing framework like FsCheck."
+                | "NUnit.Framework.AuthorAttribute"
+                | "NUnit.Framework.CultureAttribute"
+                | "NUnit.Framework.DescriptionAttribute" ->
+                    // ignoring for now: metadata only
+                    state, unrecognisedAttrs
+                | _ -> state, attr :: unrecognisedAttrs
+            )
+            |> fun (state, unrecognised) ->
+                let state, unrecognised =
+                    match SingleTestMethod.parse categories mi unrecognised with
+                    | Some test, unrecognised ->
+                        { state with
+                            Tests = test :: state.Tests
+                        },
+                        unrecognised
+                    | None, unrecognised -> state, unrecognised
+
+                unrecognised
+                |> List.filter (fun attr ->
+                    attr.AttributeType.FullName.StartsWith ("NUnit.Framework.", StringComparison.Ordinal)
+                )
+                |> function
+                    | [] -> ()
+                    | unrecognised ->
+                        unrecognised
+                        |> Seq.map (fun x -> x.AttributeType.FullName)
+                        |> String.concat ", "
+                        |> failwithf "Unrecognised attributes: %s"
+
+                state
         )
 
 module Program =
