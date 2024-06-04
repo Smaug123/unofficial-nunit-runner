@@ -40,6 +40,31 @@ jobs:
     - name: Test
       run: nix develop --command dotnet test --no-build --verbosity normal --configuration ${{matrix.config}}
 
+  selftest:
+    strategy:
+      matrix:
+        config:
+          - Release
+          - Debug
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # so that NerdBank.GitVersioning has access to history
+    - name: Install Nix
+      uses: cachix/install-nix-action@V27
+      with:
+        extra_nix_config: |
+          access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+    - name: Restore dependencies
+      run: nix develop --command dotnet restore
+    - name: Build
+      run: nix develop --command dotnet build --no-restore --configuration ${{matrix.config}}
+    - name: Test using self
+      run: nix develop --command dotnet ./TestRunner/bin/${{matrix.config}}/net8.0/TestRunner.dll -- ./Consumer/bin/${{matrix.config}}/net8.0/Consumer.dll
+
   analyzers:
     runs-on: ubuntu-latest
     permissions:
