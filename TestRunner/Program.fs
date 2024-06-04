@@ -190,7 +190,14 @@ module TestFixture =
                 | TestKind.Data data -> data |> Seq.map (fun args -> runOne test.Method (Array.ofList args))
                 | TestKind.Single -> Seq.singleton (runOne test.Method [||])
                 | TestKind.Source s ->
-                    let args = test.Method.DeclaringType.GetProperty s
+                    let args =
+                        test.Method.DeclaringType.GetProperty (
+                            s,
+                            BindingFlags.Public
+                            ||| BindingFlags.NonPublic
+                            ||| BindingFlags.Instance
+                            ||| BindingFlags.Static
+                        )
 
                     args.GetValue null :?> IEnumerable<obj>
                     |> Seq.map (fun arg ->
