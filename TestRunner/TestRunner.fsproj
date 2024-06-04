@@ -6,14 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Filter.fs" />
-    <Compile Include="Seq.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="4.1.0" />
-    <PackageReference Include="WoofWare.PrattParser" Version="0.1.2" />
+    <ProjectReference Include="..\TestRunner.Lib\TestRunner.Lib.fsproj" />
   </ItemGroup>
 
 </Project>

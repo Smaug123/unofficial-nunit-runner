@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="Filter.fs" />
+        <Compile Include="List.fs" />
+        <Compile Include="Domain.fs" />
+        <Compile Include="SingleTestMethod.fs" />
+        <Compile Include="TestFixture.fs" />
+    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="WoofWare.PrattParser" Version="0.1.2" />
+  </ItemGroup>
+
+</Project>
