@@ -36,9 +36,9 @@ jobs:
     - name: Restore dependencies
       run: nix develop --command dotnet restore
     - name: Build
-      run: nix develop --command dotnet build --no-restore --configuration ${{matrix.config}}
+      run: 'nix develop --command dotnet build --no-restore --configuration ${{matrix.config}}'
     - name: Test
-      run: nix develop --command dotnet test --no-build --verbosity normal --configuration ${{matrix.config}}
+      run: 'nix develop --command dotnet test --no-build --verbosity normal --configuration ${{matrix.config}}'
 
   selftest:
     strategy:
@@ -61,9 +61,9 @@ jobs:
     - name: Restore dependencies
       run: nix develop --command dotnet restore
     - name: Build
-      run: nix develop --command dotnet build --no-restore --configuration ${{matrix.config}}
+      run: 'nix develop --command dotnet build --no-restore --configuration ${{matrix.config}}'
     - name: Test using self
-      run: nix develop --command dotnet ./TestRunner/bin/${{matrix.config}}/net8.0/TestRunner.dll -- ./Consumer/bin/${{matrix.config}}/net8.0/Consumer.dll
+      run: 'nix develop --command dotnet exec ./TestRunner/bin/${{matrix.config}}/net8.0/TestRunner.dll ./Consumer/bin/${{matrix.config}}/net8.0/Consumer.dll'
 
   analyzers:
     runs-on: ubuntu-latest

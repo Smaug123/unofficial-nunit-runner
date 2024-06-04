@@ -125,6 +125,8 @@ type TestFixture =
         Name : string
         OneTimeSetUp : MethodInfo option
         OneTimeTearDown : MethodInfo option
+        SetUp : MethodInfo list
+        TearDown : MethodInfo list
         Tests : SingleTestMethod list
     }
 
@@ -133,6 +135,8 @@ type TestFixture =
             Name = name
             OneTimeSetUp = None
             OneTimeTearDown = None
+            SetUp = []
+            TearDown = []
             Tests = []
         }
 
@@ -147,15 +151,36 @@ type TestFailure =
 
 [<RequireQualifiedAccess>]
 module TestFixture =
-    let private runOne (test : MethodInfo) (args : obj[]) : Result<unit, TestFailure> =
+    let private runOne
+        (setUp : MethodInfo list)
+        (tearDown : MethodInfo list)
+        (test : MethodInfo)
+        (args : obj[])
+        : Result<unit, TestFailure>
+        =
         try
-            match test.Invoke (null, args) with
-            | :? unit -> Ok ()
-            | ret -> Error (TestReturnedNonUnit ret)
-        with exc ->
-            Error (TestThrew exc)
+            for setup in setUp do
+                if not (isNull (setup.Invoke (null, [||]))) then
+                    failwith $"Setup procedure '%s{setup.Name}' returned non-null"
 
-    let private runFixture (test : SingleTestMethod) : Result<unit, TestFailure> list =
+            try
+                match test.Invoke (null, args) with
+                | :? unit -> Ok ()
+                | ret -> Error (TestReturnedNonUnit ret)
+            with exc ->
+                Error (TestThrew exc)
+
+        finally
+            for tearDown in tearDown do
+                if not (isNull (tearDown.Invoke (null, [||]))) then
+                    failwith $"Teardown procedure '%s{tearDown.Name}' returned non-null"
+
+    let private runFixture
+        (setUp : MethodInfo list)
+        (tearDown : MethodInfo list)
+        (test : SingleTestMethod)
+        : Result<unit, TestFailure> list
+        =
         let shouldRunTest =
             (true, test.Modifiers)
             ||> List.fold (fun _ modifier ->
@@ -187,8 +212,10 @@ module TestFixture =
             (Option.defaultValue 1 test.Repeat)
             (fun _ ->
                 match test.Kind with
-                | TestKind.Data data -> data |> Seq.map (fun args -> runOne test.Method (Array.ofList args))
-                | TestKind.Single -> Seq.singleton (runOne test.Method [||])
+                | TestKind.Data data ->
+                    data
+                    |> Seq.map (fun args -> runOne setUp tearDown test.Method (Array.ofList args))
+                | TestKind.Single -> Seq.singleton (runOne setUp tearDown test.Method [||])
                 | TestKind.Source s ->
                     let args =
                         test.Method.DeclaringType.GetProperty (
@@ -202,11 +229,12 @@ module TestFixture =
                     args.GetValue null :?> IEnumerable<obj>
                     |> Seq.map (fun arg ->
                         match arg with
-                        | :? TestCaseData as tcd -> runOne test.Method tcd.Arguments
-                        | :? Tuple<obj, obj> as (a, b) -> runOne test.Method [| a ; b |]
-                        | :? Tuple<obj, obj, obj> as (a, b, c) -> runOne test.Method [| a ; b ; c |]
-                        | :? Tuple<obj, obj, obj, obj> as (a, b, c, d) -> runOne test.Method [| a ; b ; c ; d |]
-                        | arg -> runOne test.Method [| arg |]
+                        | :? TestCaseData as tcd -> runOne setUp tearDown test.Method tcd.Arguments
+                        | :? Tuple<obj, obj> as (a, b) -> runOne setUp tearDown test.Method [| a ; b |]
+                        | :? Tuple<obj, obj, obj> as (a, b, c) -> runOne setUp tearDown test.Method [| a ; b ; c |]
+                        | :? Tuple<obj, obj, obj, obj> as (a, b, c, d) ->
+                            runOne setUp tearDown test.Method [| a ; b ; c ; d |]
+                        | arg -> runOne setUp tearDown test.Method [| arg |]
                     )
             )
         |> Seq.concat
@@ -240,7 +268,7 @@ module TestFixture =
         match tests.OneTimeSetUp with
         | Some su ->
             if not (isNull (su.Invoke (null, [||]))) then
-                failwith "Setup procedure returned non-null"
+                failwith $"One-time setup procedure '%s{su.Name}' returned non-null"
         | _ -> ()
 
         let totalTestSuccess = ref 0
@@ -252,7 +280,7 @@ module TestFixture =
                     eprintfn $"Running test: %s{test.Name}"
                     let testSuccess = ref 0
 
-                    let results = runFixture test
+                    let results = runFixture tests.SetUp tests.TearDown test
 
                     for result in results do
                         match result with
@@ -269,7 +297,7 @@ module TestFixture =
             match tests.OneTimeTearDown with
             | Some td ->
                 if not (isNull (td.Invoke (null, [||]))) then
-                    failwith "TearDown procedure returned non-null"
+                    failwith $"TearDown procedure '%s{td.Name}' returned non-null"
             | _ -> ()
 
         eprintfn $"Test fixture %s{tests.Name} completed (%i{totalTestSuccess.Value} success)."
@@ -304,6 +332,20 @@ module TestFixture =
                         OneTimeTearDown = Some mi
                     }
                 | Some _existing -> failwith "Multiple OneTimeTearDown methods found"
+            elif
+                mi.CustomAttributes
+                |> Seq.exists (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.TearDownAttribute")
+            then
+                { state with
+                    TearDown = mi :: state.TearDown
+                }
+            elif
+                mi.CustomAttributes
+                |> Seq.exists (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.SetUpAttribute")
+            then
+                { state with
+                    SetUp = mi :: state.SetUp
+                }
             else
                 match SingleTestMethod.parse categories mi with
                 | Some test ->
@@ -320,7 +362,10 @@ module Program =
             match argv |> List.ofSeq with
             | [ dll ] -> FileInfo dll, None
             | [ dll ; "--filter" ; filter ] -> FileInfo dll, Some (FilterIntermediate.parse filter |> Filter.make)
-            | _ -> failwith "provide exactly one arg, a test DLL"
+            | got ->
+                got
+                |> String.concat " "
+                |> failwithf "provide exactly one arg, a test DLL; got: %s"
 
         let filter =
             match filter with
