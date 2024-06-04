@@ -145,6 +145,7 @@ module TestFixture =
             ||> List.fold (fun _ modifier ->
                 match modifier with
                 | Modifier.Explicit reason ->
+                    // TODO: if the filter explicitly says to run this, then do so
                     let reason =
                         match reason with
                         | None -> ""

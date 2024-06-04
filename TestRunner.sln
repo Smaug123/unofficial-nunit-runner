@@ -1,10 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TestRunner", "TestRunner.fsproj", "{D4CAE716-79EB-4174-B58C-54E66CF16536}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TestRunner", "TestRunner\TestRunner.fsproj", "{D4CAE716-79EB-4174-B58C-54E66CF16536}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "PrattParser", "..\PrattParser\PrattParser\PrattParser.fsproj", "{FD6678F3-9221-414B-8D54-2B2E16ED4B94}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TestRunner.Test", "TestRunner.Test\TestRunner.Test.fsproj", "{E776AC80-CD07-4A3E-9F85-1AEFBB56309D}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TestRunner.Test", "TestRunner\TestRunner.Test\TestRunner.Test.fsproj", "{E776AC80-CD07-4A3E-9F85-1AEFBB56309D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -16,10 +14,6 @@ Global
 		{D4CAE716-79EB-4174-B58C-54E66CF16536}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4CAE716-79EB-4174-B58C-54E66CF16536}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4CAE716-79EB-4174-B58C-54E66CF16536}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FD6678F3-9221-414B-8D54-2B2E16ED4B94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FD6678F3-9221-414B-8D54-2B2E16ED4B94}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FD6678F3-9221-414B-8D54-2B2E16ED4B94}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FD6678F3-9221-414B-8D54-2B2E16ED4B94}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E776AC80-CD07-4A3E-9F85-1AEFBB56309D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E776AC80-CD07-4A3E-9F85-1AEFBB56309D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E776AC80-CD07-4A3E-9F85-1AEFBB56309D}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -12,10 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="NUnit" Version="4.1.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\PrattParser\PrattParser\PrattParser.fsproj" />
+    <PackageReference Include="WoofWare.PrattParser" Version="0.1.1" />
   </ItemGroup>
 
 </Project>
