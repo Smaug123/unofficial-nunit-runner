@@ -161,7 +161,7 @@ module FilterIntermediate =
                 ConsumeBeforeInitialToken = false
                 ConsumeAfterFinalToken = false
                 BoundaryTokens = [ TokenType.CloseParen ]
-                Construct = Seq.exactlyOne
+                Construct = List.exactlyOne
             }
 
     let parse (s : string) : FilterIntermediate =

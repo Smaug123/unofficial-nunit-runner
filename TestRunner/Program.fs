@@ -129,6 +129,11 @@ type TestFailure =
     | TestReturnedNonUnit of obj
     | TestThrew of exn
 
+    override this.ToString () =
+        match this with
+        | TestFailure.TestReturnedNonUnit ret -> $"Test returned a non-unit: %O{ret}"
+        | TestFailure.TestThrew exc -> $"Test threw: %s{exc.Message}\n  %s{exc.StackTrace}"
+
 [<RequireQualifiedAccess>]
 module TestFixture =
     let private runOne (test : MethodInfo) (args : obj[]) : Result<unit, TestFailure> =
@@ -229,7 +234,7 @@ module TestFixture =
                     for result in results do
                         match result with
                         | Error exc ->
-                            eprintfn $"Test failed: {exc}"
+                            eprintfn $"Test failed: %O{exc}"
                             Interlocked.Increment testFailures |> ignore<int>
                         | Ok () -> Interlocked.Increment testSuccess |> ignore<int>
 
