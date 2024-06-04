@@ -487,18 +487,23 @@ module Program =
 
         let assy = Assembly.LoadFrom testDll.FullName
 
-        assy.ExportedTypes
-        // TODO: NUnit nowadays doesn't care if you're a TestFixture or not
-        |> Seq.filter (fun ty ->
-            ty.CustomAttributes
-            |> Seq.exists (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.TestFixtureAttribute")
-        )
-        |> Seq.iter (fun ty ->
-            let testFixture = TestFixture.parse ty
+        let anyFailures =
+            assy.ExportedTypes
+            // TODO: NUnit nowadays doesn't care if you're a TestFixture or not
+            |> Seq.filter (fun ty ->
+                ty.CustomAttributes
+                |> Seq.exists (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.TestFixtureAttribute")
+            )
+            |> Seq.fold
+                (fun anyFailures ty ->
+                    let testFixture = TestFixture.parse ty
 
-            match TestFixture.run filter testFixture with
-            | 0 -> ()
-            | i -> eprintfn $"%i{i} tests failed"
-        )
+                    match TestFixture.run filter testFixture with
+                    | 0 -> anyFailures
+                    | i ->
+                        eprintfn $"%i{i} tests failed"
+                        true
+                )
+                false
 
-        0
+        if anyFailures then 1 else 0
