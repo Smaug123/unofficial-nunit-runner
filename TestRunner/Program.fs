@@ -23,6 +23,7 @@ type SingleTestMethod =
         Kind : TestKind
         Modifiers : Modifier list
         Categories : string list
+        Repeat : int option
     }
 
     member this.Name = this.Method.Name
@@ -30,26 +31,26 @@ type SingleTestMethod =
 [<RequireQualifiedAccess>]
 module SingleTestMethod =
     let parse (parentCategories : string list) (method : MethodInfo) : SingleTestMethod option =
-        let isTest, hasSource, hasData, modifiers, categories =
-            ((false, None, None, [], []), method.CustomAttributes)
-            ||> Seq.fold (fun (isTest, hasSource, hasData, mods, cats) attr ->
+        let isTest, hasSource, hasData, modifiers, categories, repeat =
+            ((false, None, None, [], [], None), method.CustomAttributes)
+            ||> Seq.fold (fun (isTest, hasSource, hasData, mods, cats, repeat) attr ->
                 match attr.AttributeType.FullName with
                 | "NUnit.Framework.TestAttribute" ->
                     if attr.ConstructorArguments.Count > 0 then
                         failwith "Unexpectedly got arguments to the Test attribute"
 
-                    (true, hasSource, hasData, mods, cats)
+                    (true, hasSource, hasData, mods, cats, repeat)
                 | "NUnit.Framework.TestCaseAttribute" ->
                     let args = attr.ConstructorArguments |> Seq.map _.Value |> Seq.toList
 
                     match hasData with
-                    | None -> (isTest, hasSource, Some [ List.ofSeq args ], mods, cats)
-                    | Some existing -> (isTest, hasSource, Some ((List.ofSeq args) :: existing), mods, cats)
+                    | None -> (isTest, hasSource, Some [ List.ofSeq args ], mods, cats, repeat)
+                    | Some existing -> (isTest, hasSource, Some ((List.ofSeq args) :: existing), mods, cats, repeat)
                 | "NUnit.Framework.TestCaseSourceAttribute" ->
                     let arg = attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>
 
                     match hasSource with
-                    | None -> (isTest, Some arg, hasData, mods, cats)
+                    | None -> (isTest, Some arg, hasData, mods, cats, repeat)
                     | Some existing ->
                         failwith
                             $"Unexpectedly got multiple different sources for test %s{method.Name} (%s{existing}, %s{arg})"
@@ -59,53 +60,63 @@ module SingleTestMethod =
                         |> Seq.tryHead
                         |> Option.map (_.Value >> unbox<string>)
 
-                    (isTest, hasSource, hasData, (Modifier.Explicit reason) :: mods, cats)
+                    (isTest, hasSource, hasData, (Modifier.Explicit reason) :: mods, cats, repeat)
                 | "NUnit.Framework.IgnoreAttribute" ->
                     let reason =
                         attr.ConstructorArguments
                         |> Seq.tryHead
                         |> Option.map (_.Value >> unbox<string>)
 
-                    (isTest, hasSource, hasData, (Modifier.Ignored reason) :: mods, cats)
+                    (isTest, hasSource, hasData, (Modifier.Ignored reason) :: mods, cats, repeat)
                 | "NUnit.Framework.CategoryAttribute" ->
                     let category =
                         attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>
 
-                    (isTest, hasSource, hasData, mods, category :: cats)
+                    (isTest, hasSource, hasData, mods, category :: cats, repeat)
+                | "NUnit.Framework.RepeatAttribute" ->
+                    match repeat with
+                    | Some _ -> failwith $"Got RepeatAttribute multiple times on %s{method.Name}"
+                    | None ->
+
+                    let repeat = attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<int>
+                    (isTest, hasSource, hasData, mods, cats, Some repeat)
                 | s when s.StartsWith ("NUnit.Framework", StringComparison.Ordinal) ->
                     failwith $"Unrecognised attribute on function %s{method.Name}: %s{attr.AttributeType.FullName}"
-                | _ -> (isTest, hasSource, hasData, mods, cats)
+                | _ -> (isTest, hasSource, hasData, mods, cats, repeat)
             )
 
-        match isTest, hasSource, hasData, modifiers, categories with
-        | _, Some _, Some _, _, _ ->
+        match isTest, hasSource, hasData, modifiers, categories, repeat with
+        | _, Some _, Some _, _, _, _ ->
             failwith $"Test %s{method.Name} unexpectedly has both TestData and TestCaseSource; not currently supported"
-        | false, None, None, [], _ -> None
-        | _, Some source, None, mods, categories ->
+        | false, None, None, [], _, _ -> None
+        | _, Some source, None, mods, categories, repeat ->
             {
                 Kind = TestKind.Source source
                 Method = method
                 Modifiers = mods
                 Categories = categories @ parentCategories
+                Repeat = repeat
             }
             |> Some
-        | _, None, Some data, mods, categories ->
+        | _, None, Some data, mods, categories, repeat ->
             {
                 Kind = TestKind.Data data
                 Method = method
                 Modifiers = mods
                 Categories = categories @ parentCategories
+                Repeat = repeat
             }
             |> Some
-        | true, None, None, mods, categories ->
+        | true, None, None, mods, categories, repeat ->
             {
                 Kind = TestKind.Single
                 Method = method
                 Modifiers = mods
                 Categories = categories @ parentCategories
+                Repeat = repeat
             }
             |> Some
-        | false, None, None, _ :: _, _ ->
+        | false, None, None, _ :: _, _, _ ->
             failwith
                 $"Unexpectedly got test modifiers but no test settings on '%s{method.Name}', which you probably didn't intend."
 
@@ -172,22 +183,27 @@ module TestFixture =
             []
         else
 
-        match test.Kind with
-        | TestKind.Data data -> data |> List.map (fun args -> runOne test.Method (Array.ofList args))
-        | TestKind.Single -> [ runOne test.Method [||] ]
-        | TestKind.Source s ->
-            let args = test.Method.DeclaringType.GetProperty s
+        Seq.init
+            (Option.defaultValue 1 test.Repeat)
+            (fun _ ->
+                match test.Kind with
+                | TestKind.Data data -> data |> Seq.map (fun args -> runOne test.Method (Array.ofList args))
+                | TestKind.Single -> Seq.singleton (runOne test.Method [||])
+                | TestKind.Source s ->
+                    let args = test.Method.DeclaringType.GetProperty s
 
-            args.GetValue null :?> IEnumerable<obj>
-            |> Seq.map (fun arg ->
-                match arg with
-                | :? TestCaseData as tcd -> runOne test.Method tcd.Arguments
-                | :? Tuple<obj, obj> as (a, b) -> runOne test.Method [| a ; b |]
-                | :? Tuple<obj, obj, obj> as (a, b, c) -> runOne test.Method [| a ; b ; c |]
-                | :? Tuple<obj, obj, obj, obj> as (a, b, c, d) -> runOne test.Method [| a ; b ; c ; d |]
-                | arg -> runOne test.Method [| arg |]
+                    args.GetValue null :?> IEnumerable<obj>
+                    |> Seq.map (fun arg ->
+                        match arg with
+                        | :? TestCaseData as tcd -> runOne test.Method tcd.Arguments
+                        | :? Tuple<obj, obj> as (a, b) -> runOne test.Method [| a ; b |]
+                        | :? Tuple<obj, obj, obj> as (a, b, c) -> runOne test.Method [| a ; b ; c |]
+                        | :? Tuple<obj, obj, obj, obj> as (a, b, c, d) -> runOne test.Method [| a ; b ; c ; d |]
+                        | arg -> runOne test.Method [| arg |]
+                    )
             )
-            |> List.ofSeq
+        |> Seq.concat
+        |> Seq.toList
 
     let rec shouldRun (filter : Filter) : TestFixture -> SingleTestMethod -> bool =
         match filter with
