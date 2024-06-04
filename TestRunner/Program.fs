@@ -15,6 +15,10 @@ type TestKind =
     | Source of string
     | Data of obj list list
 
+type Combinatorial =
+    | Combinatorial
+    | Sequential
+
 type SingleTestMethod =
     {
         // TODO: cope with [<Values>] on the parameters
@@ -23,6 +27,7 @@ type SingleTestMethod =
         Modifiers : Modifier list
         Categories : string list
         Repeat : int option
+        Combinatorial : Combinatorial option
     }
 
     member this.Name = this.Method.Name
@@ -30,26 +35,27 @@ type SingleTestMethod =
 [<RequireQualifiedAccess>]
 module SingleTestMethod =
     let parse (parentCategories : string list) (method : MethodInfo) : SingleTestMethod option =
-        let isTest, hasSource, hasData, modifiers, categories, repeat =
-            ((false, None, None, [], [], None), method.CustomAttributes)
-            ||> Seq.fold (fun (isTest, hasSource, hasData, mods, cats, repeat) attr ->
+        let isTest, hasSource, hasData, modifiers, categories, repeat, comb =
+            ((false, None, None, [], [], None, None), method.CustomAttributes)
+            ||> Seq.fold (fun (isTest, hasSource, hasData, mods, cats, repeat, comb) attr ->
                 match attr.AttributeType.FullName with
                 | "NUnit.Framework.TestAttribute" ->
                     if attr.ConstructorArguments.Count > 0 then
                         failwith "Unexpectedly got arguments to the Test attribute"
 
-                    (true, hasSource, hasData, mods, cats, repeat)
+                    (true, hasSource, hasData, mods, cats, repeat, comb)
                 | "NUnit.Framework.TestCaseAttribute" ->
                     let args = attr.ConstructorArguments |> Seq.map _.Value |> Seq.toList
 
                     match hasData with
-                    | None -> (isTest, hasSource, Some [ List.ofSeq args ], mods, cats, repeat)
-                    | Some existing -> (isTest, hasSource, Some ((List.ofSeq args) :: existing), mods, cats, repeat)
+                    | None -> (isTest, hasSource, Some [ List.ofSeq args ], mods, cats, repeat, comb)
+                    | Some existing ->
+                        (isTest, hasSource, Some ((List.ofSeq args) :: existing), mods, cats, repeat, comb)
                 | "NUnit.Framework.TestCaseSourceAttribute" ->
                     let arg = attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>
 
                     match hasSource with
-                    | None -> (isTest, Some arg, hasData, mods, cats, repeat)
+                    | None -> (isTest, Some arg, hasData, mods, cats, repeat, comb)
                     | Some existing ->
                         failwith
                             $"Unexpectedly got multiple different sources for test %s{method.Name} (%s{existing}, %s{arg})"
@@ -59,63 +65,76 @@ module SingleTestMethod =
                         |> Seq.tryHead
                         |> Option.map (_.Value >> unbox<string>)
 
-                    (isTest, hasSource, hasData, (Modifier.Explicit reason) :: mods, cats, repeat)
+                    (isTest, hasSource, hasData, (Modifier.Explicit reason) :: mods, cats, repeat, comb)
                 | "NUnit.Framework.IgnoreAttribute" ->
                     let reason =
                         attr.ConstructorArguments
                         |> Seq.tryHead
                         |> Option.map (_.Value >> unbox<string>)
 
-                    (isTest, hasSource, hasData, (Modifier.Ignored reason) :: mods, cats, repeat)
+                    (isTest, hasSource, hasData, (Modifier.Ignored reason) :: mods, cats, repeat, comb)
                 | "NUnit.Framework.CategoryAttribute" ->
                     let category =
                         attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>
 
-                    (isTest, hasSource, hasData, mods, category :: cats, repeat)
+                    (isTest, hasSource, hasData, mods, category :: cats, repeat, comb)
                 | "NUnit.Framework.RepeatAttribute" ->
                     match repeat with
                     | Some _ -> failwith $"Got RepeatAttribute multiple times on %s{method.Name}"
                     | None ->
 
                     let repeat = attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<int>
-                    (isTest, hasSource, hasData, mods, cats, Some repeat)
+                    (isTest, hasSource, hasData, mods, cats, Some repeat, comb)
+                | "NUnit.Framework.CombinatorialAttribute" ->
+                    match comb with
+                    | Some _ ->
+                        failwith $"Got CombinatorialAttribute or SequentialAttribute multiple times on %s{method.Name}"
+                    | None -> (isTest, hasSource, hasData, mods, cats, repeat, Some Combinatorial.Combinatorial)
+                | "NUnit.Framework.SequentialAttribute" ->
+                    match comb with
+                    | Some _ ->
+                        failwith $"Got CombinatorialAttribute or SequentialAttribute multiple times on %s{method.Name}"
+                    | None -> (isTest, hasSource, hasData, mods, cats, repeat, Some Combinatorial.Sequential)
                 | s when s.StartsWith ("NUnit.Framework", StringComparison.Ordinal) ->
                     failwith $"Unrecognised attribute on function %s{method.Name}: %s{attr.AttributeType.FullName}"
-                | _ -> (isTest, hasSource, hasData, mods, cats, repeat)
+                | _ -> (isTest, hasSource, hasData, mods, cats, repeat, comb)
             )
 
-        match isTest, hasSource, hasData, modifiers, categories, repeat with
-        | _, Some _, Some _, _, _, _ ->
+        match isTest, hasSource, hasData, modifiers, categories, repeat, comb with
+        | _, Some _, Some _, _, _, _, _ ->
             failwith $"Test %s{method.Name} unexpectedly has both TestData and TestCaseSource; not currently supported"
-        | false, None, None, [], _, _ -> None
-        | _, Some source, None, mods, categories, repeat ->
+        | false, None, None, [], _, _, _ -> None
+        | _, Some source, None, mods, categories, repeat, comb ->
             {
                 Kind = TestKind.Source source
                 Method = method
                 Modifiers = mods
                 Categories = categories @ parentCategories
                 Repeat = repeat
+                Combinatorial = comb
             }
             |> Some
-        | _, None, Some data, mods, categories, repeat ->
+        | _, None, Some data, mods, categories, repeat, comb ->
             {
                 Kind = TestKind.Data data
                 Method = method
                 Modifiers = mods
                 Categories = categories @ parentCategories
                 Repeat = repeat
+                Combinatorial = comb
             }
             |> Some
-        | true, None, None, mods, categories, repeat ->
+        | true, None, None, mods, categories, repeat, comb ->
             {
                 Kind = TestKind.Single
                 Method = method
                 Modifiers = mods
                 Categories = categories @ parentCategories
                 Repeat = repeat
+                Combinatorial = comb
             }
             |> Some
-        | false, None, None, _ :: _, _, _ ->
+        | false, None, None, _ :: _, _, _, _ ->
             failwith
                 $"Unexpectedly got test modifiers but no test settings on '%s{method.Name}', which you probably didn't intend."
 
@@ -210,12 +229,69 @@ module TestFixture =
         Seq.init
             (Option.defaultValue 1 test.Repeat)
             (fun _ ->
-                match test.Kind with
-                | TestKind.Data data ->
+                let valuesAttrs =
+                    test.Method.GetParameters ()
+                    |> Array.map (fun i ->
+                        i.CustomAttributes
+                        |> Seq.choose (fun i ->
+                            if i.AttributeType.FullName = "NUnit.Framework.ValuesAttribute" then
+                                Some i.ConstructorArguments
+                            else
+                                None
+                        )
+                        |> Seq.toList
+                        |> function
+                            | [] -> None
+                            | [ x ] -> Some x
+                            | _ :: _ :: _ ->
+                                failwith
+                                    $"Test %s{test.Name} has multiple Values attributes on a parameter. Exactly one per parameter please."
+                    )
+
+                let valuesAttrs =
+                    if valuesAttrs |> Array.exists (fun l -> l.IsSome) then
+                        if valuesAttrs |> Array.exists (fun l -> l.IsNone) then
+                            failwith
+                                $"Test %s{test.Name} has a parameter with the Values attribute and a parameter without. All parameters must have Values if any one does."
+
+                        Choice1Of2 (valuesAttrs |> Array.map Option.get)
+                    else
+                        Choice2Of2 ()
+
+                match test.Kind, valuesAttrs with
+                | TestKind.Data data, Choice2Of2 () ->
                     data
                     |> Seq.map (fun args -> runOne setUp tearDown test.Method (Array.ofList args))
-                | TestKind.Single -> Seq.singleton (runOne setUp tearDown test.Method [||])
-                | TestKind.Source s ->
+                | TestKind.Data _, Choice1Of2 _ ->
+                    failwith
+                        $"Test %s{test.Name} has both the TestCase and Values attributes. Specify one or the other."
+                | TestKind.Single, Choice2Of2 () -> Seq.singleton (runOne setUp tearDown test.Method [||])
+                | TestKind.Single, Choice1Of2 vals ->
+                    let combinatorial =
+                        Option.defaultValue Combinatorial.Combinatorial test.Combinatorial
+
+                    match combinatorial with
+                    | Combinatorial.Combinatorial ->
+                        vals
+                        |> Seq.map (fun l -> l |> Seq.map (fun v -> v.Value) |> Seq.toList)
+                        |> Seq.toList
+                        |> List.combinations
+                        |> Seq.map (fun args -> runOne setUp tearDown test.Method (Array.ofList args))
+                    | Combinatorial.Sequential ->
+                        let maxLength = vals |> Seq.map (fun i -> i.Count) |> Seq.max
+
+                        seq {
+                            for i = 0 to maxLength - 1 do
+                                let args =
+                                    vals
+                                    |> Array.map (fun param -> if i >= param.Count then null else param.[i].Value)
+
+                                runOne setUp tearDown test.Method args
+                        }
+                | TestKind.Source _, Choice1Of2 _ ->
+                    failwith
+                        $"Test %s{test.Name} has both the TestCaseSource and Values attributes. Specify one or the other."
+                | TestKind.Source s, Choice2Of2 () ->
                     let args =
                         test.Method.DeclaringType.GetProperty (
                             s,
