@@ -2,11 +2,6 @@
 # Please dont edit it manually, your changes might get overwritten!
 {fetchNuGet}: [
   (fetchNuGet {
-    pname = "coverlet.collector";
-    version = "6.0.0";
-    sha256 = "12j34vrkmph8lspbafnqmfnj2qvysz1jcrks2khw798s6dwv0j90";
-  })
-  (fetchNuGet {
     pname = "fantomas";
     version = "6.3.7";
     sha256 = "1z1a5bw7vwz6g8nvfgkvx66jnm4hmvn62vbyq0as60nw0jlvaidl";
@@ -52,11 +47,6 @@
     sha256 = "0fj6xwgqaxq3mrai86bklclfmjkzf038mrslwfqf4ignaz9f7g5j";
   })
   (fetchNuGet {
-    pname = "NUnit.Analyzers";
-    version = "3.9.0";
-    sha256 = "13bk0kfh1c0xzmr5vzlwl7afzhz60xrw402mpkgfj954dv4s2agq";
-  })
-  (fetchNuGet {
     pname = "NUnit3TestAdapter";
     version = "4.5.0";
     sha256 = "1srx1629s0k1kmf02nmz251q07vj6pv58mdafcr5dr0bbn1fh78i";
@@ -68,7 +58,7 @@
   })
   (fetchNuGet {
     pname = "WoofWare.PrattParser";
-    version = "0.1.1";
-    sha256 = "1l0a20jrx6rkpcqadhwkch3f26j57wbvmnj8d581d4ppdw7wzisz";
+    version = "0.1.2";
+    sha256 = "0spypcwsbn805yrs6grjj68ccva902lhkq93mxy32rdply1xs34q";
   })
 ]
