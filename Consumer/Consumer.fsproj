@@ -10,6 +10,10 @@
     <ItemGroup>
         <Compile Include="TestSetUp.fs" />
         <Compile Include="TestValues.fs" />
+        <None Include="some-config.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <Compile Include="TestAppDomain.fs" />
     </ItemGroup>
 
     <ItemGroup>

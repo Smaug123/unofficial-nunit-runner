@@ -197,7 +197,7 @@ module TestFixture =
                 | :? unit -> Ok ()
                 | ret -> Error (TestReturnedNonUnit ret)
             with exc ->
-                Error (TestThrew exc)
+                Error (TestThrew exc.InnerException)
 
         finally
             for tearDown in tearDown do
