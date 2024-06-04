@@ -7,6 +7,11 @@
     sha256 = "1z1a5bw7vwz6g8nvfgkvx66jnm4hmvn62vbyq0as60nw0jlvaidl";
   })
   (fetchNuGet {
+    pname = "FsCheck";
+    version = "3.0.0-rc3";
+    sha256 = "1rn4x9qh479927viwww3dy0mikcdcq3pfqv1hzbbawnwxfzm17z1";
+  })
+  (fetchNuGet {
     pname = "fsharp-analyzers";
     version = "0.26.0";
     sha256 = "0xgv5kvbwfdvcp6s8x7xagbbi4s3mqa4ixni6pazqvyflbgnah7b";
