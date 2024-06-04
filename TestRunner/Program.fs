@@ -1,7 +1,6 @@
 ﻿namespace TestRunner
 
 open System
-open System.Collections.Generic
 open System.IO
 open System.Reflection
 open System.Threading
@@ -199,15 +198,18 @@ module TestFixture =
                             ||| BindingFlags.Static
                         )
 
-                    args.GetValue null :?> IEnumerable<obj>
-                    |> Seq.map (fun arg ->
-                        match arg with
-                        | :? TestCaseData as tcd -> runOne test.Method tcd.Arguments
-                        | :? Tuple<obj, obj> as (a, b) -> runOne test.Method [| a ; b |]
-                        | :? Tuple<obj, obj, obj> as (a, b, c) -> runOne test.Method [| a ; b ; c |]
-                        | :? Tuple<obj, obj, obj, obj> as (a, b, c, d) -> runOne test.Method [| a ; b ; c ; d |]
-                        | arg -> runOne test.Method [| arg |]
-                    )
+                    seq {
+                        // Might not be an IEnumerable of a reference type.
+                        // Concretely, `FSharpList<HttpStatusCode> :> IEnumerable<obj>` fails.
+                        for arg in args.GetValue null :?> System.Collections.IEnumerable do
+                            yield
+                                match arg with
+                                | :? TestCaseData as tcd -> runOne test.Method tcd.Arguments
+                                | :? Tuple<obj, obj> as (a, b) -> runOne test.Method [| a ; b |]
+                                | :? Tuple<obj, obj, obj> as (a, b, c) -> runOne test.Method [| a ; b ; c |]
+                                | :? Tuple<obj, obj, obj, obj> as (a, b, c, d) -> runOne test.Method [| a ; b ; c ; d |]
+                                | arg -> runOne test.Method [| arg |]
+                    }
             )
         |> Seq.concat
         |> Seq.toList
