@@ -207,7 +207,8 @@ module TestFixture =
                                 | :? TestCaseData as tcd -> runOne test.Method tcd.Arguments
                                 | :? Tuple<obj, obj> as (a, b) -> runOne test.Method [| a ; b |]
                                 | :? Tuple<obj, obj, obj> as (a, b, c) -> runOne test.Method [| a ; b ; c |]
-                                | :? Tuple<obj, obj, obj, obj> as (a, b, c, d) -> runOne test.Method [| a ; b ; c ; d |]
+                                | :? Tuple<obj, obj, obj, obj> as (a, b, c, d) ->
+                                    runOne test.Method [| a ; b ; c ; d |]
                                 | arg -> runOne test.Method [| arg |]
                     }
             )
