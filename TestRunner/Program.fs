@@ -226,16 +226,20 @@ module TestFixture =
                             ||| BindingFlags.Static
                         )
 
-                    args.GetValue null :?> IEnumerable<obj>
-                    |> Seq.map (fun arg ->
-                        match arg with
-                        | :? TestCaseData as tcd -> runOne setUp tearDown test.Method tcd.Arguments
-                        | :? Tuple<obj, obj> as (a, b) -> runOne setUp tearDown test.Method [| a ; b |]
-                        | :? Tuple<obj, obj, obj> as (a, b, c) -> runOne setUp tearDown test.Method [| a ; b ; c |]
-                        | :? Tuple<obj, obj, obj, obj> as (a, b, c, d) ->
-                            runOne setUp tearDown test.Method [| a ; b ; c ; d |]
-                        | arg -> runOne setUp tearDown test.Method [| arg |]
-                    )
+                    seq {
+                        // Might not be an IEnumerable of a reference type.
+                        // Concretely, `FSharpList<HttpStatusCode> :> IEnumerable<obj>` fails.
+                        for arg in args.GetValue null :?> System.Collections.IEnumerable do
+                            yield
+                                match arg with
+                                | :? TestCaseData as tcd -> runOne setUp tearDown test.Method tcd.Arguments
+                                | :? Tuple<obj, obj> as (a, b) -> runOne setUp tearDown test.Method [| a ; b |]
+                                | :? Tuple<obj, obj, obj> as (a, b, c) ->
+                                    runOne setUp tearDown test.Method [| a ; b ; c |]
+                                | :? Tuple<obj, obj, obj, obj> as (a, b, c, d) ->
+                                    runOne setUp tearDown test.Method [| a ; b ; c ; d |]
+                                | arg -> runOne setUp tearDown test.Method [| arg |]
+                    }
             )
         |> Seq.concat
         |> Seq.toList
@@ -362,10 +366,7 @@ module Program =
             match argv |> List.ofSeq with
             | [ dll ] -> FileInfo dll, None
             | [ dll ; "--filter" ; filter ] -> FileInfo dll, Some (FilterIntermediate.parse filter |> Filter.make)
-            | got ->
-                got
-                |> String.concat " "
-                |> failwithf "provide exactly one arg, a test DLL; got: %s"
+            | _ -> failwith "provide exactly one arg, a test DLL"
 
         let filter =
             match filter with
