@@ -154,14 +154,19 @@ module TestFixture =
                                 | arg ->
                                     let argTy = arg.GetType ()
 
-                                    if argTy.FullName = "NUnit.TestCaseData" then
-                                        let field =
-                                            argTy.GetField ("Arguments", BindingFlags.Public ||| BindingFlags.Instance)
+                                    if argTy.FullName = "NUnit.Framework.TestCaseData" then
+                                        let argsMem =
+                                            argTy.GetMethod (
+                                                "get_Arguments",
+                                                BindingFlags.Public
+                                                ||| BindingFlags.Instance
+                                                ||| BindingFlags.FlattenHierarchy
+                                            )
 
-                                        if isNull field then
+                                        if isNull argsMem then
                                             failwith "Unexpectedly could not call `.Arguments` on TestCaseData"
 
-                                        runOne setUp tearDown test.Method (field.GetValue () |> unbox<obj[]>)
+                                        runOne setUp tearDown test.Method (argsMem.Invoke (arg, [||]) |> unbox<obj[]>)
                                     else
                                         runOne setUp tearDown test.Method [| arg |]
                     }
@@ -225,8 +230,12 @@ module TestFixture =
         finally
             match tests.OneTimeTearDown with
             | Some td ->
-                if not (isNull (td.Invoke (null, [||]))) then
-                    failwith $"TearDown procedure '%s{td.Name}' returned non-null"
+                try
+                    // TODO: all these failwiths hide errors that we caught and wrapped up nicely above
+                    if not (isNull (td.Invoke (null, [||]))) then
+                        failwith $"TearDown procedure '%s{td.Name}' returned non-null"
+                with :? TargetInvocationException as e ->
+                    failwith $"One-time teardown of %s{td.Name} failed: %O{e.InnerException}"
             | _ -> ()
 
         eprintfn $"Test fixture %s{tests.Name} completed (%i{totalTestSuccess.Value} success)."
