@@ -42,7 +42,7 @@ module SingleTestMethod =
         =
         let remaining, isTest, hasSource, hasData, modifiers, categories, repeat, comb =
             (([], false, None, None, [], [], None, None), attrs)
-            ||> Seq.fold (fun (remaining, isTest, hasSource, hasData, mods, cats, repeat, comb) attr ->
+            ||> List.fold (fun (remaining, isTest, hasSource, hasData, mods, cats, repeat, comb) attr ->
                 match attr.AttributeType.FullName with
                 | "NUnit.Framework.TestAttribute" ->
                     if attr.ConstructorArguments.Count > 0 then
