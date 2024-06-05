@@ -10,9 +10,11 @@
     <ItemGroup>
         <Compile Include="TestFilter.fs" />
         <Compile Include="TestList.fs" />
+        <Compile Include="TestSurface.fs" />
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="ApiSurface" Version="4.0.40" />
         <PackageReference Include="FsCheck" Version="3.0.0-rc3" />
         <PackageReference Include="FsUnit" Version="6.0.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />

@@ -5,17 +5,27 @@ open System.Reflection
 open System.Threading
 open Microsoft.FSharp.Core
 
+/// Represents the result of a test that didn't fail.
 [<RequireQualifiedAccess>]
 type TestMemberSuccess =
+    /// The test passed.
     | Ok
+    /// We didn't run the test, because it's [<Ignore>].
     | Ignored of reason : string option
+    /// We didn't run the test, because it's [<Explicit>].
     | Explicit of reason : string option
 
+/// Represents the failure of a test.
 [<RequireQualifiedAccess>]
 type TestMemberFailure =
+    /// We couldn't run this test because it was somehow malformed in a way we detected up front.
     | Malformed of reasons : string list
+    /// We tried to run the test, but it failed. (A single test can fail many times, e.g. if it failed and also
+    /// the tear-down logic failed afterwards.)
     | Failed of TestFailure list
 
+/// A test fixture (usually represented by the [<TestFixture>]` attribute), which may contain many tests,
+/// each of which may run many times.
 [<RequireQualifiedAccess>]
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module TestFixture =
@@ -58,7 +68,7 @@ module TestFixture =
 
         let result = runMethods TestFailure.TestFailed [ test ] args
 
-        let tearDownResult = runMethods TestFailure.TestFailed tearDown [||]
+        let tearDownResult = runMethods TestFailure.TearDownFailed tearDown [||]
 
         match result, tearDownResult with
         | Ok (), Ok () -> Ok ()
@@ -244,28 +254,8 @@ module TestFixture =
         |> Seq.concat
         |> Seq.toList
 
-    let rec shouldRun (filter : Filter) : TestFixture -> SingleTestMethod -> bool =
-        match filter with
-        | Filter.Not filter ->
-            let inner = shouldRun filter
-            fun a b -> not (inner a b)
-        | Filter.And (a, b) ->
-            let inner1 = shouldRun a
-            let inner2 = shouldRun b
-            fun a b -> inner1 a b && inner2 a b
-        | Filter.Or (a, b) ->
-            let inner1 = shouldRun a
-            let inner2 = shouldRun b
-            fun a b -> inner1 a b || inner2 a b
-        | Filter.Name (Match.Exact m) -> fun _fixture method -> method.Method.Name = m
-        | Filter.Name (Match.Contains m) -> fun _fixture method -> method.Method.Name.Contains m
-        | Filter.FullyQualifiedName (Match.Exact m) -> fun fixture method -> (fixture.Name + method.Method.Name) = m
-        | Filter.FullyQualifiedName (Match.Contains m) ->
-            fun fixture method -> (fixture.Name + method.Method.Name).Contains m
-        | Filter.TestCategory (Match.Contains m) ->
-            fun _fixture method -> method.Categories |> List.exists (fun cat -> cat.Contains m)
-        | Filter.TestCategory (Match.Exact m) -> fun _fixture method -> method.Categories |> List.contains m
-
+    /// Run every test (except those which fail the `filter`) in this test fixture. As of this writing, returns the
+    /// number of test failures.
     let run (filter : TestFixture -> SingleTestMethod -> bool) (tests : TestFixture) : int =
         eprintfn $"Running test fixture: %s{tests.Name} (%i{tests.Tests.Length} tests to run)"
 
@@ -335,6 +325,8 @@ module TestFixture =
         eprintfn $"Test fixture %s{tests.Name} completed (%i{totalTestSuccess.Value} success)."
         testFailures.Value
 
+    /// Interpret this type as a [<TestFixture>], extracting the test members from it and annotating them with all
+    /// relevant information about how we should run them.
     let parse (parentType : Type) : TestFixture =
         let categories =
             parentType.CustomAttributes

@@ -9,12 +9,12 @@ module Program =
         let testDll, filter =
             match argv |> List.ofSeq with
             | [ dll ] -> FileInfo dll, None
-            | [ dll ; "--filter" ; filter ] -> FileInfo dll, Some (FilterIntermediate.parse filter |> Filter.make)
+            | [ dll ; "--filter" ; filter ] -> FileInfo dll, Some (Filter.parse filter)
             | _ -> failwith "provide exactly one arg, a test DLL"
 
         let filter =
             match filter with
-            | Some filter -> TestFixture.shouldRun filter
+            | Some filter -> Filter.shouldRun filter
             | None -> fun _ _ -> true
 
         // Fix for https://github.com/Smaug123/unofficial-nunit-runner/issues/8

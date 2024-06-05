@@ -1,7 +1,7 @@
 namespace TestRunner
 
 [<RequireQualifiedAccess>]
-module List =
+module internal List =
 
     /// Given e.g. [[1,2],[4,5,6]], returns:
     /// [1;4] ; [1;5] ; [1;6] ; [2;4] ; [2;5] ; [2;6]

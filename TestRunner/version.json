@@ -1,0 +1,10 @@
+{
+  "version": "0.1",
+  "pathFilters": [
+    "./",
+    "^TestRunner.Test/",
+    "../TestRunner.Lib",
+    ":/Directory.Build.props",
+    ":/README.md"
+  ]
+}

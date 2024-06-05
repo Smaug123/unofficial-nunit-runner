@@ -17,16 +17,19 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Include="AssemblyInfo.fs" />
       <Compile Include="Array.fs" />
-      <Compile Include="Filter.fs" />
       <Compile Include="List.fs" />
       <Compile Include="Domain.fs" />
+      <Compile Include="Filter.fs" />
       <Compile Include="SingleTestMethod.fs" />
       <Compile Include="TestFixture.fs" />
       <None Include="..\README.md">
         <Pack>True</Pack>
         <PackagePath>\</PackagePath>
       </None>
+      <EmbeddedResource Include="SurfaceBaseline.txt" />
+      <EmbeddedResource Include="version.json" />
     </ItemGroup>
   <ItemGroup>
     <PackageReference Include="WoofWare.PrattParser" Version="0.1.2" />
