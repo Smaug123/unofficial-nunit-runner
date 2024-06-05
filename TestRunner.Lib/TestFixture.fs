@@ -205,7 +205,7 @@ module TestFixture =
                     seq {
                         // Might not be an IEnumerable of a reference type.
                         // Concretely, `FSharpList<HttpStatusCode> :> IEnumerable<obj>` fails.
-                        for arg in args.GetValue null :?> System.Collections.IEnumerable do
+                        for arg in args.GetValue (null : obj) :?> System.Collections.IEnumerable do
                             yield
                                 match arg with
                                 | :? Tuple<obj, obj> as (a, b) ->
