@@ -274,9 +274,11 @@ module TestFixture =
                     match tests.OneTimeSetUp with
                     | None -> ()
                     | Some t -> yield t
+
                     match tests.OneTimeTearDown with
                     | None -> ()
                     | Some t -> yield t
+
                     yield! tests.Tests |> Seq.map (fun t -> t.Method)
                 }
 
