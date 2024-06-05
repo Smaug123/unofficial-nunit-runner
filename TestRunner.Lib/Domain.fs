@@ -10,7 +10,7 @@ type Modifier =
 [<RequireQualifiedAccess>]
 type TestKind =
     | Single
-    | Source of string
+    | Source of string list
     | Data of obj list list
 
 type Combinatorial =

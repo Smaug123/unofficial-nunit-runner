@@ -192,52 +192,53 @@ module TestFixture =
                     |> TestMemberFailure.Malformed
                     |> Error
                     |> Seq.singleton
-                | TestKind.Source s, None ->
-                    let args =
-                        test.Method.DeclaringType.GetProperty (
-                            s,
-                            BindingFlags.Public
-                            ||| BindingFlags.NonPublic
-                            ||| BindingFlags.Instance
-                            ||| BindingFlags.Static
-                        )
-
+                | TestKind.Source sources, None ->
                     seq {
-                        // Might not be an IEnumerable of a reference type.
-                        // Concretely, `FSharpList<HttpStatusCode> :> IEnumerable<obj>` fails.
-                        for arg in args.GetValue (null : obj) :?> System.Collections.IEnumerable do
-                            yield
-                                match arg with
-                                | :? Tuple<obj, obj> as (a, b) ->
-                                    runOne setUp tearDown test.Method containingObject [| a ; b |]
-                                | :? Tuple<obj, obj, obj> as (a, b, c) ->
-                                    runOne setUp tearDown test.Method containingObject [| a ; b ; c |]
-                                | :? Tuple<obj, obj, obj, obj> as (a, b, c, d) ->
-                                    runOne setUp tearDown test.Method containingObject [| a ; b ; c ; d |]
-                                | arg ->
-                                    let argTy = arg.GetType ()
+                        for source in sources do
+                            let args =
+                                test.Method.DeclaringType.GetProperty (
+                                    source,
+                                    BindingFlags.Public
+                                    ||| BindingFlags.NonPublic
+                                    ||| BindingFlags.Instance
+                                    ||| BindingFlags.Static
+                                )
 
-                                    if argTy.FullName = "NUnit.Framework.TestCaseData" then
-                                        let argsMem =
-                                            argTy.GetMethod (
-                                                "get_Arguments",
-                                                BindingFlags.Public
-                                                ||| BindingFlags.Instance
-                                                ||| BindingFlags.FlattenHierarchy
-                                            )
+                            // Might not be an IEnumerable of a reference type.
+                            // Concretely, `FSharpList<HttpStatusCode> :> IEnumerable<obj>` fails.
+                            for arg in args.GetValue (null : obj) :?> System.Collections.IEnumerable do
+                                yield
+                                    match arg with
+                                    | :? Tuple<obj, obj> as (a, b) ->
+                                        runOne setUp tearDown test.Method containingObject [| a ; b |]
+                                    | :? Tuple<obj, obj, obj> as (a, b, c) ->
+                                        runOne setUp tearDown test.Method containingObject [| a ; b ; c |]
+                                    | :? Tuple<obj, obj, obj, obj> as (a, b, c, d) ->
+                                        runOne setUp tearDown test.Method containingObject [| a ; b ; c ; d |]
+                                    | arg ->
+                                        let argTy = arg.GetType ()
 
-                                        if isNull argsMem then
-                                            failwith "Unexpectedly could not call `.Arguments` on TestCaseData"
+                                        if argTy.FullName = "NUnit.Framework.TestCaseData" then
+                                            let argsMem =
+                                                argTy.GetMethod (
+                                                    "get_Arguments",
+                                                    BindingFlags.Public
+                                                    ||| BindingFlags.Instance
+                                                    ||| BindingFlags.FlattenHierarchy
+                                                )
 
-                                        runOne
-                                            setUp
-                                            tearDown
-                                            test.Method
-                                            containingObject
-                                            (argsMem.Invoke (arg, [||]) |> unbox<obj[]>)
-                                    else
-                                        runOne setUp tearDown test.Method containingObject [| arg |]
-                                |> normaliseError
+                                            if isNull argsMem then
+                                                failwith "Unexpectedly could not call `.Arguments` on TestCaseData"
+
+                                            runOne
+                                                setUp
+                                                tearDown
+                                                test.Method
+                                                containingObject
+                                                (argsMem.Invoke (arg, [||]) |> unbox<obj[]>)
+                                        else
+                                            runOne setUp tearDown test.Method containingObject [| arg |]
+                                    |> normaliseError
                     }
             )
         |> Seq.concat
