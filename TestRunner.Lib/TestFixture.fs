@@ -282,17 +282,27 @@ module TestFixture =
             )
             |> Option.toObj
 
-        match tests.OneTimeSetUp with
-        | Some su ->
-            match su.Invoke (containingObject, [||]) with
-            | :? unit -> ()
-            | ret -> failwith $"One-time setup procedure '%s{su.Name}' returned non-null %O{ret}"
-        | _ -> ()
+        let setupResult =
+            match tests.OneTimeSetUp with
+            | Some su ->
+                try
+                    match su.Invoke (containingObject, [||]) with
+                    | :? unit -> None
+                    | ret ->
+                        Some (UserMethodFailure.ReturnedNonUnit (su.Name, ret))
+                with
+                | e ->
+                    Some (UserMethodFailure.Threw (su.Name, e))
+            | _ -> None
 
-        let totalTestSuccess = ref 0
-        let testFailures = ref 0
+        match setupResult with
+        | Some _ ->
+            // Don't run any tests if setup failed.
+            ()
+        | None ->
+            let totalTestSuccess = ref 0
+            let testFailures = ref 0
 
-        try
             for test in tests.Tests do
                 if filter tests test then
                     eprintfn $"Running test: %s{test.Name}"
@@ -311,16 +321,18 @@ module TestFixture =
                     eprintfn $"Finished test %s{test.Name} (%i{testSuccess.Value} success)"
                 else
                     eprintfn $"Skipping test due to filter: %s{test.Name}"
-        finally
-            match tests.OneTimeTearDown with
-            | Some td ->
-                try
-                    // TODO: all these failwiths hide errors that we caught and wrapped up nicely above
-                    if not (isNull (td.Invoke (containingObject, [||]))) then
-                        failwith $"TearDown procedure '%s{td.Name}' returned non-null"
-                with :? TargetInvocationException as e ->
-                    failwith $"One-time teardown of %s{td.Name} failed: %O{e.InnerException}"
-            | _ -> ()
+
+        // Unconditionally run OneTimeTearDown, whatever else happens
+        failwith "TODO: capture the failure if this fails"
+        match tests.OneTimeTearDown with
+        | Some td ->
+            try
+                // TODO: all these failwiths hide errors that we caught and wrapped up nicely above
+                if not (isNull (td.Invoke (containingObject, [||]))) then
+                    failwith $"TearDown procedure '%s{td.Name}' returned non-null"
+            with :? TargetInvocationException as e ->
+                failwith $"One-time teardown of %s{td.Name} failed: %O{e.InnerException}"
+        | _ -> ()
 
         eprintfn $"Test fixture %s{tests.Name} completed (%i{totalTestSuccess.Value} success)."
         testFailures.Value
