@@ -270,7 +270,7 @@ module TestFixture =
 
         let containingObject =
             let methods =
-                [
+                seq {
                     match tests.OneTimeSetUp with
                     | None -> ()
                     | Some t -> yield t
@@ -278,7 +278,7 @@ module TestFixture =
                     | None -> ()
                     | Some t -> yield t
                     yield! tests.Tests |> Seq.map (fun t -> t.Method)
-                ]
+                }
 
             methods
             |> Seq.tryPick (fun mi ->
