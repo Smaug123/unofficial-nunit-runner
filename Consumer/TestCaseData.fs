@@ -21,3 +21,8 @@ module TestCaseData =
     [<TestCaseSource(nameof dataSource)>]
     let ``Consume test data`` (i : int, s : string, arr : float[]) =
         lock testCasesSeen (fun () -> testCasesSeen.Add (i, s, arr))
+
+    let optional = [ Some "hi" ; None ] |> List.map TestCaseData
+
+    [<TestCaseSource(nameof optional)>]
+    let ``Consume options`` (s : string option) : unit = s |> shouldEqual s
