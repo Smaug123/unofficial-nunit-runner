@@ -2,10 +2,12 @@ namespace TestRunner
 
 open System.Reflection
 
+[<RequireQualifiedAccess>]
 type Modifier =
     | Explicit of reason : string option
     | Ignored of reason : string option
 
+[<RequireQualifiedAccess>]
 type TestKind =
     | Single
     | Source of string
@@ -47,11 +49,20 @@ type TestFixture =
             Tests = []
         }
 
-type TestFailure =
-    | TestReturnedNonUnit of obj
-    | TestThrew of exn
+[<RequireQualifiedAccess>]
+type UserMethodFailure =
+    | ReturnedNonUnit of name : string * result : obj
+    | Threw of name : string * exn
 
     override this.ToString () =
         match this with
-        | TestFailure.TestReturnedNonUnit ret -> $"Test returned a non-unit: %O{ret}"
-        | TestFailure.TestThrew exc -> $"Test threw: %s{exc.Message}\n  %s{exc.StackTrace}"
+        | UserMethodFailure.ReturnedNonUnit (method, ret) ->
+            $"User-defined method %s{method} returned a non-unit: %O{ret}"
+        | UserMethodFailure.Threw (method, exc) ->
+            $"User-defined method %s{method} threw: %s{exc.Message}\n  %s{exc.StackTrace}"
+
+[<RequireQualifiedAccess>]
+type TestFailure =
+    | TestFailed of UserMethodFailure
+    | SetUpFailed of UserMethodFailure
+    | TearDownFailed of UserMethodFailure
