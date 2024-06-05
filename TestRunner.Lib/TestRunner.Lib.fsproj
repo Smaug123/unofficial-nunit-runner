@@ -23,6 +23,7 @@
       <Compile Include="Domain.fs" />
       <Compile Include="Filter.fs" />
       <Compile Include="SingleTestMethod.fs" />
+      <Compile Include="TestProgress.fs" />
       <Compile Include="TestFixture.fs" />
       <None Include="..\README.md">
         <Pack>True</Pack>

@@ -131,3 +131,22 @@ type TestFailure =
         | TestFailure.TestFailed f
         | TestFailure.SetUpFailed f
         | TestFailure.TearDownFailed f -> f.Name
+
+/// Represents the result of a test that didn't fail.
+[<RequireQualifiedAccess>]
+type TestMemberSuccess =
+    /// The test passed.
+    | Ok
+    /// We didn't run the test, because it's [<Ignore>].
+    | Ignored of reason : string option
+    /// We didn't run the test, because it's [<Explicit>].
+    | Explicit of reason : string option
+
+/// Represents the failure of a test.
+[<RequireQualifiedAccess>]
+type TestMemberFailure =
+    /// We couldn't run this test because it was somehow malformed in a way we detected up front.
+    | Malformed of reasons : string list
+    /// We tried to run the test, but it failed. (A single test can fail many times, e.g. if it failed and also
+    /// the tear-down logic failed afterwards.)
+    | Failed of TestFailure list
