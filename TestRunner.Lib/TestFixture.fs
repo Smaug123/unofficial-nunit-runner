@@ -26,6 +26,7 @@ module TestFixture =
         (setUp : MethodInfo list)
         (tearDown : MethodInfo list)
         (test : MethodInfo)
+        (containingObject : obj)
         (args : obj[])
         : Result<unit, TestFailure list>
         =
@@ -40,7 +41,7 @@ module TestFixture =
             | head :: rest ->
                 let result =
                     try
-                        head.Invoke (null, args) |> Ok
+                        head.Invoke (containingObject, args) |> Ok
                     with e ->
                         Error (UserMethodFailure.Threw (head.Name, e))
 
@@ -103,6 +104,7 @@ module TestFixture =
     let private runTestsFromMember
         (setUp : MethodInfo list)
         (tearDown : MethodInfo list)
+        (containingObject : obj)
         (test : SingleTestMethod)
         : Result<TestMemberSuccess, TestMemberFailure> list
         =
@@ -143,7 +145,10 @@ module TestFixture =
                 match test.Kind, values with
                 | TestKind.Data data, None ->
                     data
-                    |> Seq.map (fun args -> runOne setUp tearDown test.Method (Array.ofList args) |> normaliseError)
+                    |> Seq.map (fun args ->
+                        runOne setUp tearDown test.Method containingObject (Array.ofList args)
+                        |> normaliseError
+                    )
                 | TestKind.Data _, Some _ ->
                     [
                         "Test has both the TestCase and Values attributes. Specify one or the other."
@@ -151,7 +156,10 @@ module TestFixture =
                     |> TestMemberFailure.Malformed
                     |> Error
                     |> Seq.singleton
-                | TestKind.Single, None -> runOne setUp tearDown test.Method [||] |> normaliseError |> Seq.singleton
+                | TestKind.Single, None ->
+                    runOne setUp tearDown test.Method containingObject [||]
+                    |> normaliseError
+                    |> Seq.singleton
                 | TestKind.Single, Some vals ->
                     let combinatorial =
                         Option.defaultValue Combinatorial.Combinatorial test.Combinatorial
@@ -163,7 +171,8 @@ module TestFixture =
                         |> Seq.toList
                         |> List.combinations
                         |> Seq.map (fun args ->
-                            runOne setUp tearDown test.Method (Array.ofList args) |> normaliseError
+                            runOne setUp tearDown test.Method containingObject (Array.ofList args)
+                            |> normaliseError
                         )
                     | Combinatorial.Sequential ->
                         let maxLength = vals |> Seq.map (fun i -> i.Count) |> Seq.max
@@ -174,7 +183,7 @@ module TestFixture =
                                     vals
                                     |> Array.map (fun param -> if i >= param.Count then null else param.[i].Value)
 
-                                yield runOne setUp tearDown test.Method args |> normaliseError
+                                yield runOne setUp tearDown test.Method containingObject args |> normaliseError
                         }
                 | TestKind.Source _, Some _ ->
                     [
@@ -199,11 +208,12 @@ module TestFixture =
                         for arg in args.GetValue null :?> System.Collections.IEnumerable do
                             yield
                                 match arg with
-                                | :? Tuple<obj, obj> as (a, b) -> runOne setUp tearDown test.Method [| a ; b |]
+                                | :? Tuple<obj, obj> as (a, b) ->
+                                    runOne setUp tearDown test.Method containingObject [| a ; b |]
                                 | :? Tuple<obj, obj, obj> as (a, b, c) ->
-                                    runOne setUp tearDown test.Method [| a ; b ; c |]
+                                    runOne setUp tearDown test.Method containingObject [| a ; b ; c |]
                                 | :? Tuple<obj, obj, obj, obj> as (a, b, c, d) ->
-                                    runOne setUp tearDown test.Method [| a ; b ; c ; d |]
+                                    runOne setUp tearDown test.Method containingObject [| a ; b ; c ; d |]
                                 | arg ->
                                     let argTy = arg.GetType ()
 
@@ -219,9 +229,14 @@ module TestFixture =
                                         if isNull argsMem then
                                             failwith "Unexpectedly could not call `.Arguments` on TestCaseData"
 
-                                        runOne setUp tearDown test.Method (argsMem.Invoke (arg, [||]) |> unbox<obj[]>)
+                                        runOne
+                                            setUp
+                                            tearDown
+                                            test.Method
+                                            containingObject
+                                            (argsMem.Invoke (arg, [||]) |> unbox<obj[]>)
                                     else
-                                        runOne setUp tearDown test.Method [| arg |]
+                                        runOne setUp tearDown test.Method containingObject [| arg |]
                                 |> normaliseError
                     }
             )
@@ -253,9 +268,32 @@ module TestFixture =
     let run (filter : TestFixture -> SingleTestMethod -> bool) (tests : TestFixture) : int =
         eprintfn $"Running test fixture: %s{tests.Name} (%i{tests.Tests.Length} tests to run)"
 
+        let containingObject =
+            let methods =
+                seq {
+                    match tests.OneTimeSetUp with
+                    | None -> ()
+                    | Some t -> yield t
+
+                    match tests.OneTimeTearDown with
+                    | None -> ()
+                    | Some t -> yield t
+
+                    yield! tests.Tests |> Seq.map (fun t -> t.Method)
+                }
+
+            methods
+            |> Seq.tryPick (fun mi ->
+                if not mi.IsStatic then
+                    Some (Activator.CreateInstance mi.DeclaringType)
+                else
+                    None
+            )
+            |> Option.toObj
+
         match tests.OneTimeSetUp with
         | Some su ->
-            match su.Invoke (null, [||]) with
+            match su.Invoke (containingObject, [||]) with
             | :? unit -> ()
             | ret -> failwith $"One-time setup procedure '%s{su.Name}' returned non-null %O{ret}"
         | _ -> ()
@@ -269,7 +307,7 @@ module TestFixture =
                     eprintfn $"Running test: %s{test.Name}"
                     let testSuccess = ref 0
 
-                    let results = runTestsFromMember tests.SetUp tests.TearDown test
+                    let results = runTestsFromMember tests.SetUp tests.TearDown containingObject test
 
                     for result in results do
                         match result with
@@ -287,7 +325,7 @@ module TestFixture =
             | Some td ->
                 try
                     // TODO: all these failwiths hide errors that we caught and wrapped up nicely above
-                    if not (isNull (td.Invoke (null, [||]))) then
+                    if not (isNull (td.Invoke (containingObject, [||]))) then
                         failwith $"TearDown procedure '%s{td.Name}' returned non-null"
                 with :? TargetInvocationException as e ->
                     failwith $"One-time teardown of %s{td.Name} failed: %O{e.InnerException}"

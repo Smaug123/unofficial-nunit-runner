@@ -15,6 +15,7 @@
         </None>
         <Compile Include="TestAppDomain.fs" />
         <Compile Include="TestCaseData.fs" />
+        <Compile Include="TestNonStatic.fs" />
     </ItemGroup>
 
     <ItemGroup>
