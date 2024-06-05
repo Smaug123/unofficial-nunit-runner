@@ -24,10 +24,14 @@ type TestMemberFailure =
     /// the tear-down logic failed afterwards.)
     | Failed of TestFailure list
 
+/// The results of running a single TestFixture.
 type FixtureRunResults =
     {
+        /// These tests failed.
         Failed : TestMemberFailure list
+        /// This many tests succeeded (including multiple runs of a single test, if specified).
         SuccessCount : int
+        /// These failures occurred outside the context of a test - e.g. in setup or tear-down logic.
         OtherFailures : UserMethodFailure list
     }
 
@@ -59,8 +63,8 @@ module TestFixture =
                 let result =
                     try
                         head.Invoke (containingObject, args) |> Ok
-                    with e ->
-                        Error (UserMethodFailure.Threw (head.Name, e))
+                    with :? TargetInvocationException as e ->
+                        Error (UserMethodFailure.Threw (head.Name, e.InnerException))
 
                 match result with
                 | Error e -> Error (wrap e)
@@ -298,8 +302,8 @@ module TestFixture =
                     match su.Invoke (containingObject, [||]) with
                     | :? unit -> None
                     | ret -> Some (UserMethodFailure.ReturnedNonUnit (su.Name, ret))
-                with e ->
-                    Some (UserMethodFailure.Threw (su.Name, e))
+                with :? TargetInvocationException as e ->
+                    Some (UserMethodFailure.Threw (su.Name, e.InnerException))
             | _ -> None
 
         let totalTestSuccess = ref 0

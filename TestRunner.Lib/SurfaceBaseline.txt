@@ -65,6 +65,14 @@ TestRunner.Filter.Tag [property]: [read-only] int
 TestRunner.FilterModule inherit obj
 TestRunner.FilterModule.parse [static method]: string -> TestRunner.Filter
 TestRunner.FilterModule.shouldRun [static method]: TestRunner.Filter -> (TestRunner.TestFixture -> TestRunner.SingleTestMethod -> bool)
+TestRunner.FixtureRunResults inherit obj, implements TestRunner.FixtureRunResults System.IEquatable, System.Collections.IStructuralEquatable
+TestRunner.FixtureRunResults..ctor [constructor]: (TestRunner.TestMemberFailure list, int, TestRunner.UserMethodFailure list)
+TestRunner.FixtureRunResults.Failed [property]: [read-only] TestRunner.TestMemberFailure list
+TestRunner.FixtureRunResults.get_Failed [method]: unit -> TestRunner.TestMemberFailure list
+TestRunner.FixtureRunResults.get_OtherFailures [method]: unit -> TestRunner.UserMethodFailure list
+TestRunner.FixtureRunResults.get_SuccessCount [method]: unit -> int
+TestRunner.FixtureRunResults.OtherFailures [property]: [read-only] TestRunner.UserMethodFailure list
+TestRunner.FixtureRunResults.SuccessCount [property]: [read-only] int
 TestRunner.Match inherit obj, implements TestRunner.Match System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.Match System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 2 cases
 TestRunner.Match+Contains inherit TestRunner.Match
 TestRunner.Match+Contains.get_Item [method]: unit -> string
@@ -136,10 +144,12 @@ TestRunner.TestFailure+TestFailed.Item [property]: [read-only] TestRunner.UserMe
 TestRunner.TestFailure.get_IsSetUpFailed [method]: unit -> bool
 TestRunner.TestFailure.get_IsTearDownFailed [method]: unit -> bool
 TestRunner.TestFailure.get_IsTestFailed [method]: unit -> bool
+TestRunner.TestFailure.get_Name [method]: unit -> string
 TestRunner.TestFailure.get_Tag [method]: unit -> int
 TestRunner.TestFailure.IsSetUpFailed [property]: [read-only] bool
 TestRunner.TestFailure.IsTearDownFailed [property]: [read-only] bool
 TestRunner.TestFailure.IsTestFailed [property]: [read-only] bool
+TestRunner.TestFailure.Name [property]: [read-only] string
 TestRunner.TestFailure.NewSetUpFailed [static method]: TestRunner.UserMethodFailure -> TestRunner.TestFailure
 TestRunner.TestFailure.NewTearDownFailed [static method]: TestRunner.UserMethodFailure -> TestRunner.TestFailure
 TestRunner.TestFailure.NewTestFailed [static method]: TestRunner.UserMethodFailure -> TestRunner.TestFailure
@@ -161,7 +171,7 @@ TestRunner.TestFixture.TearDown [property]: [read-only] System.Reflection.Method
 TestRunner.TestFixture.Tests [property]: [read-only] TestRunner.SingleTestMethod list
 TestRunner.TestFixtureModule inherit obj
 TestRunner.TestFixtureModule.parse [static method]: System.Type -> TestRunner.TestFixture
-TestRunner.TestFixtureModule.run [static method]: (TestRunner.TestFixture -> TestRunner.SingleTestMethod -> bool) -> TestRunner.TestFixture -> int
+TestRunner.TestFixtureModule.run [static method]: (TestRunner.TestFixture -> TestRunner.SingleTestMethod -> bool) -> TestRunner.TestFixture -> TestRunner.FixtureRunResults
 TestRunner.TestKind inherit obj, implements TestRunner.TestKind System.IEquatable, System.Collections.IStructuralEquatable - union type with 3 cases
 TestRunner.TestKind+Data inherit TestRunner.TestKind
 TestRunner.TestKind+Data.get_Item [method]: unit -> obj list list
@@ -242,9 +252,11 @@ TestRunner.UserMethodFailure+Threw.Item2 [property]: [read-only] System.Exceptio
 TestRunner.UserMethodFailure+Threw.name [property]: [read-only] string
 TestRunner.UserMethodFailure.get_IsReturnedNonUnit [method]: unit -> bool
 TestRunner.UserMethodFailure.get_IsThrew [method]: unit -> bool
+TestRunner.UserMethodFailure.get_Name [method]: unit -> string
 TestRunner.UserMethodFailure.get_Tag [method]: unit -> int
 TestRunner.UserMethodFailure.IsReturnedNonUnit [property]: [read-only] bool
 TestRunner.UserMethodFailure.IsThrew [property]: [read-only] bool
+TestRunner.UserMethodFailure.Name [property]: [read-only] string
 TestRunner.UserMethodFailure.NewReturnedNonUnit [static method]: (string, obj) -> TestRunner.UserMethodFailure
 TestRunner.UserMethodFailure.NewThrew [static method]: (string, System.Exception) -> TestRunner.UserMethodFailure
 TestRunner.UserMethodFailure.Tag [property]: [read-only] int
