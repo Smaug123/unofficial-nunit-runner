@@ -5,25 +5,6 @@ open System.Reflection
 open System.Threading
 open Microsoft.FSharp.Core
 
-/// Represents the result of a test that didn't fail.
-[<RequireQualifiedAccess>]
-type TestMemberSuccess =
-    /// The test passed.
-    | Ok
-    /// We didn't run the test, because it's [<Ignore>].
-    | Ignored of reason : string option
-    /// We didn't run the test, because it's [<Explicit>].
-    | Explicit of reason : string option
-
-/// Represents the failure of a test.
-[<RequireQualifiedAccess>]
-type TestMemberFailure =
-    /// We couldn't run this test because it was somehow malformed in a way we detected up front.
-    | Malformed of reasons : string list
-    /// We tried to run the test, but it failed. (A single test can fail many times, e.g. if it failed and also
-    /// the tear-down logic failed afterwards.)
-    | Failed of TestFailure list
-
 /// The results of running a single TestFixture.
 type FixtureRunResults =
     {
@@ -269,8 +250,13 @@ module TestFixture =
 
     /// Run every test (except those which fail the `filter`) in this test fixture, as well as the
     /// appropriate setup and tear-down logic.
-    let run (filter : TestFixture -> SingleTestMethod -> bool) (tests : TestFixture) : FixtureRunResults =
-        eprintfn $"Running test fixture: %s{tests.Name} (%i{tests.Tests.Length} tests to run)"
+    let run
+        (progress : ITestProgress)
+        (filter : TestFixture -> SingleTestMethod -> bool)
+        (tests : TestFixture)
+        : FixtureRunResults
+        =
+        progress.OnTestFixtureStart tests.Name tests.Tests.Length
 
         let containingObject =
             let methods =
@@ -316,7 +302,7 @@ module TestFixture =
         | None ->
             for test in tests.Tests do
                 if filter tests test then
-                    eprintfn $"Running test: %s{test.Name}"
+                    progress.OnTestMemberStart test.Name
                     let testSuccess = ref 0
 
                     let results = runTestsFromMember tests.SetUp tests.TearDown containingObject test
@@ -325,13 +311,13 @@ module TestFixture =
                         match result with
                         | Error failure ->
                             testFailures.Add failure
-                            eprintfn $"Test failed: %O{failure}"
+                            progress.OnTestFailed test.Name failure
                         | Ok _ -> Interlocked.Increment testSuccess |> ignore<int>
 
                     Interlocked.Add (totalTestSuccess, testSuccess.Value) |> ignore<int>
-                    eprintfn $"Finished test %s{test.Name} (%i{testSuccess.Value} success)"
+                    progress.OnTestMemberFinished test.Name
                 else
-                    eprintfn $"Skipping test due to filter: %s{test.Name}"
+                    progress.OnTestMemberSkipped test.Name
 
         // Unconditionally run OneTimeTearDown if it exists.
         let tearDownError =

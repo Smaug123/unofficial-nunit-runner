@@ -73,6 +73,12 @@ TestRunner.FixtureRunResults.get_OtherFailures [method]: unit -> TestRunner.User
 TestRunner.FixtureRunResults.get_SuccessCount [method]: unit -> int
 TestRunner.FixtureRunResults.OtherFailures [property]: [read-only] TestRunner.UserMethodFailure list
 TestRunner.FixtureRunResults.SuccessCount [property]: [read-only] int
+TestRunner.ITestProgress - interface with 5 member(s)
+TestRunner.ITestProgress.OnTestFailed [method]: string -> TestRunner.TestMemberFailure -> unit
+TestRunner.ITestProgress.OnTestFixtureStart [method]: string -> int -> unit
+TestRunner.ITestProgress.OnTestMemberFinished [method]: string -> unit
+TestRunner.ITestProgress.OnTestMemberSkipped [method]: string -> unit
+TestRunner.ITestProgress.OnTestMemberStart [method]: string -> unit
 TestRunner.Match inherit obj, implements TestRunner.Match System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.Match System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 2 cases
 TestRunner.Match+Contains inherit TestRunner.Match
 TestRunner.Match+Contains.get_Item [method]: unit -> string
@@ -171,7 +177,7 @@ TestRunner.TestFixture.TearDown [property]: [read-only] System.Reflection.Method
 TestRunner.TestFixture.Tests [property]: [read-only] TestRunner.SingleTestMethod list
 TestRunner.TestFixtureModule inherit obj
 TestRunner.TestFixtureModule.parse [static method]: System.Type -> TestRunner.TestFixture
-TestRunner.TestFixtureModule.run [static method]: (TestRunner.TestFixture -> TestRunner.SingleTestMethod -> bool) -> TestRunner.TestFixture -> TestRunner.FixtureRunResults
+TestRunner.TestFixtureModule.run [static method]: TestRunner.ITestProgress -> (TestRunner.TestFixture -> TestRunner.SingleTestMethod -> bool) -> TestRunner.TestFixture -> TestRunner.FixtureRunResults
 TestRunner.TestKind inherit obj, implements TestRunner.TestKind System.IEquatable, System.Collections.IStructuralEquatable - union type with 3 cases
 TestRunner.TestKind+Data inherit TestRunner.TestKind
 TestRunner.TestKind+Data.get_Item [method]: unit -> obj list list
@@ -236,6 +242,8 @@ TestRunner.TestMemberSuccess.NewExplicit [static method]: string option -> TestR
 TestRunner.TestMemberSuccess.NewIgnored [static method]: string option -> TestRunner.TestMemberSuccess
 TestRunner.TestMemberSuccess.Ok [static property]: [read-only] TestRunner.TestMemberSuccess
 TestRunner.TestMemberSuccess.Tag [property]: [read-only] int
+TestRunner.TestProgress inherit obj
+TestRunner.TestProgress.toStderr [static method]: unit -> TestRunner.ITestProgress
 TestRunner.UserMethodFailure inherit obj, implements TestRunner.UserMethodFailure System.IEquatable, System.Collections.IStructuralEquatable - union type with 2 cases
 TestRunner.UserMethodFailure+ReturnedNonUnit inherit TestRunner.UserMethodFailure
 TestRunner.UserMethodFailure+ReturnedNonUnit.get_name [method]: unit -> string
