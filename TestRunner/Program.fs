@@ -28,7 +28,7 @@ module Program =
             | Some filter -> Filter.shouldRun filter
             | None -> fun _ _ -> true
 
-        let progress = TestProgress.toStderr ()
+        let progress = Progress.spectre ()
 
         use _ = new SetBaseDir (testDll)
 
