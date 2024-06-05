@@ -1,8 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+      <TargetFramework>netstandard2.1</TargetFramework>
+      <PackAsTool>true</PackAsTool>
+      <GenerateDocumentationFile>true</GenerateDocumentationFile>
+      <Authors>Patrick Stevens</Authors>
+      <Copyright>Copyright (c) Patrick Stevens 2024</Copyright>
+      <Description>Library with primitives to allow you to run NUnit tests.</Description>
+      <RepositoryType>git</RepositoryType>
+      <RepositoryUrl>https://github.com/Smaug123/unofficial-nunit-runner</RepositoryUrl>
+      <PackageLicenseExpression>MIT</PackageLicenseExpression>
+      <PackageReadmeFile>README.md</PackageReadmeFile>
+      <PackageTags>nunit;test;runner</PackageTags>
+      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+      <WarnOn>FS3559</WarnOn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,6 +23,10 @@
       <Compile Include="Domain.fs" />
       <Compile Include="SingleTestMethod.fs" />
       <Compile Include="TestFixture.fs" />
+      <None Include="..\README.md">
+        <Pack>True</Pack>
+        <PackagePath>\</PackagePath>
+      </None>
     </ItemGroup>
   <ItemGroup>
     <PackageReference Include="WoofWare.PrattParser" Version="0.1.2" />

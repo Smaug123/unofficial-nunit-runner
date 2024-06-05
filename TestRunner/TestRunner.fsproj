@@ -1,12 +1,28 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
+    <PackAsTool>true</PackAsTool>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Authors>Patrick Stevens</Authors>
+    <Copyright>Copyright (c) Patrick Stevens 2024</Copyright>
+    <Description>A simple console runner for NUnit tests</Description>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/Smaug123/unofficial-nunit-runner</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>nunit;test;runner</PackageTags>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarnOn>FS3559</WarnOn>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="Program.fs" />
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
