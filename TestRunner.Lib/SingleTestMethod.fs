@@ -84,7 +84,7 @@ module SingleTestMethod =
             match isTest, sources, hasData, modifiers, categories, repeat, comb with
             | _, _ :: _, Some _, _, _, _, _ ->
                 failwith
-                    $"Test %s{method.Name} unexpectedly has both TestData and TestCaseSource; not currently supported"
+                    $"Test '%s{method.Name}' unexpectedly has both TestData and TestCaseSource; not currently supported"
             | false, [], None, [], _, _, _ -> None
             | _, _ :: _, None, mods, categories, repeat, comb ->
                 {

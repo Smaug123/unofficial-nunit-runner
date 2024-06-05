@@ -102,9 +102,9 @@ type UserMethodFailure =
     override this.ToString () =
         match this with
         | UserMethodFailure.ReturnedNonUnit (method, ret) ->
-            $"User-defined method %s{method} returned a non-unit: %O{ret}"
+            $"User-defined method '%s{method}' returned a non-unit: %O{ret}"
         | UserMethodFailure.Threw (method, exc) ->
-            $"User-defined method %s{method} threw: %s{exc.Message}\n  %s{exc.StackTrace}"
+            $"User-defined method '%s{method}' threw: %s{exc.Message}\n  %s{exc.StackTrace}"
 
     /// Name (not fully-qualified) of the method which failed.
     member this.Name =
@@ -132,6 +132,13 @@ type TestFailure =
         | TestFailure.SetUpFailed f
         | TestFailure.TearDownFailed f -> f.Name
 
+    /// Human-readable string representation.
+    override this.ToString () =
+        match this with
+        | TestFailure.TestFailed f -> $"execution: %O{f}"
+        | TestFailure.SetUpFailed f -> $"Setup failed, and we did not attempt to run test: %O{f}"
+        | TestFailure.TearDownFailed f -> $"Tear-down failed: %O{f}"
+
 /// Represents the result of a test that didn't fail.
 [<RequireQualifiedAccess>]
 type TestMemberSuccess =
@@ -150,3 +157,17 @@ type TestMemberFailure =
     /// We tried to run the test, but it failed. (A single test can fail many times, e.g. if it failed and also
     /// the tear-down logic failed afterwards.)
     | Failed of TestFailure list
+
+    /// Human-readable string representation
+    override this.ToString () : string =
+        match this with
+        | TestMemberFailure.Malformed reasons ->
+            let reasons = reasons |> String.concat "; "
+            $"Could not run test because it was malformed: %s{reasons}"
+        | TestMemberFailure.Failed errors ->
+            let errors =
+                errors
+                |> Seq.map (fun failure -> (failure : TestFailure).ToString ())
+                |> String.concat "\n"
+
+            $"Test failed: %s{errors}"

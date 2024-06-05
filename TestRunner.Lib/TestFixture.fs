@@ -97,7 +97,7 @@ module TestFixture =
         if valuesAttrs |> Array.exists (fun l -> l.IsSome) then
             if valuesAttrs |> Array.exists (fun l -> l.IsNone) then
                 failwith
-                    $"Test %s{test.Name} has a parameter with the Values attribute and a parameter without. All parameters must have Values if any one does."
+                    $"Test '%s{test.Name}' has a parameter with the Values attribute and a parameter without. All parameters must have Values if any one does."
 
             Some (valuesAttrs |> Array.map Option.get) |> Ok
         else

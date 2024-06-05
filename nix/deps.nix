@@ -122,6 +122,11 @@
     sha256 = "1srx1629s0k1kmf02nmz251q07vj6pv58mdafcr5dr0bbn1fh78i";
   })
   (fetchNuGet {
+    pname = "Spectre.Console";
+    version = "0.49.1";
+    sha256 = "0fhl96p3xjd5k1wwvhs80cp35rrlgnza6mw9vy0knhmf7ji9b95n";
+  })
+  (fetchNuGet {
     pname = "System.Formats.Asn1";
     version = "6.0.0";
     sha256 = "1vvr7hs4qzjqb37r0w1mxq7xql2b17la63jwvmgv65s1hj00g8r9";
