@@ -3,9 +3,15 @@ namespace TestRunner
 open System
 open System.Reflection
 
+/// A single method or member which holds some tests. (Often such a member will represent only one test, but e.g.
+/// if it has [<TestCaseSource>] then it represents multiple tests.)
 [<RequireQualifiedAccess>]
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module SingleTestMethod =
+    /// Extract a SingleTestMethod from the given MethodInfo that we think represents a test.
+    /// You pass us the attributes you still haven't parsed from this MethodInfo, and we give you back the sub-list
+    /// of attributes we were also unable to interpret.
+    /// You also give us the list of categories with which the containing TestFixture is tagged.
     let parse
         (parentCategories : string list)
         (method : MethodInfo)

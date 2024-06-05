@@ -1,0 +1,262 @@
+TestRunner.Combinatorial inherit obj, implements TestRunner.Combinatorial System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.Combinatorial System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 2 cases
+TestRunner.Combinatorial+Tags inherit obj
+TestRunner.Combinatorial+Tags.Combinatorial [static field]: int = 0
+TestRunner.Combinatorial+Tags.Sequential [static field]: int = 1
+TestRunner.Combinatorial.Combinatorial [static property]: [read-only] TestRunner.Combinatorial
+TestRunner.Combinatorial.get_Combinatorial [static method]: unit -> TestRunner.Combinatorial
+TestRunner.Combinatorial.get_IsCombinatorial [method]: unit -> bool
+TestRunner.Combinatorial.get_IsSequential [method]: unit -> bool
+TestRunner.Combinatorial.get_Sequential [static method]: unit -> TestRunner.Combinatorial
+TestRunner.Combinatorial.get_Tag [method]: unit -> int
+TestRunner.Combinatorial.IsCombinatorial [property]: [read-only] bool
+TestRunner.Combinatorial.IsSequential [property]: [read-only] bool
+TestRunner.Combinatorial.Sequential [static property]: [read-only] TestRunner.Combinatorial
+TestRunner.Combinatorial.Tag [property]: [read-only] int
+TestRunner.Filter inherit obj, implements TestRunner.Filter System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.Filter System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 6 cases
+TestRunner.Filter+And inherit TestRunner.Filter
+TestRunner.Filter+And.get_Item1 [method]: unit -> TestRunner.Filter
+TestRunner.Filter+And.get_Item2 [method]: unit -> TestRunner.Filter
+TestRunner.Filter+And.Item1 [property]: [read-only] TestRunner.Filter
+TestRunner.Filter+And.Item2 [property]: [read-only] TestRunner.Filter
+TestRunner.Filter+FullyQualifiedName inherit TestRunner.Filter
+TestRunner.Filter+FullyQualifiedName.get_Item [method]: unit -> TestRunner.Match
+TestRunner.Filter+FullyQualifiedName.Item [property]: [read-only] TestRunner.Match
+TestRunner.Filter+Name inherit TestRunner.Filter
+TestRunner.Filter+Name.get_Item [method]: unit -> TestRunner.Match
+TestRunner.Filter+Name.Item [property]: [read-only] TestRunner.Match
+TestRunner.Filter+Not inherit TestRunner.Filter
+TestRunner.Filter+Not.get_Item [method]: unit -> TestRunner.Filter
+TestRunner.Filter+Not.Item [property]: [read-only] TestRunner.Filter
+TestRunner.Filter+Or inherit TestRunner.Filter
+TestRunner.Filter+Or.get_Item1 [method]: unit -> TestRunner.Filter
+TestRunner.Filter+Or.get_Item2 [method]: unit -> TestRunner.Filter
+TestRunner.Filter+Or.Item1 [property]: [read-only] TestRunner.Filter
+TestRunner.Filter+Or.Item2 [property]: [read-only] TestRunner.Filter
+TestRunner.Filter+Tags inherit obj
+TestRunner.Filter+Tags.And [static field]: int = 5
+TestRunner.Filter+Tags.FullyQualifiedName [static field]: int = 0
+TestRunner.Filter+Tags.Name [static field]: int = 1
+TestRunner.Filter+Tags.Not [static field]: int = 3
+TestRunner.Filter+Tags.Or [static field]: int = 4
+TestRunner.Filter+Tags.TestCategory [static field]: int = 2
+TestRunner.Filter+TestCategory inherit TestRunner.Filter
+TestRunner.Filter+TestCategory.get_Item [method]: unit -> TestRunner.Match
+TestRunner.Filter+TestCategory.Item [property]: [read-only] TestRunner.Match
+TestRunner.Filter.get_IsAnd [method]: unit -> bool
+TestRunner.Filter.get_IsFullyQualifiedName [method]: unit -> bool
+TestRunner.Filter.get_IsName [method]: unit -> bool
+TestRunner.Filter.get_IsNot [method]: unit -> bool
+TestRunner.Filter.get_IsOr [method]: unit -> bool
+TestRunner.Filter.get_IsTestCategory [method]: unit -> bool
+TestRunner.Filter.get_Tag [method]: unit -> int
+TestRunner.Filter.IsAnd [property]: [read-only] bool
+TestRunner.Filter.IsFullyQualifiedName [property]: [read-only] bool
+TestRunner.Filter.IsName [property]: [read-only] bool
+TestRunner.Filter.IsNot [property]: [read-only] bool
+TestRunner.Filter.IsOr [property]: [read-only] bool
+TestRunner.Filter.IsTestCategory [property]: [read-only] bool
+TestRunner.Filter.NewAnd [static method]: (TestRunner.Filter, TestRunner.Filter) -> TestRunner.Filter
+TestRunner.Filter.NewFullyQualifiedName [static method]: TestRunner.Match -> TestRunner.Filter
+TestRunner.Filter.NewName [static method]: TestRunner.Match -> TestRunner.Filter
+TestRunner.Filter.NewNot [static method]: TestRunner.Filter -> TestRunner.Filter
+TestRunner.Filter.NewOr [static method]: (TestRunner.Filter, TestRunner.Filter) -> TestRunner.Filter
+TestRunner.Filter.NewTestCategory [static method]: TestRunner.Match -> TestRunner.Filter
+TestRunner.Filter.Tag [property]: [read-only] int
+TestRunner.FilterModule inherit obj
+TestRunner.FilterModule.parse [static method]: string -> TestRunner.Filter
+TestRunner.FilterModule.shouldRun [static method]: TestRunner.Filter -> (TestRunner.TestFixture -> TestRunner.SingleTestMethod -> bool)
+TestRunner.FixtureRunResults inherit obj, implements TestRunner.FixtureRunResults System.IEquatable, System.Collections.IStructuralEquatable
+TestRunner.FixtureRunResults..ctor [constructor]: (TestRunner.TestMemberFailure list, int, TestRunner.UserMethodFailure list)
+TestRunner.FixtureRunResults.Failed [property]: [read-only] TestRunner.TestMemberFailure list
+TestRunner.FixtureRunResults.get_Failed [method]: unit -> TestRunner.TestMemberFailure list
+TestRunner.FixtureRunResults.get_OtherFailures [method]: unit -> TestRunner.UserMethodFailure list
+TestRunner.FixtureRunResults.get_SuccessCount [method]: unit -> int
+TestRunner.FixtureRunResults.OtherFailures [property]: [read-only] TestRunner.UserMethodFailure list
+TestRunner.FixtureRunResults.SuccessCount [property]: [read-only] int
+TestRunner.Match inherit obj, implements TestRunner.Match System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.Match System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 2 cases
+TestRunner.Match+Contains inherit TestRunner.Match
+TestRunner.Match+Contains.get_Item [method]: unit -> string
+TestRunner.Match+Contains.Item [property]: [read-only] string
+TestRunner.Match+Exact inherit TestRunner.Match
+TestRunner.Match+Exact.get_Item [method]: unit -> string
+TestRunner.Match+Exact.Item [property]: [read-only] string
+TestRunner.Match+Tags inherit obj
+TestRunner.Match+Tags.Contains [static field]: int = 1
+TestRunner.Match+Tags.Exact [static field]: int = 0
+TestRunner.Match.get_IsContains [method]: unit -> bool
+TestRunner.Match.get_IsExact [method]: unit -> bool
+TestRunner.Match.get_Tag [method]: unit -> int
+TestRunner.Match.IsContains [property]: [read-only] bool
+TestRunner.Match.IsExact [property]: [read-only] bool
+TestRunner.Match.NewContains [static method]: string -> TestRunner.Match
+TestRunner.Match.NewExact [static method]: string -> TestRunner.Match
+TestRunner.Match.Tag [property]: [read-only] int
+TestRunner.Modifier inherit obj, implements TestRunner.Modifier System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.Modifier System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 2 cases
+TestRunner.Modifier+Explicit inherit TestRunner.Modifier
+TestRunner.Modifier+Explicit.get_reason [method]: unit -> string option
+TestRunner.Modifier+Explicit.reason [property]: [read-only] string option
+TestRunner.Modifier+Ignored inherit TestRunner.Modifier
+TestRunner.Modifier+Ignored.get_reason [method]: unit -> string option
+TestRunner.Modifier+Ignored.reason [property]: [read-only] string option
+TestRunner.Modifier+Tags inherit obj
+TestRunner.Modifier+Tags.Explicit [static field]: int = 0
+TestRunner.Modifier+Tags.Ignored [static field]: int = 1
+TestRunner.Modifier.get_IsExplicit [method]: unit -> bool
+TestRunner.Modifier.get_IsIgnored [method]: unit -> bool
+TestRunner.Modifier.get_Tag [method]: unit -> int
+TestRunner.Modifier.IsExplicit [property]: [read-only] bool
+TestRunner.Modifier.IsIgnored [property]: [read-only] bool
+TestRunner.Modifier.NewExplicit [static method]: string option -> TestRunner.Modifier
+TestRunner.Modifier.NewIgnored [static method]: string option -> TestRunner.Modifier
+TestRunner.Modifier.Tag [property]: [read-only] int
+TestRunner.SingleTestMethod inherit obj, implements TestRunner.SingleTestMethod System.IEquatable, System.Collections.IStructuralEquatable
+TestRunner.SingleTestMethod..ctor [constructor]: (System.Reflection.MethodInfo, TestRunner.TestKind, TestRunner.Modifier list, string list, int option, TestRunner.Combinatorial option)
+TestRunner.SingleTestMethod.Categories [property]: [read-only] string list
+TestRunner.SingleTestMethod.Combinatorial [property]: [read-only] TestRunner.Combinatorial option
+TestRunner.SingleTestMethod.get_Categories [method]: unit -> string list
+TestRunner.SingleTestMethod.get_Combinatorial [method]: unit -> TestRunner.Combinatorial option
+TestRunner.SingleTestMethod.get_Kind [method]: unit -> TestRunner.TestKind
+TestRunner.SingleTestMethod.get_Method [method]: unit -> System.Reflection.MethodInfo
+TestRunner.SingleTestMethod.get_Modifiers [method]: unit -> TestRunner.Modifier list
+TestRunner.SingleTestMethod.get_Name [method]: unit -> string
+TestRunner.SingleTestMethod.get_Repeat [method]: unit -> int option
+TestRunner.SingleTestMethod.Kind [property]: [read-only] TestRunner.TestKind
+TestRunner.SingleTestMethod.Method [property]: [read-only] System.Reflection.MethodInfo
+TestRunner.SingleTestMethod.Modifiers [property]: [read-only] TestRunner.Modifier list
+TestRunner.SingleTestMethod.Name [property]: [read-only] string
+TestRunner.SingleTestMethod.Repeat [property]: [read-only] int option
+TestRunner.SingleTestMethodModule inherit obj
+TestRunner.SingleTestMethodModule.parse [static method]: string list -> System.Reflection.MethodInfo -> System.Reflection.CustomAttributeData list -> (TestRunner.SingleTestMethod option * System.Reflection.CustomAttributeData list)
+TestRunner.TestFailure inherit obj, implements TestRunner.TestFailure System.IEquatable, System.Collections.IStructuralEquatable - union type with 3 cases
+TestRunner.TestFailure+SetUpFailed inherit TestRunner.TestFailure
+TestRunner.TestFailure+SetUpFailed.get_Item [method]: unit -> TestRunner.UserMethodFailure
+TestRunner.TestFailure+SetUpFailed.Item [property]: [read-only] TestRunner.UserMethodFailure
+TestRunner.TestFailure+Tags inherit obj
+TestRunner.TestFailure+Tags.SetUpFailed [static field]: int = 1
+TestRunner.TestFailure+Tags.TearDownFailed [static field]: int = 2
+TestRunner.TestFailure+Tags.TestFailed [static field]: int = 0
+TestRunner.TestFailure+TearDownFailed inherit TestRunner.TestFailure
+TestRunner.TestFailure+TearDownFailed.get_Item [method]: unit -> TestRunner.UserMethodFailure
+TestRunner.TestFailure+TearDownFailed.Item [property]: [read-only] TestRunner.UserMethodFailure
+TestRunner.TestFailure+TestFailed inherit TestRunner.TestFailure
+TestRunner.TestFailure+TestFailed.get_Item [method]: unit -> TestRunner.UserMethodFailure
+TestRunner.TestFailure+TestFailed.Item [property]: [read-only] TestRunner.UserMethodFailure
+TestRunner.TestFailure.get_IsSetUpFailed [method]: unit -> bool
+TestRunner.TestFailure.get_IsTearDownFailed [method]: unit -> bool
+TestRunner.TestFailure.get_IsTestFailed [method]: unit -> bool
+TestRunner.TestFailure.get_Name [method]: unit -> string
+TestRunner.TestFailure.get_Tag [method]: unit -> int
+TestRunner.TestFailure.IsSetUpFailed [property]: [read-only] bool
+TestRunner.TestFailure.IsTearDownFailed [property]: [read-only] bool
+TestRunner.TestFailure.IsTestFailed [property]: [read-only] bool
+TestRunner.TestFailure.Name [property]: [read-only] string
+TestRunner.TestFailure.NewSetUpFailed [static method]: TestRunner.UserMethodFailure -> TestRunner.TestFailure
+TestRunner.TestFailure.NewTearDownFailed [static method]: TestRunner.UserMethodFailure -> TestRunner.TestFailure
+TestRunner.TestFailure.NewTestFailed [static method]: TestRunner.UserMethodFailure -> TestRunner.TestFailure
+TestRunner.TestFailure.Tag [property]: [read-only] int
+TestRunner.TestFixture inherit obj, implements TestRunner.TestFixture System.IEquatable, System.Collections.IStructuralEquatable
+TestRunner.TestFixture..ctor [constructor]: (string, System.Reflection.MethodInfo option, System.Reflection.MethodInfo option, System.Reflection.MethodInfo list, System.Reflection.MethodInfo list, TestRunner.SingleTestMethod list)
+TestRunner.TestFixture.Empty [static method]: string -> TestRunner.TestFixture
+TestRunner.TestFixture.get_Name [method]: unit -> string
+TestRunner.TestFixture.get_OneTimeSetUp [method]: unit -> System.Reflection.MethodInfo option
+TestRunner.TestFixture.get_OneTimeTearDown [method]: unit -> System.Reflection.MethodInfo option
+TestRunner.TestFixture.get_SetUp [method]: unit -> System.Reflection.MethodInfo list
+TestRunner.TestFixture.get_TearDown [method]: unit -> System.Reflection.MethodInfo list
+TestRunner.TestFixture.get_Tests [method]: unit -> TestRunner.SingleTestMethod list
+TestRunner.TestFixture.Name [property]: [read-only] string
+TestRunner.TestFixture.OneTimeSetUp [property]: [read-only] System.Reflection.MethodInfo option
+TestRunner.TestFixture.OneTimeTearDown [property]: [read-only] System.Reflection.MethodInfo option
+TestRunner.TestFixture.SetUp [property]: [read-only] System.Reflection.MethodInfo list
+TestRunner.TestFixture.TearDown [property]: [read-only] System.Reflection.MethodInfo list
+TestRunner.TestFixture.Tests [property]: [read-only] TestRunner.SingleTestMethod list
+TestRunner.TestFixtureModule inherit obj
+TestRunner.TestFixtureModule.parse [static method]: System.Type -> TestRunner.TestFixture
+TestRunner.TestFixtureModule.run [static method]: (TestRunner.TestFixture -> TestRunner.SingleTestMethod -> bool) -> TestRunner.TestFixture -> TestRunner.FixtureRunResults
+TestRunner.TestKind inherit obj, implements TestRunner.TestKind System.IEquatable, System.Collections.IStructuralEquatable - union type with 3 cases
+TestRunner.TestKind+Data inherit TestRunner.TestKind
+TestRunner.TestKind+Data.get_Item [method]: unit -> obj list list
+TestRunner.TestKind+Data.Item [property]: [read-only] obj list list
+TestRunner.TestKind+Source inherit TestRunner.TestKind
+TestRunner.TestKind+Source.get_Item [method]: unit -> string list
+TestRunner.TestKind+Source.Item [property]: [read-only] string list
+TestRunner.TestKind+Tags inherit obj
+TestRunner.TestKind+Tags.Data [static field]: int = 2
+TestRunner.TestKind+Tags.Single [static field]: int = 0
+TestRunner.TestKind+Tags.Source [static field]: int = 1
+TestRunner.TestKind.get_IsData [method]: unit -> bool
+TestRunner.TestKind.get_IsSingle [method]: unit -> bool
+TestRunner.TestKind.get_IsSource [method]: unit -> bool
+TestRunner.TestKind.get_Single [static method]: unit -> TestRunner.TestKind
+TestRunner.TestKind.get_Tag [method]: unit -> int
+TestRunner.TestKind.IsData [property]: [read-only] bool
+TestRunner.TestKind.IsSingle [property]: [read-only] bool
+TestRunner.TestKind.IsSource [property]: [read-only] bool
+TestRunner.TestKind.NewData [static method]: obj list list -> TestRunner.TestKind
+TestRunner.TestKind.NewSource [static method]: string list -> TestRunner.TestKind
+TestRunner.TestKind.Single [static property]: [read-only] TestRunner.TestKind
+TestRunner.TestKind.Tag [property]: [read-only] int
+TestRunner.TestMemberFailure inherit obj, implements TestRunner.TestMemberFailure System.IEquatable, System.Collections.IStructuralEquatable - union type with 2 cases
+TestRunner.TestMemberFailure+Failed inherit TestRunner.TestMemberFailure
+TestRunner.TestMemberFailure+Failed.get_Item [method]: unit -> TestRunner.TestFailure list
+TestRunner.TestMemberFailure+Failed.Item [property]: [read-only] TestRunner.TestFailure list
+TestRunner.TestMemberFailure+Malformed inherit TestRunner.TestMemberFailure
+TestRunner.TestMemberFailure+Malformed.get_reasons [method]: unit -> string list
+TestRunner.TestMemberFailure+Malformed.reasons [property]: [read-only] string list
+TestRunner.TestMemberFailure+Tags inherit obj
+TestRunner.TestMemberFailure+Tags.Failed [static field]: int = 1
+TestRunner.TestMemberFailure+Tags.Malformed [static field]: int = 0
+TestRunner.TestMemberFailure.get_IsFailed [method]: unit -> bool
+TestRunner.TestMemberFailure.get_IsMalformed [method]: unit -> bool
+TestRunner.TestMemberFailure.get_Tag [method]: unit -> int
+TestRunner.TestMemberFailure.IsFailed [property]: [read-only] bool
+TestRunner.TestMemberFailure.IsMalformed [property]: [read-only] bool
+TestRunner.TestMemberFailure.NewFailed [static method]: TestRunner.TestFailure list -> TestRunner.TestMemberFailure
+TestRunner.TestMemberFailure.NewMalformed [static method]: string list -> TestRunner.TestMemberFailure
+TestRunner.TestMemberFailure.Tag [property]: [read-only] int
+TestRunner.TestMemberSuccess inherit obj, implements TestRunner.TestMemberSuccess System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TestMemberSuccess System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 3 cases
+TestRunner.TestMemberSuccess+Explicit inherit TestRunner.TestMemberSuccess
+TestRunner.TestMemberSuccess+Explicit.get_reason [method]: unit -> string option
+TestRunner.TestMemberSuccess+Explicit.reason [property]: [read-only] string option
+TestRunner.TestMemberSuccess+Ignored inherit TestRunner.TestMemberSuccess
+TestRunner.TestMemberSuccess+Ignored.get_reason [method]: unit -> string option
+TestRunner.TestMemberSuccess+Ignored.reason [property]: [read-only] string option
+TestRunner.TestMemberSuccess+Tags inherit obj
+TestRunner.TestMemberSuccess+Tags.Explicit [static field]: int = 2
+TestRunner.TestMemberSuccess+Tags.Ignored [static field]: int = 1
+TestRunner.TestMemberSuccess+Tags.Ok [static field]: int = 0
+TestRunner.TestMemberSuccess.get_IsExplicit [method]: unit -> bool
+TestRunner.TestMemberSuccess.get_IsIgnored [method]: unit -> bool
+TestRunner.TestMemberSuccess.get_IsOk [method]: unit -> bool
+TestRunner.TestMemberSuccess.get_Ok [static method]: unit -> TestRunner.TestMemberSuccess
+TestRunner.TestMemberSuccess.get_Tag [method]: unit -> int
+TestRunner.TestMemberSuccess.IsExplicit [property]: [read-only] bool
+TestRunner.TestMemberSuccess.IsIgnored [property]: [read-only] bool
+TestRunner.TestMemberSuccess.IsOk [property]: [read-only] bool
+TestRunner.TestMemberSuccess.NewExplicit [static method]: string option -> TestRunner.TestMemberSuccess
+TestRunner.TestMemberSuccess.NewIgnored [static method]: string option -> TestRunner.TestMemberSuccess
+TestRunner.TestMemberSuccess.Ok [static property]: [read-only] TestRunner.TestMemberSuccess
+TestRunner.TestMemberSuccess.Tag [property]: [read-only] int
+TestRunner.UserMethodFailure inherit obj, implements TestRunner.UserMethodFailure System.IEquatable, System.Collections.IStructuralEquatable - union type with 2 cases
+TestRunner.UserMethodFailure+ReturnedNonUnit inherit TestRunner.UserMethodFailure
+TestRunner.UserMethodFailure+ReturnedNonUnit.get_name [method]: unit -> string
+TestRunner.UserMethodFailure+ReturnedNonUnit.get_result [method]: unit -> obj
+TestRunner.UserMethodFailure+ReturnedNonUnit.name [property]: [read-only] string
+TestRunner.UserMethodFailure+ReturnedNonUnit.result [property]: [read-only] obj
+TestRunner.UserMethodFailure+Tags inherit obj
+TestRunner.UserMethodFailure+Tags.ReturnedNonUnit [static field]: int = 0
+TestRunner.UserMethodFailure+Tags.Threw [static field]: int = 1
+TestRunner.UserMethodFailure+Threw inherit TestRunner.UserMethodFailure
+TestRunner.UserMethodFailure+Threw.get_Item2 [method]: unit -> System.Exception
+TestRunner.UserMethodFailure+Threw.get_name [method]: unit -> string
+TestRunner.UserMethodFailure+Threw.Item2 [property]: [read-only] System.Exception
+TestRunner.UserMethodFailure+Threw.name [property]: [read-only] string
+TestRunner.UserMethodFailure.get_IsReturnedNonUnit [method]: unit -> bool
+TestRunner.UserMethodFailure.get_IsThrew [method]: unit -> bool
+TestRunner.UserMethodFailure.get_Name [method]: unit -> string
+TestRunner.UserMethodFailure.get_Tag [method]: unit -> int
+TestRunner.UserMethodFailure.IsReturnedNonUnit [property]: [read-only] bool
+TestRunner.UserMethodFailure.IsThrew [property]: [read-only] bool
+TestRunner.UserMethodFailure.Name [property]: [read-only] string
+TestRunner.UserMethodFailure.NewReturnedNonUnit [static method]: (string, obj) -> TestRunner.UserMethodFailure
+TestRunner.UserMethodFailure.NewThrew [static method]: (string, System.Exception) -> TestRunner.UserMethodFailure
+TestRunner.UserMethodFailure.Tag [property]: [read-only] int

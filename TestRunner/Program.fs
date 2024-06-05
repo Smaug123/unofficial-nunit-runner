@@ -9,12 +9,12 @@ module Program =
         let testDll, filter =
             match argv |> List.ofSeq with
             | [ dll ] -> FileInfo dll, None
-            | [ dll ; "--filter" ; filter ] -> FileInfo dll, Some (FilterIntermediate.parse filter |> Filter.make)
+            | [ dll ; "--filter" ; filter ] -> FileInfo dll, Some (Filter.parse filter)
             | _ -> failwith "provide exactly one arg, a test DLL"
 
         let filter =
             match filter with
-            | Some filter -> TestFixture.shouldRun filter
+            | Some filter -> Filter.shouldRun filter
             | None -> fun _ _ -> true
 
         // Fix for https://github.com/Smaug123/unofficial-nunit-runner/issues/8
@@ -36,11 +36,27 @@ module Program =
                     (fun anyFailures ty ->
                         let testFixture = TestFixture.parse ty
 
-                        match TestFixture.run filter testFixture with
-                        | 0 -> anyFailures
-                        | i ->
-                            eprintfn $"%i{i} tests failed"
-                            true
+                        let results = TestFixture.run filter testFixture
+
+                        let anyFailures =
+                            match results.Failed with
+                            | [] -> anyFailures
+                            | _ :: _ ->
+                                eprintfn $"%i{results.Failed.Length} tests failed"
+                                true
+
+                        let anyFailures =
+                            match results.OtherFailures with
+                            | [] -> anyFailures
+                            | otherFailures ->
+                                eprintfn "Other failures encountered: "
+
+                                for failure in otherFailures do
+                                    eprintfn $"  %s{failure.Name}"
+
+                                true
+
+                        anyFailures
                     )
                     false
             finally

@@ -10,68 +10,56 @@ module TestFilter =
     let docExamples =
         [
             "(Name~MyClass) | (Name~MyClass2)",
-            FilterIntermediate.Or (
-                FilterIntermediate.Contains (FilterIntermediate.Name, FilterIntermediate.String "MyClass"),
-                FilterIntermediate.Contains (FilterIntermediate.Name, FilterIntermediate.String "MyClass2")
+            ParsedFilter.Or (
+                ParsedFilter.Contains (ParsedFilter.Name, ParsedFilter.String "MyClass"),
+                ParsedFilter.Contains (ParsedFilter.Name, ParsedFilter.String "MyClass2")
             )
-            "xyz", FilterIntermediate.Contains (FilterIntermediate.FullyQualifiedName, FilterIntermediate.String "xyz")
-            "FullyQualifiedName~xyz",
-            FilterIntermediate.Contains (FilterIntermediate.FullyQualifiedName, FilterIntermediate.String "xyz")
+            "xyz", ParsedFilter.Contains (ParsedFilter.FullyQualifiedName, ParsedFilter.String "xyz")
+            "FullyQualifiedName~xyz", ParsedFilter.Contains (ParsedFilter.FullyQualifiedName, ParsedFilter.String "xyz")
             "FullyQualifiedName!~IntegrationTests",
-            FilterIntermediate.Not (
-                FilterIntermediate.Contains (
-                    FilterIntermediate.FullyQualifiedName,
-                    FilterIntermediate.String "IntegrationTests"
-                )
+            ParsedFilter.Not (
+                ParsedFilter.Contains (ParsedFilter.FullyQualifiedName, ParsedFilter.String "IntegrationTests")
             )
             "FullyQualifiedName=MyNamespace.MyTestsClass<ParameterType1%2CParameterType2>.MyTestMethod",
-            FilterIntermediate.Equal (
-                FilterIntermediate.FullyQualifiedName,
-                FilterIntermediate.String "MyNamespace.MyTestsClass<ParameterType1%2CParameterType2>.MyTestMethod"
+            ParsedFilter.Equal (
+                ParsedFilter.FullyQualifiedName,
+                ParsedFilter.String "MyNamespace.MyTestsClass<ParameterType1%2CParameterType2>.MyTestMethod"
             )
-            "Name~Method", FilterIntermediate.Contains (FilterIntermediate.Name, FilterIntermediate.String "Method")
+            "Name~Method", ParsedFilter.Contains (ParsedFilter.Name, ParsedFilter.String "Method")
             "FullyQualifiedName!=MSTestNamespace.UnitTest1.TestMethod1",
-            FilterIntermediate.Not (
-                FilterIntermediate.Equal (
-                    FilterIntermediate.FullyQualifiedName,
-                    FilterIntermediate.String "MSTestNamespace.UnitTest1.TestMethod1"
+            ParsedFilter.Not (
+                ParsedFilter.Equal (
+                    ParsedFilter.FullyQualifiedName,
+                    ParsedFilter.String "MSTestNamespace.UnitTest1.TestMethod1"
                 )
             )
-            "TestCategory=CategoryA",
-            FilterIntermediate.Equal (FilterIntermediate.TestCategory, FilterIntermediate.String "CategoryA")
+            "TestCategory=CategoryA", ParsedFilter.Equal (ParsedFilter.TestCategory, ParsedFilter.String "CategoryA")
             "FullyQualifiedName~UnitTest1|TestCategory=CategoryA",
-            FilterIntermediate.Or (
-                FilterIntermediate.Contains (
-                    FilterIntermediate.FullyQualifiedName,
-                    FilterIntermediate.String "UnitTest1"
-                ),
-                FilterIntermediate.Equal (FilterIntermediate.TestCategory, FilterIntermediate.String "CategoryA")
+            ParsedFilter.Or (
+                ParsedFilter.Contains (ParsedFilter.FullyQualifiedName, ParsedFilter.String "UnitTest1"),
+                ParsedFilter.Equal (ParsedFilter.TestCategory, ParsedFilter.String "CategoryA")
             )
             "FullyQualifiedName~UnitTest1&TestCategory=CategoryA",
-            FilterIntermediate.And (
-                FilterIntermediate.Contains (
-                    FilterIntermediate.FullyQualifiedName,
-                    FilterIntermediate.String "UnitTest1"
-                ),
-                FilterIntermediate.Equal (FilterIntermediate.TestCategory, FilterIntermediate.String "CategoryA")
+            ParsedFilter.And (
+                ParsedFilter.Contains (ParsedFilter.FullyQualifiedName, ParsedFilter.String "UnitTest1"),
+                ParsedFilter.Equal (ParsedFilter.TestCategory, ParsedFilter.String "CategoryA")
             )
             "(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|TestCategory=1",
-            FilterIntermediate.Or (
-                FilterIntermediate.And (
-                    FilterIntermediate.Contains (
-                        FilterIntermediate.FullyQualifiedName,
-                        FilterIntermediate.String "UnitTest1"
-                    ),
-                    FilterIntermediate.Equal (FilterIntermediate.TestCategory, FilterIntermediate.String "CategoryA")
+            ParsedFilter.Or (
+                ParsedFilter.And (
+                    ParsedFilter.Contains (ParsedFilter.FullyQualifiedName, ParsedFilter.String "UnitTest1"),
+                    ParsedFilter.Equal (ParsedFilter.TestCategory, ParsedFilter.String "CategoryA")
                 ),
-                FilterIntermediate.Equal (FilterIntermediate.TestCategory, FilterIntermediate.String "1")
+                ParsedFilter.Equal (ParsedFilter.TestCategory, ParsedFilter.String "1")
             )
         ]
         |> List.map TestCaseData
 
+    // sigh, NUnit doesn't want to run internal tests
     [<TestCaseSource(nameof docExamples)>]
-    let ``Doc examples`` (example : string, expected : FilterIntermediate) =
-        FilterIntermediate.parse example |> shouldEqual expected
+    let ``Doc examples`` (example : string, expected : obj) =
+        let expected = expected |> unbox<ParsedFilter>
+        ParsedFilter.parse example |> shouldEqual expected
 
     let docExamplesRefined =
         [
@@ -112,4 +100,4 @@ module TestFilter =
 
     [<TestCaseSource(nameof docExamplesRefined)>]
     let ``Doc examples, refined`` (example : string, expected : Filter) =
-        FilterIntermediate.parse example |> Filter.make |> shouldEqual expected
+        Filter.parse example |> shouldEqual expected

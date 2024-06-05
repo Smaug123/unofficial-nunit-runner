@@ -7,19 +7,19 @@ open PrattParser
 // https://learn.microsoft.com/en-us/dotnet/core/testing/selective-unit-tests?pivots=mstest
 
 [<RequireQualifiedAccess>]
-type FilterIntermediate =
+type internal ParsedFilter =
     | FullyQualifiedName
     | Name
     | TestCategory
-    | Not of FilterIntermediate
-    | Or of FilterIntermediate * FilterIntermediate
-    | And of FilterIntermediate * FilterIntermediate
-    | Equal of FilterIntermediate * FilterIntermediate
-    | Contains of FilterIntermediate * FilterIntermediate
+    | Not of ParsedFilter
+    | Or of ParsedFilter * ParsedFilter
+    | And of ParsedFilter * ParsedFilter
+    | Equal of ParsedFilter * ParsedFilter
+    | Contains of ParsedFilter * ParsedFilter
     | String of string
 
 [<RequireQualifiedAccess>]
-type TokenType =
+type internal TokenType =
     | FullyQualifiedName
     | Name
     | TestCategory
@@ -34,14 +34,14 @@ type TokenType =
     | NotContains
     | String
 
-type Token =
+type internal Token =
     {
         Type : TokenType
         Trivia : int * int
     }
 
 [<RequireQualifiedAccess>]
-module Token =
+module internal Token =
     let inline standalone (ty : TokenType) (charPos : int) : Token =
         {
             Type = ty
@@ -66,7 +66,7 @@ module Token =
         | _ -> None
 
 [<RequireQualifiedAccess>]
-module Lexer =
+module internal Lexer =
     let lex (s : string) : Token seq =
         seq {
             let mutable i = 0
@@ -121,15 +121,15 @@ module Lexer =
         }
 
 [<RequireQualifiedAccess>]
-module FilterIntermediate =
-    let private atom (inputString : string) (token : Token) : FilterIntermediate option =
+module internal ParsedFilter =
+    let private atom (inputString : string) (token : Token) : ParsedFilter option =
         let start, len = token.Trivia
 
         match token.Type with
-        | TokenType.String -> Some (FilterIntermediate.String (inputString.Substring (start, len)))
-        | TokenType.FullyQualifiedName -> Some FilterIntermediate.FullyQualifiedName
-        | TokenType.Name -> Some FilterIntermediate.Name
-        | TokenType.TestCategory -> Some FilterIntermediate.TestCategory
+        | TokenType.String -> Some (ParsedFilter.String (inputString.Substring (start, len)))
+        | TokenType.FullyQualifiedName -> Some ParsedFilter.FullyQualifiedName
+        | TokenType.Name -> Some ParsedFilter.Name
+        | TokenType.TestCategory -> Some ParsedFilter.TestCategory
         | TokenType.OpenParen -> None
         | TokenType.CloseParen -> None
         | TokenType.And -> None
@@ -141,20 +141,14 @@ module FilterIntermediate =
         | TokenType.Contains -> None
 
     let parser =
-        Parser.make<_, Token, FilterIntermediate> _.Type atom
-        |> Parser.withInfix TokenType.And (10, 11) (fun a b -> FilterIntermediate.And (a, b))
-        |> Parser.withInfix TokenType.Equal (15, 16) (fun a b -> FilterIntermediate.Equal (a, b))
-        |> Parser.withInfix
-            TokenType.NotEqual
-            (15, 16)
-            (fun a b -> FilterIntermediate.Not (FilterIntermediate.Equal (a, b)))
-        |> Parser.withInfix TokenType.Contains (15, 16) (fun a b -> FilterIntermediate.Contains (a, b))
-        |> Parser.withInfix
-            TokenType.NotContains
-            (15, 16)
-            (fun a b -> FilterIntermediate.Not (FilterIntermediate.Contains (a, b)))
-        |> Parser.withInfix TokenType.Or (5, 6) (fun a b -> FilterIntermediate.Or (a, b))
-        |> Parser.withUnaryPrefix TokenType.Not ((), 13) FilterIntermediate.Not
+        Parser.make<_, Token, ParsedFilter> _.Type atom
+        |> Parser.withInfix TokenType.And (10, 11) (fun a b -> ParsedFilter.And (a, b))
+        |> Parser.withInfix TokenType.Equal (15, 16) (fun a b -> ParsedFilter.Equal (a, b))
+        |> Parser.withInfix TokenType.NotEqual (15, 16) (fun a b -> ParsedFilter.Not (ParsedFilter.Equal (a, b)))
+        |> Parser.withInfix TokenType.Contains (15, 16) (fun a b -> ParsedFilter.Contains (a, b))
+        |> Parser.withInfix TokenType.NotContains (15, 16) (fun a b -> ParsedFilter.Not (ParsedFilter.Contains (a, b)))
+        |> Parser.withInfix TokenType.Or (5, 6) (fun a b -> ParsedFilter.Or (a, b))
+        |> Parser.withUnaryPrefix TokenType.Not ((), 13) ParsedFilter.Not
         |> Parser.withBracketLike
             TokenType.OpenParen
             {
@@ -164,65 +158,102 @@ module FilterIntermediate =
                 Construct = List.exactlyOne
             }
 
-    let parse (s : string) : FilterIntermediate =
+    let parse (s : string) : ParsedFilter =
         let parsed, remaining = Parser.execute parser s (Lexer.lex s |> Seq.toList)
 
         if not remaining.IsEmpty then
             failwith $"Leftover tokens: %O{remaining}"
 
         match parsed with
-        | FilterIntermediate.String _ -> FilterIntermediate.Contains (FilterIntermediate.FullyQualifiedName, parsed)
+        | ParsedFilter.String _ -> ParsedFilter.Contains (ParsedFilter.FullyQualifiedName, parsed)
         | _ -> parsed
 
+/// The type of matching which this filter will perform.
 type Match =
+    /// This filter will only match if its argument is exactly (case-sensitively) equal to this.
     | Exact of string
+    /// This filter will match if its argument (case-sensitively) contains this substring.
     | Contains of string
 
+/// A filter which is to be applied when running tests, to determine which tests to run.
 [<RequireQualifiedAccess>]
 type Filter =
+    /// The fully qualified name of the test must match this.
     | FullyQualifiedName of Match
+    /// The name (without its assembly prepended) of the test must match this.
     | Name of Match
+    /// The test must be in a matching category.
     | TestCategory of Match
+    /// The test must not match this filter.
     | Not of Filter
+    /// The test must match at least one of these filters.
     | Or of Filter * Filter
+    /// The test must match both of these filters.
     | And of Filter * Filter
 
+/// Methods for manipulating filters.
 [<RequireQualifiedAccess>]
 module Filter =
     let private unescape (s : string) : string =
         // TODO: XML escaping
         s
 
-    let rec make (fi : FilterIntermediate) : Filter =
+    let rec internal makeParsed (fi : ParsedFilter) : Filter =
         match fi with
-        | FilterIntermediate.Not x -> Filter.Not (make x)
-        | FilterIntermediate.FullyQualifiedName -> failwith "malformed filter: found FullyQualifiedName with no operand"
-        | FilterIntermediate.Name -> failwith "malformed filter: found Name with no operand"
-        | FilterIntermediate.TestCategory -> failwith "malformed filter: found TestCategory with no operand"
-        | FilterIntermediate.Or (a, b) -> Filter.Or (make a, make b)
-        | FilterIntermediate.And (a, b) -> Filter.And (make a, make b)
-        | FilterIntermediate.Equal (key, value) ->
+        | ParsedFilter.Not x -> Filter.Not (makeParsed x)
+        | ParsedFilter.FullyQualifiedName -> failwith "malformed filter: found FullyQualifiedName with no operand"
+        | ParsedFilter.Name -> failwith "malformed filter: found Name with no operand"
+        | ParsedFilter.TestCategory -> failwith "malformed filter: found TestCategory with no operand"
+        | ParsedFilter.Or (a, b) -> Filter.Or (makeParsed a, makeParsed b)
+        | ParsedFilter.And (a, b) -> Filter.And (makeParsed a, makeParsed b)
+        | ParsedFilter.Equal (key, value) ->
             let value =
                 match value with
-                | FilterIntermediate.String s -> unescape s
+                | ParsedFilter.String s -> unescape s
                 | _ -> failwith $"malformed filter: found non-string operand on RHS of equality, '%O{value}'"
 
             match key with
-            | FilterIntermediate.TestCategory -> Filter.TestCategory (Match.Exact value)
-            | FilterIntermediate.FullyQualifiedName -> Filter.FullyQualifiedName (Match.Exact value)
-            | FilterIntermediate.Name -> Filter.Name (Match.Exact value)
+            | ParsedFilter.TestCategory -> Filter.TestCategory (Match.Exact value)
+            | ParsedFilter.FullyQualifiedName -> Filter.FullyQualifiedName (Match.Exact value)
+            | ParsedFilter.Name -> Filter.Name (Match.Exact value)
             | _ -> failwith $"Malformed filter: left-hand side of Equals clause must be e.g. TestCategory, was %O{key}"
-        | FilterIntermediate.Contains (key, value) ->
+        | ParsedFilter.Contains (key, value) ->
             let value =
                 match value with
-                | FilterIntermediate.String s -> unescape s
+                | ParsedFilter.String s -> unescape s
                 | _ -> failwith $"malformed filter: found non-string operand on RHS of containment, '%O{value}'"
 
             match key with
-            | FilterIntermediate.TestCategory -> Filter.TestCategory (Match.Contains value)
-            | FilterIntermediate.FullyQualifiedName -> Filter.FullyQualifiedName (Match.Contains value)
-            | FilterIntermediate.Name -> Filter.Name (Match.Contains value)
+            | ParsedFilter.TestCategory -> Filter.TestCategory (Match.Contains value)
+            | ParsedFilter.FullyQualifiedName -> Filter.FullyQualifiedName (Match.Contains value)
+            | ParsedFilter.Name -> Filter.Name (Match.Contains value)
             | _ ->
                 failwith $"Malformed filter: left-hand side of Contains clause must be e.g. TestCategory, was %O{key}"
-        | FilterIntermediate.String s ->
-            failwith $"Malformed filter: got verbatim string %s{s} when expected an operation"
+        | ParsedFilter.String s -> failwith $"Malformed filter: got verbatim string %s{s} when expected an operation"
+
+    /// Parse the input string, e.g. the `foo` one might get from `dotnet test --filter foo`.
+    /// Verbatim strings are assumed to be XML-escaped.
+    let parse (s : string) : Filter = ParsedFilter.parse s |> makeParsed
+
+    /// Convert the representation of a test filter into a function that decides whether to run any given test.
+    let rec shouldRun (filter : Filter) : TestFixture -> SingleTestMethod -> bool =
+        match filter with
+        | Filter.Not filter ->
+            let inner = shouldRun filter
+            fun a b -> not (inner a b)
+        | Filter.And (a, b) ->
+            let inner1 = shouldRun a
+            let inner2 = shouldRun b
+            fun a b -> inner1 a b && inner2 a b
+        | Filter.Or (a, b) ->
+            let inner1 = shouldRun a
+            let inner2 = shouldRun b
+            fun a b -> inner1 a b || inner2 a b
+        | Filter.Name (Match.Exact m) -> fun _fixture method -> method.Method.Name = m
+        | Filter.Name (Match.Contains m) -> fun _fixture method -> method.Method.Name.Contains m
+        | Filter.FullyQualifiedName (Match.Exact m) -> fun fixture method -> (fixture.Name + method.Method.Name) = m
+        | Filter.FullyQualifiedName (Match.Contains m) ->
+            fun fixture method -> (fixture.Name + method.Method.Name).Contains m
+        | Filter.TestCategory (Match.Contains m) ->
+            fun _fixture method -> method.Categories |> List.exists (fun cat -> cat.Contains m)
+        | Filter.TestCategory (Match.Exact m) -> fun _fixture method -> method.Categories |> List.contains m
