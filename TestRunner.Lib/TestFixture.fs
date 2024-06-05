@@ -6,106 +6,153 @@ open System.Threading
 open Microsoft.FSharp.Core
 
 [<RequireQualifiedAccess>]
+type TestMemberSuccess =
+    | Ok
+    | Ignored of reason : string option
+    | Explicit of reason : string option
+
+[<RequireQualifiedAccess>]
+type TestMemberFailure =
+    | Malformed of reasons : string list
+    | Failed of TestFailure list
+
+[<RequireQualifiedAccess>]
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module TestFixture =
+    /// It's possible for multiple things to fail about a test: e.g. the test failed and also the tear-down failed.
+    ///
+    /// This function does not throw.
     let private runOne
         (setUp : MethodInfo list)
         (tearDown : MethodInfo list)
         (test : MethodInfo)
         (args : obj[])
-        : Result<unit, TestFailure>
+        : Result<unit, TestFailure list>
         =
-        try
-            for setup in setUp do
-                if not (isNull (setup.Invoke (null, [||]))) then
-                    failwith $"Setup procedure '%s{setup.Name}' returned non-null"
+        let rec runMethods
+            (wrap : UserMethodFailure -> TestFailure)
+            (toRun : MethodInfo list)
+            (args : obj[])
+            : Result<unit, _>
+            =
+            match toRun with
+            | [] -> Ok ()
+            | head :: rest ->
+                let result =
+                    try
+                        head.Invoke (null, args) |> Ok
+                    with e ->
+                        Error (UserMethodFailure.Threw (head.Name, e))
 
-            try
-                match test.Invoke (null, args) with
-                | :? unit -> Ok ()
-                | ret -> Error (TestReturnedNonUnit ret)
-            with exc ->
-                Error (TestThrew exc.InnerException)
+                match result with
+                | Error e -> Error (wrap e)
+                | Ok result ->
+                    match result with
+                    | :? unit -> runMethods wrap rest args
+                    | ret -> UserMethodFailure.ReturnedNonUnit (head.Name, ret) |> wrap |> Error
 
-        finally
-            for tearDown in tearDown do
-                if not (isNull (tearDown.Invoke (null, [||]))) then
-                    failwith $"Teardown procedure '%s{tearDown.Name}' returned non-null"
+        match runMethods TestFailure.SetUpFailed setUp [||] with
+        | Error e -> Error [ e ]
+        | Ok () ->
 
-    let private runFixture
+        let result = runMethods TestFailure.TestFailed [ test ] args
+
+        let tearDownResult = runMethods TestFailure.TestFailed tearDown [||]
+
+        match result, tearDownResult with
+        | Ok (), Ok () -> Ok ()
+        | Error e, Ok ()
+        | Ok (), Error e -> Error [ e ]
+        | Error e1, Error e2 -> Error [ e1 ; e2 ]
+
+    let private getValues (test : SingleTestMethod) =
+        let valuesAttrs =
+            test.Method.GetParameters ()
+            |> Array.map (fun i ->
+                i.CustomAttributes
+                |> Seq.choose (fun i ->
+                    if i.AttributeType.FullName = "NUnit.Framework.ValuesAttribute" then
+                        Some i.ConstructorArguments
+                    else
+                        None
+                )
+                |> Seq.toList
+                |> function
+                    | [] -> Ok None
+                    | [ x ] -> Ok (Some x)
+                    | _ :: _ :: _ ->
+                        "Multiple Values attributes on a parameter. Exactly one per parameter please."
+                        |> Error
+            )
+            |> Array.allOkOrError
+
+        match valuesAttrs with
+        | Error (_, e) -> Error (TestMemberFailure.Malformed (List.ofArray e))
+        | Ok valuesAttrs ->
+
+        if valuesAttrs |> Array.exists (fun l -> l.IsSome) then
+            if valuesAttrs |> Array.exists (fun l -> l.IsNone) then
+                failwith
+                    $"Test %s{test.Name} has a parameter with the Values attribute and a parameter without. All parameters must have Values if any one does."
+
+            Some (valuesAttrs |> Array.map Option.get) |> Ok
+        else
+            Ok None
+
+    /// This method only throws if there's a critical logic error in the runner.
+    let private runTestsFromMember
         (setUp : MethodInfo list)
         (tearDown : MethodInfo list)
         (test : SingleTestMethod)
-        : Result<unit, TestFailure> list
+        : Result<TestMemberSuccess, TestMemberFailure> list
         =
-        let shouldRunTest =
-            (true, test.Modifiers)
-            ||> List.fold (fun _ modifier ->
+        let resultPreRun =
+            (None, test.Modifiers)
+            ||> List.fold (fun _result modifier ->
+                // TODO: would be nice not to throw away the accumulation,
+                // and also when we get to being able to run Explicit tests we should discriminate exactly whether
+                // there was an Ignore
                 match modifier with
                 | Modifier.Explicit reason ->
-                    // TODO: if the filter explicitly says to run this, then do so
-                    let reason =
-                        match reason with
-                        | None -> ""
-                        | Some r -> $" (%s{r})"
-
-                    printfn $"Will ignore test %s{test.Name} because it is marked explicit%s{reason}"
-                    false
-                | Modifier.Ignored reason ->
-                    let reason =
-                        match reason with
-                        | None -> ""
-                        | Some r -> $" (%s{r})"
-
-                    eprintfn $"Will ignore test %s{test.Name} because it is marked ignored%s{reason}"
-                    false
+                    // TODO: have a mode where we can run explicit tests
+                    Some (TestMemberSuccess.Explicit reason)
+                | Modifier.Ignored reason -> Some (TestMemberSuccess.Ignored reason)
             )
 
-        if not shouldRunTest then
-            []
-        else
+        match resultPreRun with
+        | Some result -> [ Ok result ]
+        | None ->
 
         Seq.init
             (Option.defaultValue 1 test.Repeat)
             (fun _ ->
-                let valuesAttrs =
-                    test.Method.GetParameters ()
-                    |> Array.map (fun i ->
-                        i.CustomAttributes
-                        |> Seq.choose (fun i ->
-                            if i.AttributeType.FullName = "NUnit.Framework.ValuesAttribute" then
-                                Some i.ConstructorArguments
-                            else
-                                None
-                        )
-                        |> Seq.toList
-                        |> function
-                            | [] -> None
-                            | [ x ] -> Some x
-                            | _ :: _ :: _ ->
-                                failwith
-                                    $"Test %s{test.Name} has multiple Values attributes on a parameter. Exactly one per parameter please."
-                    )
+                let values = getValues test
 
-                let valuesAttrs =
-                    if valuesAttrs |> Array.exists (fun l -> l.IsSome) then
-                        if valuesAttrs |> Array.exists (fun l -> l.IsNone) then
-                            failwith
-                                $"Test %s{test.Name} has a parameter with the Values attribute and a parameter without. All parameters must have Values if any one does."
+                match values with
+                | Error e -> Seq.singleton (Error e)
+                | Ok values ->
 
-                        Choice1Of2 (valuesAttrs |> Array.map Option.get)
-                    else
-                        Choice2Of2 ()
+                let inline normaliseError
+                    (e : Result<unit, TestFailure list>)
+                    : Result<TestMemberSuccess, TestMemberFailure>
+                    =
+                    match e with
+                    | Ok () -> Ok TestMemberSuccess.Ok
+                    | Error e -> Error (e |> TestMemberFailure.Failed)
 
-                match test.Kind, valuesAttrs with
-                | TestKind.Data data, Choice2Of2 () ->
+                match test.Kind, values with
+                | TestKind.Data data, None ->
                     data
-                    |> Seq.map (fun args -> runOne setUp tearDown test.Method (Array.ofList args))
-                | TestKind.Data _, Choice1Of2 _ ->
-                    failwith
-                        $"Test %s{test.Name} has both the TestCase and Values attributes. Specify one or the other."
-                | TestKind.Single, Choice2Of2 () -> Seq.singleton (runOne setUp tearDown test.Method [||])
-                | TestKind.Single, Choice1Of2 vals ->
+                    |> Seq.map (fun args -> runOne setUp tearDown test.Method (Array.ofList args) |> normaliseError)
+                | TestKind.Data _, Some _ ->
+                    [
+                        "Test has both the TestCase and Values attributes. Specify one or the other."
+                    ]
+                    |> TestMemberFailure.Malformed
+                    |> Error
+                    |> Seq.singleton
+                | TestKind.Single, None -> runOne setUp tearDown test.Method [||] |> normaliseError |> Seq.singleton
+                | TestKind.Single, Some vals ->
                     let combinatorial =
                         Option.defaultValue Combinatorial.Combinatorial test.Combinatorial
 
@@ -115,7 +162,9 @@ module TestFixture =
                         |> Seq.map (fun l -> l |> Seq.map (fun v -> v.Value) |> Seq.toList)
                         |> Seq.toList
                         |> List.combinations
-                        |> Seq.map (fun args -> runOne setUp tearDown test.Method (Array.ofList args))
+                        |> Seq.map (fun args ->
+                            runOne setUp tearDown test.Method (Array.ofList args) |> normaliseError
+                        )
                     | Combinatorial.Sequential ->
                         let maxLength = vals |> Seq.map (fun i -> i.Count) |> Seq.max
 
@@ -125,12 +174,16 @@ module TestFixture =
                                     vals
                                     |> Array.map (fun param -> if i >= param.Count then null else param.[i].Value)
 
-                                runOne setUp tearDown test.Method args
+                                yield runOne setUp tearDown test.Method args |> normaliseError
                         }
-                | TestKind.Source _, Choice1Of2 _ ->
-                    failwith
-                        $"Test %s{test.Name} has both the TestCaseSource and Values attributes. Specify one or the other."
-                | TestKind.Source s, Choice2Of2 () ->
+                | TestKind.Source _, Some _ ->
+                    [
+                        "Test has both the TestCaseSource and Values attributes. Specify one or the other."
+                    ]
+                    |> TestMemberFailure.Malformed
+                    |> Error
+                    |> Seq.singleton
+                | TestKind.Source s, None ->
                     let args =
                         test.Method.DeclaringType.GetProperty (
                             s,
@@ -169,6 +222,7 @@ module TestFixture =
                                         runOne setUp tearDown test.Method (argsMem.Invoke (arg, [||]) |> unbox<obj[]>)
                                     else
                                         runOne setUp tearDown test.Method [| arg |]
+                                |> normaliseError
                     }
             )
         |> Seq.concat
@@ -201,8 +255,9 @@ module TestFixture =
 
         match tests.OneTimeSetUp with
         | Some su ->
-            if not (isNull (su.Invoke (null, [||]))) then
-                failwith $"One-time setup procedure '%s{su.Name}' returned non-null"
+            match su.Invoke (null, [||]) with
+            | :? unit -> ()
+            | ret -> failwith $"One-time setup procedure '%s{su.Name}' returned non-null %O{ret}"
         | _ -> ()
 
         let totalTestSuccess = ref 0
@@ -214,14 +269,14 @@ module TestFixture =
                     eprintfn $"Running test: %s{test.Name}"
                     let testSuccess = ref 0
 
-                    let results = runFixture tests.SetUp tests.TearDown test
+                    let results = runTestsFromMember tests.SetUp tests.TearDown test
 
                     for result in results do
                         match result with
                         | Error exc ->
                             eprintfn $"Test failed: %O{exc}"
                             Interlocked.Increment testFailures |> ignore<int>
-                        | Ok () -> Interlocked.Increment testSuccess |> ignore<int>
+                        | Ok _ -> Interlocked.Increment testSuccess |> ignore<int>
 
                     Interlocked.Add (totalTestSuccess, testSuccess.Value) |> ignore<int>
                     eprintfn $"Finished test %s{test.Name} (%i{testSuccess.Value} success)"
