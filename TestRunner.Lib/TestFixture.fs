@@ -199,6 +199,7 @@ module TestFixture =
                         for arg in args.GetValue null :?> System.Collections.IEnumerable do
                             yield
                                 match arg with
+                                | null -> runOne setUp tearDown test.Method [| null |]
                                 | :? Tuple<obj, obj> as (a, b) -> runOne setUp tearDown test.Method [| a ; b |]
                                 | :? Tuple<obj, obj, obj> as (a, b, c) ->
                                     runOne setUp tearDown test.Method [| a ; b ; c |]
