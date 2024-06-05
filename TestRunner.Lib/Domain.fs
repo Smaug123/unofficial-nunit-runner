@@ -79,7 +79,7 @@ type TestFixture =
         Tests : SingleTestMethod list
     }
 
-    /// A test fixture about which we know nothing.
+    /// A test fixture about which we know nothing. No tests, no setup/teardown.
     static member Empty (name : string) =
         {
             Name = name
@@ -106,6 +106,12 @@ type UserMethodFailure =
         | UserMethodFailure.Threw (method, exc) ->
             $"User-defined method %s{method} threw: %s{exc.Message}\n  %s{exc.StackTrace}"
 
+    /// Name (not fully-qualified) of the method which failed.
+    member this.Name =
+        match this with
+        | UserMethodFailure.Threw (name, _)
+        | UserMethodFailure.ReturnedNonUnit (name, _) -> name
+
 /// Represents the failure of a single run of one test. An error signalled this way is a user error: the unit under
 /// test has misbehaved.
 [<RequireQualifiedAccess>]
@@ -118,3 +124,10 @@ type TestFailure =
     /// We failed to tear down the test (e.g. its TearDown failed). This can happen even if the test failed,
     /// because we always run tear-downs, even after failed tests.
     | TearDownFailed of UserMethodFailure
+
+    /// Name (not fully-qualified) of the method which failed.
+    member this.Name =
+        match this with
+        | TestFailure.TestFailed f
+        | TestFailure.SetUpFailed f
+        | TestFailure.TearDownFailed f -> f.Name

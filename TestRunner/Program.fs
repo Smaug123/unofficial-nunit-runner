@@ -36,11 +36,27 @@ module Program =
                     (fun anyFailures ty ->
                         let testFixture = TestFixture.parse ty
 
-                        match TestFixture.run filter testFixture with
-                        | 0 -> anyFailures
-                        | i ->
-                            eprintfn $"%i{i} tests failed"
-                            true
+                        let results = TestFixture.run filter testFixture
+
+                        let anyFailures =
+                            match results.Failed with
+                            | [] -> anyFailures
+                            | _ :: _ ->
+                                eprintfn $"%i{results.Failed.Length} tests failed"
+                                true
+
+                        let anyFailures =
+                            match results.OtherFailures with
+                            | [] -> anyFailures
+                            | otherFailures ->
+                                eprintfn "Other failures encountered: "
+
+                                for failure in otherFailures do
+                                    eprintfn $"  %s{failure.Name}"
+
+                                true
+
+                        anyFailures
                     )
                     false
             finally

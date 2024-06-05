@@ -24,6 +24,13 @@ type TestMemberFailure =
     /// the tear-down logic failed afterwards.)
     | Failed of TestFailure list
 
+type FixtureRunResults =
+    {
+        Failed : TestMemberFailure list
+        SuccessCount : int
+        OtherFailures : UserMethodFailure list
+    }
+
 /// A test fixture (usually represented by the [<TestFixture>]` attribute), which may contain many tests,
 /// each of which may run many times.
 [<RequireQualifiedAccess>]
@@ -68,6 +75,7 @@ module TestFixture =
 
         let result = runMethods TestFailure.TestFailed [ test ] args
 
+        // Unconditionally run TearDown after tests, even if tests failed.
         let tearDownResult = runMethods TestFailure.TearDownFailed tearDown [||]
 
         match result, tearDownResult with
@@ -110,7 +118,8 @@ module TestFixture =
         else
             Ok None
 
-    /// This method only throws if there's a critical logic error in the runner.
+    /// This method should never throw: it only throws if there's a critical logic error in the runner.
+    /// Exceptions from the units under test are wrapped up and passed out.
     let private runTestsFromMember
         (setUp : MethodInfo list)
         (tearDown : MethodInfo list)
@@ -254,9 +263,9 @@ module TestFixture =
         |> Seq.concat
         |> Seq.toList
 
-    /// Run every test (except those which fail the `filter`) in this test fixture. As of this writing, returns the
-    /// number of test failures.
-    let run (filter : TestFixture -> SingleTestMethod -> bool) (tests : TestFixture) : int =
+    /// Run every test (except those which fail the `filter`) in this test fixture, as well as the
+    /// appropriate setup and tear-down logic.
+    let run (filter : TestFixture -> SingleTestMethod -> bool) (tests : TestFixture) : FixtureRunResults =
         eprintfn $"Running test fixture: %s{tests.Name} (%i{tests.Tests.Length} tests to run)"
 
         let containingObject =
@@ -288,21 +297,19 @@ module TestFixture =
                 try
                     match su.Invoke (containingObject, [||]) with
                     | :? unit -> None
-                    | ret ->
-                        Some (UserMethodFailure.ReturnedNonUnit (su.Name, ret))
-                with
-                | e ->
+                    | ret -> Some (UserMethodFailure.ReturnedNonUnit (su.Name, ret))
+                with e ->
                     Some (UserMethodFailure.Threw (su.Name, e))
             | _ -> None
+
+        let totalTestSuccess = ref 0
+        let testFailures = ResizeArray ()
 
         match setupResult with
         | Some _ ->
             // Don't run any tests if setup failed.
             ()
         | None ->
-            let totalTestSuccess = ref 0
-            let testFailures = ref 0
-
             for test in tests.Tests do
                 if filter tests test then
                     eprintfn $"Running test: %s{test.Name}"
@@ -312,9 +319,9 @@ module TestFixture =
 
                     for result in results do
                         match result with
-                        | Error exc ->
-                            eprintfn $"Test failed: %O{exc}"
-                            Interlocked.Increment testFailures |> ignore<int>
+                        | Error failure ->
+                            testFailures.Add failure
+                            eprintfn $"Test failed: %O{failure}"
                         | Ok _ -> Interlocked.Increment testSuccess |> ignore<int>
 
                     Interlocked.Add (totalTestSuccess, testSuccess.Value) |> ignore<int>
@@ -322,20 +329,23 @@ module TestFixture =
                 else
                     eprintfn $"Skipping test due to filter: %s{test.Name}"
 
-        // Unconditionally run OneTimeTearDown, whatever else happens
-        failwith "TODO: capture the failure if this fails"
-        match tests.OneTimeTearDown with
-        | Some td ->
-            try
-                // TODO: all these failwiths hide errors that we caught and wrapped up nicely above
-                if not (isNull (td.Invoke (containingObject, [||]))) then
-                    failwith $"TearDown procedure '%s{td.Name}' returned non-null"
-            with :? TargetInvocationException as e ->
-                failwith $"One-time teardown of %s{td.Name} failed: %O{e.InnerException}"
-        | _ -> ()
+        // Unconditionally run OneTimeTearDown if it exists.
+        let tearDownError =
+            match tests.OneTimeTearDown with
+            | Some td ->
+                try
+                    match td.Invoke (containingObject, [||]) with
+                    | null -> None
+                    | ret -> Some (UserMethodFailure.ReturnedNonUnit (td.Name, ret))
+                with :? TargetInvocationException as e ->
+                    Some (UserMethodFailure.Threw (td.Name, e))
+            | _ -> None
 
-        eprintfn $"Test fixture %s{tests.Name} completed (%i{totalTestSuccess.Value} success)."
-        testFailures.Value
+        {
+            Failed = testFailures |> Seq.toList
+            SuccessCount = totalTestSuccess.Value
+            OtherFailures = [ tearDownError ; setupResult ] |> List.choose id
+        }
 
     /// Interpret this type as a [<TestFixture>], extracting the test members from it and annotating them with all
     /// relevant information about how we should run them.
