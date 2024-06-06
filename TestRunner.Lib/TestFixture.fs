@@ -1,6 +1,7 @@
 namespace TestRunner
 
 open System
+open System.IO
 open System.Reflection
 open System.Threading
 open Microsoft.FSharp.Core
@@ -281,6 +282,9 @@ module TestFixture =
             )
             |> Option.toObj
 
+        let oldWorkDir = Environment.CurrentDirectory
+        Environment.CurrentDirectory <- FileInfo(tests.ContainingAssembly.Location).Directory.FullName
+
         let setupResult =
             match tests.OneTimeSetUp with
             | Some su ->
@@ -331,6 +335,8 @@ module TestFixture =
                     Some (UserMethodFailure.Threw (td.Name, e))
             | _ -> None
 
+        Environment.CurrentDirectory <- oldWorkDir
+
         {
             Failed = testFailures |> Seq.toList
             SuccessCount = totalTestSuccess.Value
@@ -346,7 +352,7 @@ module TestFixture =
             |> Seq.map (fun attr -> attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>)
             |> Seq.toList
 
-        (TestFixture.Empty parentType.Name, parentType.GetRuntimeMethods ())
+        (TestFixture.Empty parentType.Assembly parentType.Name, parentType.GetRuntimeMethods ())
         ||> Seq.fold (fun state mi ->
             ((state, []), mi.CustomAttributes)
             ||> Seq.fold (fun (state, unrecognisedAttrs) attr ->
