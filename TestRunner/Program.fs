@@ -1,8 +1,12 @@
 ﻿namespace TestRunner
 
 open System
+open System.Diagnostics
 open System.IO
 open System.Reflection
+open System.Runtime.InteropServices
+open System.Runtime.Loader
+open System.Text.RegularExpressions
 
 // Fix for https://github.com/Smaug123/unofficial-nunit-runner/issues/8
 // Set AppContext.BaseDirectory to where the test DLL is.
@@ -15,7 +19,91 @@ type SetBaseDir (testDll : FileInfo) =
         member _.Dispose () =
             AppContext.SetData ("APP_CONTEXT_BASE_DIRECTORY", oldBaseDir)
 
+
+type Ctx (dll : FileInfo, runtimes : DirectoryInfo list) =
+    inherit AssemblyLoadContext ()
+
+    override this.Load (target : AssemblyName) : Assembly =
+        let path = Path.Combine (dll.Directory.FullName, $"%s{target.Name}.dll")
+
+        if File.Exists path then
+            this.LoadFromAssemblyPath path
+        else
+
+        runtimes
+        |> List.tryPick (fun di ->
+            let path = Path.Combine (dll.Directory.FullName, $"%s{target.Name}.dll")
+
+            if File.Exists path then
+                this.LoadFromAssemblyPath path |> Some
+            else
+                None
+        )
+        |> Option.defaultValue null
+
 module Program =
+    /// This is *the most cursed* method. There must surely be a better way.
+    let locateRuntimes (dll : FileInfo) : DirectoryInfo list =
+        let resolver =
+            PathAssemblyResolver
+                [|
+                    yield dll.FullName
+                    yield! Directory.GetFiles (RuntimeEnvironment.GetRuntimeDirectory (), "*.dll")
+                    yield! Directory.GetFiles (dll.Directory.FullName, "*.dll")
+                |]
+
+        use mlc = new MetadataLoadContext (resolver)
+        let assy = mlc.LoadFromAssemblyPath dll.FullName
+
+        let runtime =
+            assy.CustomAttributes
+            |> Seq.find (fun att -> att.AttributeType.FullName = "System.Runtime.Versioning.TargetFrameworkAttribute")
+            |> fun attr -> Seq.exactlyOne attr.ConstructorArguments
+            |> fun args -> args.Value |> unbox<string>
+
+        let regex = Regex "\\.NETCoreApp,Version=v([0-9]+)\.[0-9]+"
+        let mat = regex.Match (runtime)
+
+        if not mat.Success then
+            failwith $"Could not identify runtime: %s{runtime}"
+
+        let runtimeVersion = mat.Groups.[1].Value |> Int32.Parse
+
+        let runtimes =
+            let psi = ProcessStartInfo "dotnet"
+            psi.ArgumentList.Add "--list-runtimes"
+            psi.RedirectStandardOutput <- true
+            use proc = new Process ()
+            proc.StartInfo <- psi
+
+            if not (proc.Start ()) then
+                failwith "Could not start dotnet"
+
+            let version = proc.StandardOutput.ReadToEnd ()
+            proc.WaitForExit ()
+
+            if proc.ExitCode <> 0 then
+                failwith $"dotnet quit with exit code %i{proc.ExitCode}"
+
+            version
+
+        runtimes.Split ('\n')
+        |> Seq.filter (not << String.IsNullOrEmpty)
+        |> Seq.choose (fun runtime ->
+            let split = runtime.Split ' '
+            let target = split.[1]
+
+            if Int32.Parse (target.Split '.').[0] = runtimeVersion then
+                let dir = split.[split.Length - 1]
+
+                Path.Combine (dir.Substring (1, dir.Length - 2), target)
+                |> DirectoryInfo
+                |> Some
+            else
+                None
+        )
+        |> Seq.toList
+
     let main argv =
         let testDll, filter =
             match argv |> List.ofSeq with
@@ -32,7 +120,8 @@ module Program =
 
         use _ = new SetBaseDir (testDll)
 
-        let assy = Assembly.LoadFrom testDll.FullName
+        let ctx = Ctx (testDll, locateRuntimes testDll)
+        let assy = ctx.LoadFromAssemblyPath testDll.FullName
 
         let anyFailures =
             assy.ExportedTypes
