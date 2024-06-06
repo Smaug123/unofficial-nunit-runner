@@ -36,11 +36,6 @@ module Program =
 
         let anyFailures =
             assy.ExportedTypes
-            // TODO: NUnit nowadays doesn't care if you're a TestFixture or not
-            |> Seq.filter (fun ty ->
-                ty.CustomAttributes
-                |> Seq.exists (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.TestFixtureAttribute")
-            )
             |> Seq.fold
                 (fun anyFailures ty ->
                     let testFixture = TestFixture.parse ty

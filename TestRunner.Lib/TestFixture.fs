@@ -1,6 +1,7 @@
 namespace TestRunner
 
 open System
+open System.IO
 open System.Reflection
 open System.Threading
 open Microsoft.FSharp.Core
@@ -30,7 +31,7 @@ module TestFixture =
         (test : MethodInfo)
         (containingObject : obj)
         (args : obj[])
-        : Result<unit, TestFailure list>
+        : Result<TestMemberSuccess, TestFailure list>
         =
         let rec runMethods
             (wrap : UserMethodFailure -> TestFailure)
@@ -58,15 +59,30 @@ module TestFixture =
         | Error e -> Error [ e ]
         | Ok () ->
 
-        let result = runMethods TestFailure.TestFailed [ test ] args
+        let result =
+            let result = runMethods TestFailure.TestFailed [ test ] args
+
+            match result with
+            | Ok () -> Ok None
+            | Error (TestFailure.TestFailed (UserMethodFailure.Threw (_, exc)) as orig) ->
+                match exc.GetType().FullName with
+                | "NUnit.Framework.SuccessException" -> Ok None
+                | "NUnit.Framework.IgnoreException" -> Ok (Some (TestMemberSuccess.Ignored (Option.ofObj exc.Message)))
+                | "NUnit.Framework.InconclusiveException" ->
+                    Ok (Some (TestMemberSuccess.Inconclusive (Option.ofObj exc.Message)))
+                | s when s.StartsWith ("NUnit.Framework.", StringComparison.Ordinal) ->
+                    failwith $"Unrecognised special exception: %s{s}"
+                | _ -> Error orig
+            | Error orig -> Error orig
 
         // Unconditionally run TearDown after tests, even if tests failed.
         let tearDownResult = runMethods TestFailure.TearDownFailed tearDown [||]
 
         match result, tearDownResult with
-        | Ok (), Ok () -> Ok ()
+        | Ok None, Ok () -> Ok TestMemberSuccess.Ok
+        | Ok (Some s), Ok () -> Ok s
         | Error e, Ok ()
-        | Ok (), Error e -> Error [ e ]
+        | Ok _, Error e -> Error [ e ]
         | Error e1, Error e2 -> Error [ e1 ; e2 ]
 
     let private getValues (test : SingleTestMethod) =
@@ -139,11 +155,11 @@ module TestFixture =
                 | Ok values ->
 
                 let inline normaliseError
-                    (e : Result<unit, TestFailure list>)
+                    (e : Result<TestMemberSuccess, TestFailure list>)
                     : Result<TestMemberSuccess, TestMemberFailure>
                     =
                     match e with
-                    | Ok () -> Ok TestMemberSuccess.Ok
+                    | Ok s -> Ok s
                     | Error e -> Error (e |> TestMemberFailure.Failed)
 
                 match test.Kind, values with
@@ -281,6 +297,9 @@ module TestFixture =
             )
             |> Option.toObj
 
+        let oldWorkDir = Environment.CurrentDirectory
+        Environment.CurrentDirectory <- FileInfo(tests.ContainingAssembly.Location).Directory.FullName
+
         let setupResult =
             match tests.OneTimeSetUp with
             | Some su ->
@@ -331,6 +350,8 @@ module TestFixture =
                     Some (UserMethodFailure.Threw (td.Name, e))
             | _ -> None
 
+        Environment.CurrentDirectory <- oldWorkDir
+
         {
             Failed = testFailures |> Seq.toList
             SuccessCount = totalTestSuccess.Value
@@ -346,7 +367,7 @@ module TestFixture =
             |> Seq.map (fun attr -> attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>)
             |> Seq.toList
 
-        (TestFixture.Empty parentType.Name, parentType.GetRuntimeMethods ())
+        (TestFixture.Empty parentType.Assembly parentType.Name, parentType.GetRuntimeMethods ())
         ||> Seq.fold (fun state mi ->
             ((state, []), mi.CustomAttributes)
             ||> Seq.fold (fun (state, unrecognisedAttrs) attr ->
