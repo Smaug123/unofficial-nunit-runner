@@ -161,8 +161,10 @@ TestRunner.TestFailure.NewTearDownFailed [static method]: TestRunner.UserMethodF
 TestRunner.TestFailure.NewTestFailed [static method]: TestRunner.UserMethodFailure -> TestRunner.TestFailure
 TestRunner.TestFailure.Tag [property]: [read-only] int
 TestRunner.TestFixture inherit obj, implements TestRunner.TestFixture System.IEquatable, System.Collections.IStructuralEquatable
-TestRunner.TestFixture..ctor [constructor]: (string, System.Reflection.MethodInfo option, System.Reflection.MethodInfo option, System.Reflection.MethodInfo list, System.Reflection.MethodInfo list, TestRunner.SingleTestMethod list)
-TestRunner.TestFixture.Empty [static method]: string -> TestRunner.TestFixture
+TestRunner.TestFixture..ctor [constructor]: (System.Reflection.Assembly, string, System.Reflection.MethodInfo option, System.Reflection.MethodInfo option, System.Reflection.MethodInfo list, System.Reflection.MethodInfo list, TestRunner.SingleTestMethod list)
+TestRunner.TestFixture.ContainingAssembly [property]: [read-only] System.Reflection.Assembly
+TestRunner.TestFixture.Empty [static method]: System.Reflection.Assembly -> string -> TestRunner.TestFixture
+TestRunner.TestFixture.get_ContainingAssembly [method]: unit -> System.Reflection.Assembly
 TestRunner.TestFixture.get_Name [method]: unit -> string
 TestRunner.TestFixture.get_OneTimeSetUp [method]: unit -> System.Reflection.MethodInfo option
 TestRunner.TestFixture.get_OneTimeTearDown [method]: unit -> System.Reflection.MethodInfo option
