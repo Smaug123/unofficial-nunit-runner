@@ -67,8 +67,7 @@ module TestFixture =
             | Error (TestFailure.TestFailed (UserMethodFailure.Threw (_, exc)) as orig) ->
                 match exc.GetType().FullName with
                 | "NUnit.Framework.SuccessException" -> Ok None
-                | "NUnit.Framework.IgnoreException" ->
-                    Ok (Some (TestMemberSuccess.Ignored (Option.ofObj exc.Message)))
+                | "NUnit.Framework.IgnoreException" -> Ok (Some (TestMemberSuccess.Ignored (Option.ofObj exc.Message)))
                 | "NUnit.Framework.InconclusiveException" ->
                     Ok (Some (TestMemberSuccess.Inconclusive (Option.ofObj exc.Message)))
                 | s when s.StartsWith ("NUnit.Framework.", StringComparison.Ordinal) ->
