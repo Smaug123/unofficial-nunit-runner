@@ -61,7 +61,7 @@ module Program =
             |> fun attr -> Seq.exactlyOne attr.ConstructorArguments
             |> fun args -> args.Value |> unbox<string>
 
-        let regex = Regex "\\.NETCoreApp,Version=v([0-9]+)\.[0-9]+"
+        let regex = Regex "\\.NETCoreApp,Version=v([0-9]+)\\.[0-9]+"
         let mat = regex.Match (runtime)
 
         if not mat.Success then
