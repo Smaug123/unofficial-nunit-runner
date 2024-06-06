@@ -66,10 +66,10 @@ module TestFixture =
             | Ok () -> Ok None
             | Error (TestFailure.TestFailed (UserMethodFailure.Threw (_, exc)) as orig) ->
                 match exc.GetType().FullName with
-                | s when s.Contains "NUnit.Framework.SuccessException" -> Ok None
-                | s when s.Contains "NUnit.Framework.IgnoreException" ->
+                | "NUnit.Framework.SuccessException" -> Ok None
+                | "NUnit.Framework.IgnoreException" ->
                     Ok (Some (TestMemberSuccess.Ignored (Option.ofObj exc.Message)))
-                | s when s.StartsWith "NUnit.Framework.InconclusiveException" ->
+                | "NUnit.Framework.InconclusiveException" ->
                     Ok (Some (TestMemberSuccess.Inconclusive (Option.ofObj exc.Message)))
                 | s when s.StartsWith ("NUnit.Framework.", StringComparison.Ordinal) ->
                     failwith $"Unrecognised special exception: %s{s}"
