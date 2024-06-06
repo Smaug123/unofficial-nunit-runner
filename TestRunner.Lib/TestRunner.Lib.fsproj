@@ -25,6 +25,7 @@
       <Compile Include="SingleTestMethod.fs" />
       <Compile Include="TestProgress.fs" />
       <Compile Include="TestFixture.fs" />
+      <Compile Include="TrxReport.fs" />
       <None Include="..\README.md">
         <Pack>True</Pack>
         <PackagePath>\</PackagePath>
