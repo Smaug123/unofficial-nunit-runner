@@ -221,27 +221,34 @@ TestRunner.TestMemberFailure.IsMalformed [property]: [read-only] bool
 TestRunner.TestMemberFailure.NewFailed [static method]: TestRunner.TestFailure list -> TestRunner.TestMemberFailure
 TestRunner.TestMemberFailure.NewMalformed [static method]: string list -> TestRunner.TestMemberFailure
 TestRunner.TestMemberFailure.Tag [property]: [read-only] int
-TestRunner.TestMemberSuccess inherit obj, implements TestRunner.TestMemberSuccess System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TestMemberSuccess System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 3 cases
+TestRunner.TestMemberSuccess inherit obj, implements TestRunner.TestMemberSuccess System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TestMemberSuccess System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 4 cases
 TestRunner.TestMemberSuccess+Explicit inherit TestRunner.TestMemberSuccess
 TestRunner.TestMemberSuccess+Explicit.get_reason [method]: unit -> string option
 TestRunner.TestMemberSuccess+Explicit.reason [property]: [read-only] string option
 TestRunner.TestMemberSuccess+Ignored inherit TestRunner.TestMemberSuccess
 TestRunner.TestMemberSuccess+Ignored.get_reason [method]: unit -> string option
 TestRunner.TestMemberSuccess+Ignored.reason [property]: [read-only] string option
+TestRunner.TestMemberSuccess+Inconclusive inherit TestRunner.TestMemberSuccess
+TestRunner.TestMemberSuccess+Inconclusive.get_reason [method]: unit -> string option
+TestRunner.TestMemberSuccess+Inconclusive.reason [property]: [read-only] string option
 TestRunner.TestMemberSuccess+Tags inherit obj
 TestRunner.TestMemberSuccess+Tags.Explicit [static field]: int = 2
 TestRunner.TestMemberSuccess+Tags.Ignored [static field]: int = 1
+TestRunner.TestMemberSuccess+Tags.Inconclusive [static field]: int = 3
 TestRunner.TestMemberSuccess+Tags.Ok [static field]: int = 0
 TestRunner.TestMemberSuccess.get_IsExplicit [method]: unit -> bool
 TestRunner.TestMemberSuccess.get_IsIgnored [method]: unit -> bool
+TestRunner.TestMemberSuccess.get_IsInconclusive [method]: unit -> bool
 TestRunner.TestMemberSuccess.get_IsOk [method]: unit -> bool
 TestRunner.TestMemberSuccess.get_Ok [static method]: unit -> TestRunner.TestMemberSuccess
 TestRunner.TestMemberSuccess.get_Tag [method]: unit -> int
 TestRunner.TestMemberSuccess.IsExplicit [property]: [read-only] bool
 TestRunner.TestMemberSuccess.IsIgnored [property]: [read-only] bool
+TestRunner.TestMemberSuccess.IsInconclusive [property]: [read-only] bool
 TestRunner.TestMemberSuccess.IsOk [property]: [read-only] bool
 TestRunner.TestMemberSuccess.NewExplicit [static method]: string option -> TestRunner.TestMemberSuccess
 TestRunner.TestMemberSuccess.NewIgnored [static method]: string option -> TestRunner.TestMemberSuccess
+TestRunner.TestMemberSuccess.NewInconclusive [static method]: string option -> TestRunner.TestMemberSuccess
 TestRunner.TestMemberSuccess.Ok [static property]: [read-only] TestRunner.TestMemberSuccess
 TestRunner.TestMemberSuccess.Tag [property]: [read-only] int
 TestRunner.TestProgress inherit obj
