@@ -151,6 +151,8 @@ type TestMemberSuccess =
     | Ignored of reason : string option
     /// We didn't run the test, because it's [<Explicit>].
     | Explicit of reason : string option
+    /// We ran the test, and it performed Assert.Inconclusive.
+    | Inconclusive of reason : string option
 
 /// Represents the failure of a test.
 [<RequireQualifiedAccess>]

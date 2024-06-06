@@ -31,7 +31,7 @@ module TestFixture =
         (test : MethodInfo)
         (containingObject : obj)
         (args : obj[])
-        : Result<unit, TestFailure list>
+        : Result<TestMemberSuccess, TestFailure list>
         =
         let rec runMethods
             (wrap : UserMethodFailure -> TestFailure)
@@ -59,15 +59,31 @@ module TestFixture =
         | Error e -> Error [ e ]
         | Ok () ->
 
-        let result = runMethods TestFailure.TestFailed [ test ] args
+        let result =
+            let result = runMethods TestFailure.TestFailed [ test ] args
+
+            match result with
+            | Ok () -> Ok None
+            | Error (TestFailure.TestFailed (UserMethodFailure.Threw (_, exc)) as orig) ->
+                match exc.GetType().FullName with
+                | s when s.Contains "NUnit.Framework.SuccessException" -> Ok None
+                | s when s.Contains "NUnit.Framework.IgnoreException" ->
+                    Ok (Some (TestMemberSuccess.Ignored (Option.ofObj exc.Message)))
+                | s when s.StartsWith "NUnit.Framework.InconclusiveException" ->
+                    Ok (Some (TestMemberSuccess.Inconclusive (Option.ofObj exc.Message)))
+                | s when s.StartsWith ("NUnit.Framework.", StringComparison.Ordinal) ->
+                    failwith $"Unrecognised special exception: %s{s}"
+                | _ -> Error orig
+            | Error orig -> Error orig
 
         // Unconditionally run TearDown after tests, even if tests failed.
         let tearDownResult = runMethods TestFailure.TearDownFailed tearDown [||]
 
         match result, tearDownResult with
-        | Ok (), Ok () -> Ok ()
+        | Ok None, Ok () -> Ok TestMemberSuccess.Ok
+        | Ok (Some s), Ok () -> Ok s
         | Error e, Ok ()
-        | Ok (), Error e -> Error [ e ]
+        | Ok _, Error e -> Error [ e ]
         | Error e1, Error e2 -> Error [ e1 ; e2 ]
 
     let private getValues (test : SingleTestMethod) =
@@ -140,11 +156,11 @@ module TestFixture =
                 | Ok values ->
 
                 let inline normaliseError
-                    (e : Result<unit, TestFailure list>)
+                    (e : Result<TestMemberSuccess, TestFailure list>)
                     : Result<TestMemberSuccess, TestMemberFailure>
                     =
                     match e with
-                    | Ok () -> Ok TestMemberSuccess.Ok
+                    | Ok s -> Ok s
                     | Error e -> Error (e |> TestMemberFailure.Failed)
 
                 match test.Kind, values with
