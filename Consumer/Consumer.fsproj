@@ -9,6 +9,7 @@
 
     <ItemGroup>
         <Compile Include="NoAttribute.fs" />
+        <Compile Include="Inconclusive.fs" />
         <Compile Include="TestSetUp.fs" />
         <Compile Include="TestValues.fs" />
         <None Include="some-config.json">
