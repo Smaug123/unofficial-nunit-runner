@@ -57,6 +57,8 @@ type SingleTestMethod =
 /// each of which may run many times.
 type TestFixture =
     {
+        /// The assembly which contains this TestFixture, loaded into a separate context.
+        ContainingAssembly : Assembly
         /// Fully-qualified name of this fixture (e.g. MyThing.Test.Foo for `[<TestFixture>] module Foo` in the
         /// `MyThing.Test` assembly).
         Name : string
@@ -80,8 +82,9 @@ type TestFixture =
     }
 
     /// A test fixture about which we know nothing. No tests, no setup/teardown.
-    static member Empty (name : string) =
+    static member Empty (containingAssembly : Assembly) (name : string) =
         {
+            ContainingAssembly = containingAssembly
             Name = name
             OneTimeSetUp = None
             OneTimeTearDown = None
