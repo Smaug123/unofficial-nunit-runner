@@ -62,6 +62,11 @@
     sha256 = "1bl471s7fx9jycr0cc8rylwf34mrvlg9qn1an6l86nisavfcyb7v";
   })
   (fetchNuGet {
+    pname = "Myriad.Sdk";
+    version = "0.8.3";
+    sha256 = "0qv78c5s5m04xb8h17nnn2ig26zcyya91k2dpj745cm1cbnzvvgc";
+  })
+  (fetchNuGet {
     pname = "Nerdbank.GitVersioning";
     version = "3.6.139";
     sha256 = "0npcryhq3r0c2zi940jk39h13mzc4hyg7z8gm6jdmxi1aqv1vh8c";
@@ -175,6 +180,21 @@
     pname = "System.Text.Json";
     version = "7.0.3";
     sha256 = "0zjrnc9lshagm6kdb9bdh45dmlnkpwcpyssa896sda93ngbmj8k9";
+  })
+  (fetchNuGet {
+    pname = "WoofWare.DotnetRuntimeLocator";
+    version = "0.1.2";
+    sha256 = "0kwkq28ddzc0bpr22jmgcl8dhnhg776gf6l054rsxw8lrvpwhmv9";
+  })
+  (fetchNuGet {
+    pname = "WoofWare.Myriad.Plugins";
+    version = "2.1.40";
+    sha256 = "025lv42zjvqpr2di0iaqhqpricqary3l2a3cxgjjl0zxzflfbmx2";
+  })
+  (fetchNuGet {
+    pname = "WoofWare.Myriad.Plugins.Attributes";
+    version = "3.1.4";
+    sha256 = "06yw013f2qs2r8bxvja2c5kzbqc5knd3sc3pf6w5gaz4fbzwc2c3";
   })
   (fetchNuGet {
     pname = "WoofWare.PrattParser";
