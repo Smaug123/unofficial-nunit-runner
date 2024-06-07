@@ -1,16 +1,10 @@
 ﻿namespace TestRunner
 
 open System
-open System.Collections.Generic
-open System.Diagnostics
+open WoofWare.DotnetRuntimeLocator
 open System.IO
 open System.Reflection
-open System.Runtime.CompilerServices
-open System.Runtime.InteropServices
 open System.Runtime.Loader
-open System.Text
-open System.Text.RegularExpressions
-open Microsoft.FSharp.NativeInterop
 
 // Fix for https://github.com/Smaug123/unofficial-nunit-runner/issues/8
 // Set AppContext.BaseDirectory to where the test DLL is.
@@ -47,11 +41,20 @@ type Ctx (dll : FileInfo, runtimes : DirectoryInfo list) =
 
 
 module Program =
-    let selectRuntime (config : RuntimeOptions) (f : DotnetEnvironmentInfo) : Choice<DotnetEnvironmentFrameworkInfo, DotnetEnvironmentSdkInfo> option =
+    let selectRuntime
+        (config : RuntimeOptions)
+        (f : DotnetEnvironmentInfo)
+        : Choice<DotnetEnvironmentFrameworkInfo, DotnetEnvironmentSdkInfo> option
+        =
         let rollForward =
             match Environment.GetEnvironmentVariable "DOTNET_ROLL_FORWARD" with
-            | null -> config.RollForward |> Option.map RollForward.Parse |> Option.defaultValue RollForward.Minor
+            | null ->
+                config.RollForward
+                |> Option.map RollForward.Parse
+                |> Option.defaultValue RollForward.Minor
             | s -> RollForward.Parse s
+
+        printfn "%O" f
 
         let desired = Version config.Framework.Version
 
@@ -59,41 +62,50 @@ module Program =
         | RollForward.Minor ->
             let available =
                 f.Frameworks
-                |> Seq.filter (fun fi -> fi.Name = config.Framework.Name)
-                |> Seq.filter (fun fi -> fi.Version.Major = desired.Major && fi.Version.Minor >= desired.Minor)
-                |> Seq.tryMinBy (fun fi -> fi.Version.Minor, fi.Version.Build)
+                |> Seq.choose (fun fi ->
+                    if fi.Name = config.Framework.Name then
+                        Some (fi, Version fi.Version)
+                    else
+                        None
+                )
+                |> Seq.filter (fun (_, version) -> version.Major = desired.Major && version.Minor >= desired.Minor)
+                |> Seq.tryMinBy (fun (_, version) -> version.Minor, version.Build)
+
             match available with
-            | Some f -> Some (Choice1Of2 f)
-            | None ->
-                failwith "TODO: maybe the SDK can provide a runtime"
-        | _ ->
-            failwith "non-minor RollForward not supported yet; please shout if you want it"
+            | Some (f, _) -> Some (Choice1Of2 f)
+            | None -> failwith "TODO: maybe the SDK can provide a runtime"
+        | _ -> failwith "non-minor RollForward not supported yet; please shout if you want it"
 
     let locateRuntimes (dll : FileInfo) : DirectoryInfo list =
         let runtimeConfig =
             let name =
                 if not (dll.Name.EndsWith (".dll", StringComparison.OrdinalIgnoreCase)) then
                     failwith $"Expected DLL %s{dll.FullName} to end in .dll"
+
                 dll.Name.Substring (0, dll.Name.Length - 4)
+
             Path.Combine (dll.Directory.FullName, $"%s{name}.runtimeconfig.json")
             |> File.ReadAllText
             |> System.Text.Json.Nodes.JsonNode.Parse
             |> RuntimeConfig.jsonParse
             |> fun f -> f.RuntimeOptions
 
-        let availableRuntimes = RuntimeLocator.getEnv (FileInfo "/etc/profiles/per-user/patrick/bin/dotnet")
+        let availableRuntimes = DotnetEnvironmentInfo.Get ()
 
         let runtime = selectRuntime runtimeConfig availableRuntimes
 
         match runtime with
         | None ->
-            let availableF = availableRuntimes.Frameworks |> Seq.map (fun f -> f.Path) |> String.concat " ; "
-            let availableS = availableRuntimes.Sdks |> Seq.map (fun f -> f.Path) |> String.concat " ; "
-            failwith $"No acceptable runtime found for DLL %s{dll.FullName}.\nAvailable frameworks: %s{availableF}\nAvailable SDKs: %s{availableS}"
-        | Some (Choice1Of2 runtime) ->
-            [ dll.Directory ; DirectoryInfo runtime.Path ]
-        | Some (Choice2Of2 sdk) ->
-            [ dll.Directory ; DirectoryInfo sdk.Path ]
+            let availableF =
+                availableRuntimes.Frameworks |> Seq.map (fun f -> f.Path) |> String.concat " ; "
+
+            let availableS =
+                availableRuntimes.Sdks |> Seq.map (fun f -> f.Path) |> String.concat " ; "
+
+            failwith
+                $"No acceptable runtime found for DLL %s{dll.FullName}.\nAvailable frameworks: %s{availableF}\nAvailable SDKs: %s{availableS}"
+        | Some (Choice1Of2 runtime) -> [ dll.Directory ; DirectoryInfo runtime.Path ]
+        | Some (Choice2Of2 sdk) -> [ dll.Directory ; DirectoryInfo sdk.Path ]
 
     let main argv =
         let testDll, filter =

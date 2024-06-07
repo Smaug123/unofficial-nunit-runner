@@ -25,7 +25,6 @@
     </Compile>
     <Compile Include="Seq.fs" />
     <Compile Include="Progress.fs" />
-    <Compile Include="RuntimeLocator.fs" />
     <Compile Include="Program.fs" />
     <None Include="..\README.md">
       <Pack>True</Pack>
@@ -39,7 +38,7 @@
 
   <ItemGroup>
     <PackageReference Include="Spectre.Console" Version="0.49.1" />
-    <PackageReference Include="System.Reflection.MetadataLoadContext" Version="8.0.0" />
+    <PackageReference Include="WoofWare.DotnetRuntimeLocator" Version="0.1.2" />
     <PackageReference Include="WoofWare.Myriad.Plugins.Attributes" Version="3.1.4" />
     <PackageReference Include="Myriad.SDK" Version="0.8.3" />
     <PackageReference Include="WoofWare.Myriad.Plugins" Version="$(WoofWareMyriadPluginVersion)" PrivateAssets="all" />
