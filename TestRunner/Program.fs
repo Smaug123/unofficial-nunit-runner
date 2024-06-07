@@ -54,8 +54,6 @@ module Program =
                 |> Option.defaultValue RollForward.Minor
             | s -> RollForward.Parse s
 
-        printfn "%O" f
-
         let desired = Version config.Framework.Version
 
         match rollForward with
@@ -73,7 +71,10 @@ module Program =
 
             match available with
             | Some (f, _) -> Some (Choice1Of2 f)
-            | None -> failwith "TODO: maybe the SDK can provide a runtime"
+            | None ->
+                // TODO: maybe we can ask the SDK. But we keep on trucking: maybe we're self-contained,
+                // and we'll actually find all the runtime next to the DLL.
+                None
         | _ -> failwith "non-minor RollForward not supported yet; please shout if you want it"
 
     let locateRuntimes (dll : FileInfo) : DirectoryInfo list =
@@ -96,14 +97,8 @@ module Program =
 
         match runtime with
         | None ->
-            let availableF =
-                availableRuntimes.Frameworks |> Seq.map (fun f -> f.Path) |> String.concat " ; "
-
-            let availableS =
-                availableRuntimes.Sdks |> Seq.map (fun f -> f.Path) |> String.concat " ; "
-
-            failwith
-                $"No acceptable runtime found for DLL %s{dll.FullName}.\nAvailable frameworks: %s{availableF}\nAvailable SDKs: %s{availableS}"
+            // Keep on trucking: let's be optimistic and hope that we're self-contained.
+            [ dll.Directory ]
         | Some (Choice1Of2 runtime) -> [ dll.Directory ; DirectoryInfo runtime.Path ]
         | Some (Choice2Of2 sdk) -> [ dll.Directory ; DirectoryInfo sdk.Path ]
 
