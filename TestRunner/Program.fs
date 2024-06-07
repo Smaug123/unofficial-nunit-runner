@@ -1,7 +1,5 @@
 ﻿namespace TestRunner
 
-#nowarn "9"
-
 open System
 open System.Collections.Generic
 open System.Diagnostics
@@ -13,16 +11,6 @@ open System.Runtime.Loader
 open System.Text
 open System.Text.RegularExpressions
 open Microsoft.FSharp.NativeInterop
-
-[<RequireQualifiedAccess>]
-module Native =
-    let getMemory' (count : int) (ptr : nativeint) : byte[] =
-        let munged = NativePtr.ofNativeInt ptr
-        Array.init count (fun i ->
-            NativePtr.get<byte> munged i
-        )
-    let inline getMemory (count : int) (ptr : nativeptr<'a>) : byte[] =
-        getMemory' count (NativePtr.toNativeInt ptr)
 
 // Fix for https://github.com/Smaug123/unofficial-nunit-runner/issues/8
 // Set AppContext.BaseDirectory to where the test DLL is.
@@ -58,252 +46,8 @@ type Ctx (dll : FileInfo, runtimes : DirectoryInfo list) =
         |> Option.defaultValue null
 
 
-[<Struct>]
-[<StructLayout(LayoutKind.Sequential)>]
-type DotnetEnvironmentSdkInfoNative =
-    {
-       size : nativeint
-       version : nativeptr<byte>
-       path : nativeptr<byte>
-    }
-
-[<Struct>]
-[<StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)>]
-type DotnetEnvironmentFrameworkInfoNative =
-    {
-       size : nativeint
-       name : nativeptr<byte>
-       version : nativeptr<byte>
-       path : nativeptr<byte>
-   }
-
-[<Struct>]
-[<StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)>]
-type DotnetEnvironmentInfoNative =
-    {
-        size : nativeint
-        hostfxr_version : nativeptr<byte>
-        hostfxr_commit_hash : nativeptr<byte>
-        sdk_count : nativeint
-        sdks : nativeptr<DotnetEnvironmentSdkInfoNative>
-
-        framework_count : nativeint
-        frameworks : nativeptr<DotnetEnvironmentFrameworkInfoNative>
-    }
-
-type DotnetEnvironmentFrameworkInfo =
-    {
-        Name : string
-        Version : string
-        Path : string
-    }
-
-    static member FromNative (n : DotnetEnvironmentFrameworkInfoNative) : DotnetEnvironmentFrameworkInfo =
-        if n.size < 0 || n.size > Int32.MaxValue then
-            failwith "native int too big or negative"
-        let size = int n.size
-        if size <> Marshal.SizeOf n then
-            failwith "invalid size returned"
-        let builder = StringBuilder ()
-        let version =
-            builder.Clear () |> ignore<StringBuilder>
-            let mutable isDone = false
-            let mutable i = 0
-            while not isDone do
-                let b = NativePtr.get n.version i
-                if b = 0uy then
-                    isDone <- true
-                else
-                    builder.Append (char b) |> ignore<StringBuilder>
-                    i <- i + 1
-            builder.ToString ()
-        let path =
-            builder.Clear () |> ignore<StringBuilder>
-            let mutable isDone = false
-            let mutable i = 0
-            while not isDone do
-                let b = NativePtr.get n.path i
-                if b = 0uy then
-                    isDone <- true
-                else
-                    builder.Append (char b) |> ignore<StringBuilder>
-                    i <- i + 1
-            builder.ToString ()
-        let name =
-            builder.Clear () |> ignore<StringBuilder>
-            let mutable isDone = false
-            let mutable i = 0
-            while not isDone do
-                let b = NativePtr.get n.name i
-                if b = 0uy then
-                    isDone <- true
-                else
-                    builder.Append (char b) |> ignore<StringBuilder>
-                    i <- i + 1
-            builder.ToString ()
-
-        {
-            Version = version
-            Path = path
-            Name = name
-        }
-
-type DotnetEnvironmentSdkInfo =
-    {
-        Version : string
-        Path : string
-    }
-
-    static member FromNative (n : DotnetEnvironmentSdkInfoNative) : DotnetEnvironmentSdkInfo =
-        if n.size < 0 || n.size > Int32.MaxValue then
-            failwith "native int too big or negative"
-        let size = int n.size
-        if size <> Marshal.SizeOf n then
-            failwith "invalid size returned"
-
-        let builder = StringBuilder ()
-
-        let version =
-            builder.Clear () |> ignore<StringBuilder>
-            let mutable isDone = false
-            let mutable i = 0
-            while not isDone do
-                let b = NativePtr.get n.version i
-                if b = 0uy then
-                    isDone <- true
-                else
-                    builder.Append (char b) |> ignore<StringBuilder>
-                    i <- i + 1
-            builder.ToString ()
-
-        let path =
-            builder.Clear () |> ignore<StringBuilder>
-            let mutable isDone = false
-            let mutable i = 0
-            while not isDone do
-                let b = NativePtr.get n.path i
-                if b = 0uy then
-                    isDone <- true
-                else
-                    builder.Append (char b) |> ignore<StringBuilder>
-                    i <- i + 1
-            builder.ToString ()
-
-        {
-            Version = version
-            Path = path
-        }
-
-type DotnetEnvironmentInfo =
-    {
-        mutable HostFxrVersion : string
-        mutable HostFxrCommitHash : string
-        mutable Sdks : DotnetEnvironmentSdkInfo IReadOnlyList
-        mutable Frameworks : DotnetEnvironmentFrameworkInfo IReadOnlyList
-    }
-
-    static member FromNative (n : DotnetEnvironmentInfoNative) : DotnetEnvironmentInfo =
-        let size = int n.size
-        if size <> Marshal.SizeOf n then
-            failwith "invalid size returned"
-        let builder = StringBuilder ()
-        let hostFxrVersion =
-            builder.Clear () |> ignore<StringBuilder>
-            let mutable i = 0
-            let mutable isDone = false
-            while not isDone do
-                let b = NativePtr.get n.hostfxr_version i
-                if b = 0uy then
-                    isDone <- true
-                else
-                    builder.Append (char b) |> ignore<StringBuilder>
-                    i <- i + 1
-            builder.ToString ()
-        let hostCommitHash =
-            builder.Clear () |> ignore<StringBuilder>
-            let mutable i = 0
-            let mutable isDone = false
-            while not isDone do
-                let b = NativePtr.get n.hostfxr_commit_hash i
-                if b = 0uy then
-                    isDone <- true
-                else
-                    builder.Append (char b) |> ignore<StringBuilder>
-                    i <- i + 1
-            builder.ToString ()
-
-        let frameworkCount = int n.framework_count
-        let frameworks = ResizeArray frameworkCount
-
-        for i = 0 to frameworkCount - 1 do
-            frameworks.Add (NativePtr.get n.frameworks i |> DotnetEnvironmentFrameworkInfo.FromNative)
-
-        let sdkCount = int n.sdk_count
-        let sdks = ResizeArray sdkCount
-        for i = 0 to sdkCount - 1 do
-            sdks.Add (NativePtr.get n.sdks i |> DotnetEnvironmentSdkInfo.FromNative)
-
-        {
-            Frameworks = frameworks
-            HostFxrVersion = hostFxrVersion
-            HostFxrCommitHash = hostCommitHash
-            Sdks = sdks
-        }
-
-type DelegateReturn = delegate of nativeptr<DotnetEnvironmentInfoNative> * nativeint -> unit
-
-type RuntimeDelegate = delegate of nativeptr<byte> * nativeint * nativeint * nativeint -> int32
-
 module Program =
-    let storeResult (envInfo: nativeptr<DotnetEnvironmentInfoNative>) (retLoc: nativeint) : unit =
-        let toRet = DotnetEnvironmentInfo.FromNative (NativePtr.read envInfo)
-        let handle = GCHandle.FromIntPtr retLoc
-        handle.set_Target toRet
-
-    let callDelegate (dotnet : string) (f : RuntimeDelegate) : DotnetEnvironmentInfo =
-        let dotnet = Encoding.ASCII.GetBytes dotnet
-        use fixedDotnet = fixed dotnet
-
-        let mutable extracted = Unchecked.defaultof<DotnetEnvironmentInfo>
-        let handle = GCHandle.Alloc extracted
-
-        try
-            let callback = Marshal.GetFunctionPointerForDelegate<DelegateReturn> (DelegateReturn storeResult)
-
-            let rc = f.Invoke (fixedDotnet, Unchecked.defaultof<_>, callback, GCHandle.ToIntPtr handle)
-            if rc <> 0 then
-                failwith $"nonzero exit code %i{rc}"
-
-            handle.Target |> unbox<_>
-        finally
-            handle.Free ()
-
-    [<TailCall>]
-    let rec resolveAllSymlinks (f : FileInfo) : FileInfo =
-        match f.LinkTarget with
-        | null -> f
-        | v -> resolveAllSymlinks (Path.Combine (f.Directory.FullName, v) |> FileInfo)
-
-    /// This is *the most cursed* method. There must surely be a better way.
     let locateRuntimes (dll : FileInfo) : DirectoryInfo list =
-        // TODO: test this if we're self-contained
-        let hostFxr =
-            RuntimeEnvironment.GetRuntimeDirectory ()
-            |> DirectoryInfo
-            |> fun d -> d.Parent.Parent.Parent
-            |> fun d -> Path.Combine (d.FullName, "host", "fxr") |> DirectoryInfo
-            |> fun d -> d.EnumerateDirectories () |> Seq.head
-            |> fun d -> NativeLibrary.Load (d.EnumerateFiles "*hostfxr*" |> Seq.exactlyOne |> fun f -> f.FullName)
-        try
-            let ptr = NativeLibrary.GetExport (hostFxr, "hostfxr_get_dotnet_environment_info")
-            if ptr = IntPtr.Zero then
-                failwith "could not load function"
-            let f = Marshal.GetDelegateForFunctionPointer<RuntimeDelegate> ptr
-            let result = callDelegate (resolveAllSymlinks (FileInfo "/etc/profiles/per-user/patrick/bin/dotnet")).Directory.FullName f
-
-            printfn $"here: %+A{result}"
-        finally
-            NativeLibrary.Free hostFxr
         let resolver =
             PathAssemblyResolver
                 [|
@@ -329,39 +73,13 @@ module Program =
 
         let runtimeVersion = mat.Groups.[1].Value |> Int32.Parse
 
-        let runtimes =
-            let psi = ProcessStartInfo "dotnet"
-            psi.ArgumentList.Add "--list-runtimes"
-            psi.RedirectStandardOutput <- true
-            use proc = new Process ()
-            proc.StartInfo <- psi
+        let availableRuntimes = RuntimeLocator.getEnv (FileInfo "/etc/profiles/per-user/patrick/bin/dotnet")
 
-            if not (proc.Start ()) then
-                failwith "Could not start dotnet"
-
-            let version = proc.StandardOutput.ReadToEnd ()
-            proc.WaitForExit ()
-
-            if proc.ExitCode <> 0 then
-                failwith $"dotnet quit with exit code %i{proc.ExitCode}"
-
-            version
-
-        runtimes.Split ('\n')
-        |> Seq.filter (not << String.IsNullOrEmpty)
-        |> Seq.choose (fun runtime ->
-            let split = runtime.Split ' '
-            let target = split.[1]
-
-            if Int32.Parse (target.Split '.').[0] = runtimeVersion then
-                let dir = split.[split.Length - 1]
-
-                Path.Combine (dir.Substring (1, dir.Length - 2), target)
-                |> DirectoryInfo
-                |> Some
-            else
-                None
+        availableRuntimes.Frameworks
+        |> Seq.filter (fun fi ->
+            fi.Version = runtime
         )
+        |> Seq.map (fun fi -> fi.Path |> DirectoryInfo)
         |> Seq.toList
 
     let main argv =
