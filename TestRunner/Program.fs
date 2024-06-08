@@ -105,11 +105,18 @@ module Program =
     let main argv =
         let startTime = DateTimeOffset.Now
 
-        let testDll, filter =
+        let testDll, filter, trxPath =
             match argv |> List.ofSeq with
-            | [ dll ] -> FileInfo dll, None
-            | [ dll ; "--filter" ; filter ] -> FileInfo dll, Some (Filter.parse filter)
-            | _ -> failwith "provide exactly one arg, a test DLL"
+            | [ dll ] -> FileInfo dll, None, None
+            | [ dll ; "--trx" ; trxPath ] -> FileInfo dll, None, Some trxPath
+            | [ dll ; "--filter" ; filter ] -> FileInfo dll, Some (Filter.parse filter), None
+            | [ dll ; "--trx" ; trxPath ; "--filter" ; filter ] ->
+                FileInfo dll, Some (Filter.parse filter), Some trxPath
+            | [ dll ; "--filter" ; filter ; "--trx" ; trxPath ] ->
+                FileInfo dll, Some (Filter.parse filter), Some trxPath
+            | _ ->
+                failwith
+                    "provide exactly one arg, a test DLL; then optionally `--filter <filter>` and/or `--trx <output-filename>`."
 
         let filter =
             match filter with
@@ -330,10 +337,10 @@ module Program =
                     TestListId = testListId
                     RelativeResultsDirectory = i.ExecutionId.ToString () // for some reason
                     Output =
-                        match i.StdOut, i.StdErr with
-                        | None, None -> None
+                        match i.StdOut, i.StdErr, exc with
+                        | None, None, None -> None
                         // TODO surely stderr can be emitted
-                        | stdout, _stderr ->
+                        | stdout, _stderr, exc ->
                             Some
                                 {
                                     TrxOutput.StdOut = stdout
@@ -354,6 +361,12 @@ module Program =
                 TestLists = [ testList ]
                 ResultsSummary = resultSummary
             }
+
+        match trxPath with
+        | Some trxPath ->
+            let contents = TrxReport.toXml report |> fun d -> d.OuterXml
+            File.WriteAllText (trxPath, contents)
+        | None -> ()
 
         match outcome with
         | TrxOutcome.Completed -> 0
