@@ -158,6 +158,7 @@ type TrxTestOutcome =
         | TrxTestOutcome.Failed -> "Failed"
         | TrxTestOutcome.NotExecuted -> "NotExecuted"
 
+    /// Round-trips with `ToString`; returns None if parse was unsuccessful.
     static member Parse (s : string) : TrxTestOutcome option =
         if s.Equals ("passed", StringComparison.OrdinalIgnoreCase) then
             Some TrxTestOutcome.Passed
@@ -227,6 +228,7 @@ type TrxOutput =
             }
             |> Ok
 
+/// The result of a run of a single test.
 type TrxUnitTestResult =
     {
         /// An ID that lets us identify this test result among the executions (see the <UnitTest> data object).
@@ -464,6 +466,7 @@ type TrxTestMethod =
         }
         |> Ok
 
+/// Information about a single "execution"; it's not entirely clear to me what this is.
 type TrxExecution =
     {
         /// Identifier for the execution that ran this specific test.
@@ -578,10 +581,14 @@ type TrxUnitTest =
         }
         |> Ok
 
+/// Essentially a mapping that tells you which list and execution a test is in.
 type TrxTestEntry =
     {
+        /// For cross-referencing with the TestLists list.
         TestListId : Guid
+        /// Don't really know what this means.
         ExecutionId : Guid
+        /// For cross-referencing with the TestDefinitions list.
         TestId : Guid
     }
 
@@ -639,13 +646,16 @@ type TrxTestEntry =
         }
         |> Ok
 
-type TrxTestList =
+/// An entry in the TestList, assigning a name to each TestListId.
+type TrxTestListEntry =
     {
+        /// Human-readable name of this list.
         Name : string
+        /// ID of this list, for cross-referencing with other tests' TestListId.
         Id : Guid
     }
 
-    static member internal ofXml (node : XmlNode) : Result<TrxTestList, string> =
+    static member internal ofXml (node : XmlNode) : Result<TrxTestListEntry, string> =
         let attrs =
             node.Attributes
             |> Seq.cast<XmlAttribute>
@@ -681,9 +691,13 @@ type TrxTestList =
         }
         |> Ok
 
+/// Outcome of a test run or of a test.
 type TrxOutcome =
+    /// Test run was successful.
     | Completed
+    /// Dunno why this can be emitted. I've seen it applied to the RunInfo of a specific test.
     | Warning
+    /// Test run failed, perhaps because some tests failed.
     | Failed
 
     /// Serialisation suitable for direct interpolation into a TRX report.
@@ -693,6 +707,7 @@ type TrxOutcome =
         | TrxOutcome.Completed -> "Completed"
         | TrxOutcome.Failed -> "Failed"
 
+    /// Round-trips with ToString. Returns None if parse failed.
     static member Parse (s : string) : TrxOutcome option =
         if s.Equals ("warning", StringComparison.OrdinalIgnoreCase) then
             Some TrxOutcome.Warning
@@ -708,6 +723,7 @@ type TrxRunInfo =
     {
         /// The computer on which this text was emitted.
         ComputerName : string
+        /// Dunno why this field is here; it seems to be "Warning" when text is emitted?
         Outcome : TrxOutcome
         /// When this text was emitted.
         Timestamp : DateTimeOffset
@@ -777,23 +793,41 @@ type TrxRunInfo =
         }
         |> Ok
 
+/// Summary statistic of what happened to all the tests in the run.
 type TrxCounters =
     {
+        /// All the tests known to the runner.
         Total : uint
+        /// All the tests which were executed (e.g. skipping out [<Ignore>] ones).
         Executed : uint
+        /// The tests which passed.
         Passed : uint
+        /// The tests which failed.
         Failed : uint
+        /// The tests which experienced an error which prevented them from terminating correctly.
         Errors : uint
+        /// The tests which timed out before they could pass or fail.
         Timeout : uint
+        /// Tests where the runner crashed, I think.
         Aborted : uint
+        /// Tests which terminated with Assert.Inconclusive
         Inconclusive : uint
+        /// Wonder when this can happen
         PassedButRunAborted : uint
+        /// Dunno!
         NotRunnable : uint
+        /// Search me!
         NotExecuted : uint
+        /// No idea!
         Disconnected : uint
+        /// Tests which succeeded but warned.
         Warning : uint
+        /// I *think* this describes how many tests have been completed *for a run which is still going*.
+        /// When a run's finished, this is 0.
         Completed : uint
+        /// Tests which are still running.
         InProgress : uint
+        /// Tests which are waiting to run.
         Pending : uint
     }
 
@@ -1018,11 +1052,17 @@ type TrxCounters =
             Pending = 0u
         }
 
+/// Summary of the results; in general this doesn't explicitly mention specific test results
+/// unless they have some unusual property like "printed to stdout".
 type TrxResultsSummary =
     {
+        /// Aggregated outcome of the entire test run.
         Outcome : TrxOutcome
+        /// Summary of the number of tests in each possible state.
         Counters : TrxCounters
+        /// Any messages emitted by the test runner itself, not by the tests.
         Output : TrxOutput
+        /// Further information about some specific tests which were run.
         RunInfos : TrxRunInfo list
     }
 
@@ -1083,14 +1123,24 @@ type TrxResultsSummary =
 /// A report on a test run.
 type TrxReport =
     {
+        /// An ID for this test run; this probably won't appear anywhere else in the report,
+        /// it's to discriminate between *different* runs.
         Id : Guid
+        /// A human-readable name for this run.
         Name : string
+        /// Information about when the test run entered certain states.
         Times : TrxReportTimes
+        /// Some rather inscrutable information about the configuration of this run.
         Settings : TrxTestSettings
+        /// Results of all individual tests.
         Results : TrxUnitTestResult list
+        /// Metadata about each individual test.
         TestDefinitions : TrxUnitTest list
+        /// Mapping telling you which execution and test list each test belongs to.
         TestEntries : TrxTestEntry list
-        TestLists : TrxTestList list
+        /// It's possible for tests to be grouped into "lists"; this is metadata about those lists.
+        TestLists : TrxTestListEntry list
+        /// Summary information about the test run's overall status.
         ResultsSummary : TrxResultsSummary
     }
 
@@ -1145,7 +1195,7 @@ type TrxReport =
             | NodeWithNamedChild "TestLists" v ->
                 v.ChildNodes
                 |> Seq.cast
-                |> Seq.map TrxTestList.ofXml
+                |> Seq.map TrxTestListEntry.ofXml
                 |> Seq.toList
                 |> Result.allOkOrError
                 |> Result.mapError (fun (_, errors) -> String.concat "; " errors)
