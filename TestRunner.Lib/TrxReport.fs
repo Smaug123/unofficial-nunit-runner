@@ -1723,6 +1723,7 @@ module TrxReport =
         | NodeWithNamedChild "TestRun" node -> TrxReport.ofXml node
         | _ -> Error "XML document did not have a TestRun node"
 
+    /// Render this report as XML, suitable to save in a .TRX file.
     let toXml (report : TrxReport) : XmlDocument =
         let doc = XmlDocument ()
 
