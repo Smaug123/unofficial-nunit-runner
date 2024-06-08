@@ -52,6 +52,9 @@ module TestFilter =
                 ),
                 ParsedFilter.Equal (ParsedFilter.TestCategory, ParsedFilter.String "1")
             )
+
+            "Name ~\"&apos;hello&quot; world^&amp;foo|bar!&gt;&lt;\"",
+            ParsedFilter.Contains (ParsedFilter.Name, ParsedFilter.String """'hello" world^&foo|bar!><""")
         ]
         |> List.map TestCaseData
 
