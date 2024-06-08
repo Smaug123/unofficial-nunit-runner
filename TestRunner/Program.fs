@@ -108,12 +108,12 @@ module Program =
         let testDll, filter, trxPath =
             match argv |> List.ofSeq with
             | [ dll ] -> FileInfo dll, None, None
-            | [ dll ; "--trx" ; trxPath ] -> FileInfo dll, None, Some trxPath
+            | [ dll ; "--trx" ; trxPath ] -> FileInfo dll, None, Some (FileInfo trxPath)
             | [ dll ; "--filter" ; filter ] -> FileInfo dll, Some (Filter.parse filter), None
             | [ dll ; "--trx" ; trxPath ; "--filter" ; filter ] ->
-                FileInfo dll, Some (Filter.parse filter), Some trxPath
+                FileInfo dll, Some (Filter.parse filter), Some (FileInfo trxPath)
             | [ dll ; "--filter" ; filter ; "--trx" ; trxPath ] ->
-                FileInfo dll, Some (Filter.parse filter), Some trxPath
+                FileInfo dll, Some (Filter.parse filter), Some (FileInfo trxPath)
             | _ ->
                 failwith
                     "provide exactly one arg, a test DLL; then optionally `--filter <filter>` and/or `--trx <output-filename>`."
@@ -365,7 +365,8 @@ module Program =
         match trxPath with
         | Some trxPath ->
             let contents = TrxReport.toXml report |> fun d -> d.OuterXml
-            File.WriteAllText (trxPath, contents)
+            trxPath.Directory.Create ()
+            File.WriteAllText (trxPath.FullName, contents)
         | None -> ()
 
         match outcome with

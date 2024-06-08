@@ -41,12 +41,6 @@ jobs:
       run: 'nix develop --command dotnet test --no-build --verbosity normal --configuration ${{matrix.config}}'
 
   selftest:
-    strategy:
-      matrix:
-        config:
-          - Release
-          - Debug
-
     runs-on: ubuntu-latest
 
     steps:
@@ -61,9 +55,14 @@ jobs:
     - name: Restore dependencies
       run: nix develop --command dotnet restore
     - name: Build
-      run: 'nix develop --command dotnet build --no-restore --configuration ${{matrix.config}}'
+      run: 'nix develop --command dotnet build --no-restore --configuration Release'
     - name: Test using self
-      run: 'nix develop --command dotnet exec ./TestRunner/bin/${{matrix.config}}/net8.0/TestRunner.dll ./Consumer/bin/${{matrix.config}}/net8.0/Consumer.dll'
+      run: 'nix develop --command dotnet exec ./TestRunner/bin/Release/net8.0/TestRunner.dll ./Consumer/bin/Release/net8.0/Consumer.dll --trx TrxOut/out.trx'
+    - name: Parse Trx files
+      uses: NasAmin/trx-parser@v0.1
+      id: trx-parser
+      with:
+        TRX_PATH: ${{ github.workspace }}/TrxOut
 
   analyzers:
     runs-on: ubuntu-latest
