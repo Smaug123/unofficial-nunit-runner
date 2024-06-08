@@ -6,6 +6,7 @@ open System.Xml
 /// Describes the times at which a complete test run went through state transitions.
 /// These all have semantics specific to the test runner, and I have not rigorously worked out what
 /// semantics NUnit has, so take these with considerable amounts of salt.
+[<NoComparison>]
 type TrxReportTimes =
     {
         /// The time at which this test run was instantiated. (Note that this is *not* what NUnit does.
@@ -19,6 +20,32 @@ type TrxReportTimes =
         /// The time at which this test run finished.
         Finish : DateTimeOffset
     }
+
+    member internal this.toXml (doc : XmlDocument) : XmlNode =
+        let node =
+            doc.CreateElement ("Times", "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")
+
+        do
+            let attr = doc.CreateAttribute "creation"
+            attr.Value <- this.Creation.ToString "o"
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "queuing"
+            attr.Value <- this.Queuing.ToString "o"
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "start"
+            attr.Value <- this.Start.ToString "o"
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "finish"
+            attr.Value <- this.Finish.ToString "o"
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        node
 
     static member internal ofXml (node : XmlNode) : Result<TrxReportTimes, string> =
         if node.HasChildNodes then
@@ -77,12 +104,23 @@ type TrxReportTimes =
             |> Error
 
 /// Information about this particular instance of the test runner in space and time.
+[<NoComparison>]
 type TrxDeployment =
     {
         /// Identifier saying where and when this instance of the runner took place.
         /// Nothing else cares about this value; it's for the human's benefit.
         RunDeploymentRoot : string
     }
+
+    member internal this.toXml (doc : XmlDocument) : XmlNode =
+        let node = doc.CreateElement "Deployment"
+
+        do
+            let attr = doc.CreateAttribute "runDeploymentRoot"
+            attr.Value <- this.RunDeploymentRoot
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        node
 
     static member internal ofXml (node : XmlNode) : Result<TrxDeployment, string> =
         if node.HasChildNodes then
@@ -99,6 +137,7 @@ type TrxDeployment =
 
 /// Don't really know what this is; I'm guessing it identifies a configuration of one of the various test runners
 /// that may have taken part in this test run?
+[<NoComparison>]
 type TrxTestSettings =
     {
         /// Name of one particular configuration of a test runner, human-readable.
@@ -108,6 +147,23 @@ type TrxTestSettings =
         /// Data about how this particular instance of the test runner was deployed.
         Deployment : TrxDeployment
     }
+
+    member internal this.toXml (doc : XmlDocument) : XmlNode =
+        let node = doc.CreateElement "TestSettings"
+
+        do
+            let attr = doc.CreateAttribute "name"
+            attr.Value <- this.Name
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "id"
+            attr.Value <- this.Id.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do node.AppendChild (this.Deployment.toXml doc) |> ignore<XmlNode>
+
+        node
 
     static member internal ofXml (node : XmlNode) : Result<TrxTestSettings, string> =
         let name =
@@ -143,6 +199,7 @@ type TrxTestSettings =
             |> Error
 
 /// The outcome of a specific single test.
+[<NoComparison>]
 type TrxTestOutcome =
     /// The test passed.
     | Passed
@@ -171,6 +228,7 @@ type TrxTestOutcome =
 
 /// Description of an error emitted by something that runs (e.g. the test harness or an individual test).
 /// This is not a description of a test *failure*.
+[<NoComparison>]
 type TrxErrorInfo =
     {
         /// Description of the error.
@@ -178,6 +236,27 @@ type TrxErrorInfo =
         /// Stack trace if this error arose from an exception.
         StackTrace : string option
     }
+
+    member internal this.toXml (doc : XmlDocument) : XmlNode =
+        let node = doc.CreateElement "ErrorInfo"
+
+        match this.Message with
+        | None -> ()
+        | Some message ->
+            let child = doc.CreateTextNode message
+            let messageNode = doc.CreateElement "Message"
+            messageNode.AppendChild child |> ignore<XmlNode>
+            node.AppendChild messageNode |> ignore<XmlNode>
+
+        match this.StackTrace with
+        | None -> ()
+        | Some stackTrace ->
+            let child = doc.CreateTextNode stackTrace
+            let stackTraceNode = doc.CreateElement "StackTrace"
+            stackTraceNode.AppendChild child |> ignore<XmlNode>
+            node.AppendChild stackTraceNode |> ignore<XmlNode>
+
+        node
 
     static member internal ofXml (node : XmlNode) : Result<TrxErrorInfo, string> =
         let message =
@@ -197,6 +276,7 @@ type TrxErrorInfo =
         |> Ok
 
 /// Information output by something that runs (e.g. the test harness itself, or an individual test).
+[<NoComparison>]
 type TrxOutput =
     {
         /// What the entity printed to standard output.
@@ -204,6 +284,23 @@ type TrxOutput =
         /// Description of any error the entity encountered.
         ErrorInfo : TrxErrorInfo option
     }
+
+    member internal this.toXml (doc : XmlDocument) : XmlNode =
+        let node = doc.CreateElement "Output"
+
+        match this.StdOut with
+        | None -> ()
+        | Some stdout ->
+            let text = doc.CreateTextNode stdout
+            let childNode = doc.CreateElement "StdOut"
+            childNode.AppendChild text |> ignore<XmlNode>
+            node.AppendChild childNode |> ignore<XmlNode>
+
+        match this.ErrorInfo with
+        | None -> ()
+        | Some errInfo -> node.AppendChild (errInfo.toXml doc) |> ignore<XmlNode>
+
+        node
 
     static member internal ofXml (node : XmlNode) : Result<TrxOutput, string> =
         let stdout =
@@ -229,6 +326,7 @@ type TrxOutput =
             |> Ok
 
 /// The result of a run of a single test.
+[<NoComparison>]
 type TrxUnitTestResult =
     {
         /// An ID that lets us identify this test result among the executions (see the <UnitTest> data object).
@@ -257,6 +355,70 @@ type TrxUnitTestResult =
         /// Any output the test had, beyond its passed/failed (etc) outcome.
         Output : TrxOutput option
     }
+
+    member internal this.toXml (doc : XmlDocument) : XmlNode =
+        let node = doc.CreateElement "UnitTestResult"
+
+        do
+            let attr = doc.CreateAttribute "executionId"
+            attr.Value <- this.ExecutionId.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "testId"
+            attr.Value <- this.TestId.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "testName"
+            attr.Value <- this.TestName
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "computerName"
+            attr.Value <- this.ComputerName
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "duration"
+            attr.Value <- this.Duration.ToString "c"
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "startTime"
+            attr.Value <- this.StartTime.ToString "o"
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "endTime"
+            attr.Value <- this.EndTime.ToString "o"
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "testType"
+            attr.Value <- this.TestType.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "outcome"
+            attr.Value <- this.Outcome.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "testListId"
+            attr.Value <- this.TestListId.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "relativeResultsDirectory"
+            attr.Value <- this.RelativeResultsDirectory
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        match this.Output with
+        | None -> ()
+        | Some output -> node.AppendChild (output.toXml doc) |> ignore<XmlNode>
+
+        node
 
     static member internal ofXml (node : XmlNode) : Result<TrxUnitTestResult, string> =
         let attrs =
@@ -401,6 +563,7 @@ type TrxUnitTestResult =
 
 /// A method which, being run, caused a test to run.
 /// You get one of these for each run, so in particular you get a different one for each parameter of the method.
+[<NoComparison>]
 type TrxTestMethod =
     {
         /// Path to the DLL from which this test was extracted.
@@ -412,6 +575,31 @@ type TrxTestMethod =
         /// Name of the test method. This includes string representations of any parameters to the method.
         Name : string
     }
+
+    member internal this.toXml (doc : XmlDocument) : XmlNode =
+        let node = doc.CreateElement "TestMethod"
+
+        do
+            let attr = doc.CreateAttribute "codeBase"
+            attr.Value <- this.CodeBase
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "adapterTypeName"
+            attr.Value <- this.AdapterTypeName.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "className"
+            attr.Value <- this.ClassName
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "name"
+            attr.Value <- this.Name
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        node
 
     static member internal ofXml (node : XmlNode) : Result<TrxTestMethod, string> =
         let attrs =
@@ -467,11 +655,22 @@ type TrxTestMethod =
         |> Ok
 
 /// Information about a single "execution"; it's not entirely clear to me what this is.
+[<NoComparison>]
 type TrxExecution =
     {
         /// Identifier for the execution that ran this specific test.
         Id : Guid
     }
+
+    member internal this.toXml (doc : XmlDocument) : XmlNode =
+        let node = doc.CreateElement "Execution"
+
+        do
+            let attr = doc.CreateAttribute "id"
+            attr.Value <- this.Id.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        node
 
     static member internal ofXml (node : XmlNode) : Result<TrxExecution, string> =
         let attrs =
@@ -503,6 +702,7 @@ type TrxExecution =
 
 
 /// A single test. (So, for example, you get different ones of these for each parameter to the test method.)
+[<NoComparison>]
 type TrxUnitTest =
     {
         /// Name of the test, incorporating string representations of any parameters to the test.
@@ -516,6 +716,28 @@ type TrxUnitTest =
         /// The method we ran to run this test.
         TestMethod : TrxTestMethod
     }
+
+    member internal this.toXml (doc : XmlDocument) : XmlNode =
+        let node = doc.CreateElement "UnitTest"
+
+        do
+            let attr = doc.CreateAttribute "name"
+            attr.Value <- this.Name
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "storage"
+            attr.Value <- this.Storage
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "id"
+            attr.Value <- this.Id.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        node.AppendChild (this.Execution.toXml doc) |> ignore<XmlNode>
+        node.AppendChild (this.TestMethod.toXml doc) |> ignore<XmlNode>
+        node
 
     static member internal ofXml (node : XmlNode) : Result<TrxUnitTest, string> =
         let attrs =
@@ -582,6 +804,7 @@ type TrxUnitTest =
         |> Ok
 
 /// Essentially a mapping that tells you which list and execution a test is in.
+[<NoComparison>]
 type TrxTestEntry =
     {
         /// For cross-referencing with the TestLists list.
@@ -591,6 +814,26 @@ type TrxTestEntry =
         /// For cross-referencing with the TestDefinitions list.
         TestId : Guid
     }
+
+    member internal this.toXml (doc : XmlDocument) : XmlNode =
+        let node = doc.CreateElement "TestEntry"
+
+        do
+            let attr = doc.CreateAttribute "testListId"
+            attr.Value <- this.TestListId.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "executionId"
+            attr.Value <- this.ExecutionId.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "testId"
+            attr.Value <- this.TestId.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        node
 
     static member internal ofXml (node : XmlNode) : Result<TrxTestEntry, string> =
         let attrs =
@@ -647,6 +890,7 @@ type TrxTestEntry =
         |> Ok
 
 /// An entry in the TestList, assigning a name to each TestListId.
+[<NoComparison>]
 type TrxTestListEntry =
     {
         /// Human-readable name of this list.
@@ -654,6 +898,21 @@ type TrxTestListEntry =
         /// ID of this list, for cross-referencing with other tests' TestListId.
         Id : Guid
     }
+
+    member internal this.toXml (doc : XmlDocument) : XmlNode =
+        let node = doc.CreateElement "TestList"
+
+        do
+            let attr = doc.CreateAttribute "name"
+            attr.Value <- this.Name
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "id"
+            attr.Value <- this.Id.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        node
 
     static member internal ofXml (node : XmlNode) : Result<TrxTestListEntry, string> =
         let attrs =
@@ -692,6 +951,7 @@ type TrxTestListEntry =
         |> Ok
 
 /// Outcome of a test run or of a test.
+[<NoComparison>]
 type TrxOutcome =
     /// Test run was successful.
     | Completed
@@ -719,6 +979,7 @@ type TrxOutcome =
             None
 
 /// Ancillary information about text emitted during a complete test run.
+[<NoComparison>]
 type TrxRunInfo =
     {
         /// The computer on which this text was emitted.
@@ -730,6 +991,30 @@ type TrxRunInfo =
         /// The text which was emitted in this event within the run.
         Text : string
     }
+
+    member internal this.toXml (doc : XmlDocument) : XmlNode =
+        let node = doc.CreateElement "RunInfo"
+
+        do
+            let attr = doc.CreateAttribute "computerName"
+            attr.Value <- this.ComputerName
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "outcome"
+            attr.Value <- this.Outcome.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "timestamp"
+            attr.Value <- this.Timestamp.ToString "o"
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        let childNode = doc.CreateElement "Text"
+        let textNode = doc.CreateTextNode this.Text
+        childNode.AppendChild textNode |> ignore<XmlNode>
+        node.AppendChild childNode |> ignore<XmlNode>
+        node
 
     static member internal ofXml (node : XmlNode) : Result<TrxRunInfo, string> =
         let attrs =
@@ -794,6 +1079,7 @@ type TrxRunInfo =
         |> Ok
 
 /// Summary statistic of what happened to all the tests in the run.
+[<NoComparison>]
 type TrxCounters =
     {
         /// All the tests known to the runner.
@@ -830,6 +1116,91 @@ type TrxCounters =
         /// Tests which are waiting to run.
         Pending : uint
     }
+
+    member internal this.toXml (doc : XmlDocument) : XmlNode =
+        let node = doc.CreateElement "Counters"
+
+        do
+            let attr = doc.CreateAttribute "total"
+            attr.Value <- this.Total.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "executed"
+            attr.Value <- this.Executed.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "passed"
+            attr.Value <- this.Passed.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "failed"
+            attr.Value <- this.Failed.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "error"
+            attr.Value <- this.Errors.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "timeout"
+            attr.Value <- this.Timeout.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "aborted"
+            attr.Value <- this.Aborted.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "inconclusive"
+            attr.Value <- this.Inconclusive.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "passedButRunAborted"
+            attr.Value <- this.PassedButRunAborted.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "notRunnable"
+            attr.Value <- this.NotRunnable.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "notExecuted"
+            attr.Value <- this.NotExecuted.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "disconnected"
+            attr.Value <- this.Disconnected.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "warning"
+            attr.Value <- this.Warning.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "completed"
+            attr.Value <- this.Completed.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "inProgress"
+            attr.Value <- this.InProgress.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "pending"
+            attr.Value <- this.Pending.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        node
 
     static member internal ofXml (node : XmlNode) : Result<TrxCounters, string> =
         let attrs =
@@ -1054,6 +1425,7 @@ type TrxCounters =
 
 /// Summary of the results; in general this doesn't explicitly mention specific test results
 /// unless they have some unusual property like "printed to stdout".
+[<NoComparison>]
 type TrxResultsSummary =
     {
         /// Aggregated outcome of the entire test run.
@@ -1065,6 +1437,27 @@ type TrxResultsSummary =
         /// Further information about some specific tests which were run.
         RunInfos : TrxRunInfo list
     }
+
+    member internal this.toXml (doc : XmlDocument) : XmlNode =
+        let node = doc.CreateElement "ResultSummary"
+
+        do
+            let attr = doc.CreateAttribute "outcome"
+            attr.Value <- this.Outcome.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        node.AppendChild (this.Counters.toXml doc) |> ignore<XmlNode>
+        node.AppendChild (this.Output.toXml doc) |> ignore<XmlNode>
+
+        do
+            let runInfosNode = doc.CreateElement "RunInfos"
+
+            for runInfo in this.RunInfos do
+                runInfosNode.AppendChild (runInfo.toXml doc) |> ignore<XmlNode>
+
+            node.AppendChild runInfosNode |> ignore<XmlNode>
+
+        node
 
     static member internal ofXml (node : XmlNode) : Result<TrxResultsSummary, string> =
         match node.Attributes.["outcome"] with
@@ -1121,6 +1514,7 @@ type TrxResultsSummary =
         |> Ok
 
 /// A report on a test run.
+[<NoComparison>]
 type TrxReport =
     {
         /// An ID for this test run; this probably won't appear anywhere else in the report,
@@ -1143,6 +1537,59 @@ type TrxReport =
         /// Summary information about the test run's overall status.
         ResultsSummary : TrxResultsSummary
     }
+
+    member internal this.toXml (doc : XmlDocument) : XmlNode =
+        let node =
+            doc.CreateElement ("TestRun", "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")
+
+        do
+            let attr = doc.CreateAttribute "id"
+            attr.Value <- this.Id.ToString ()
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        do
+            let attr = doc.CreateAttribute "name"
+            attr.Value <- this.Name
+            node.Attributes.Append attr |> ignore<XmlAttribute>
+
+        node.AppendChild (this.Times.toXml doc) |> ignore<XmlNode>
+        node.AppendChild (this.Settings.toXml doc) |> ignore<XmlNode>
+
+        do
+            let resultNode = doc.CreateElement "Results"
+
+            for result in this.Results do
+                resultNode.AppendChild (result.toXml doc) |> ignore<XmlNode>
+
+            node.AppendChild resultNode |> ignore<XmlNode>
+
+        do
+            let defsNode = doc.CreateElement "TestDefinitions"
+
+            for result in this.TestDefinitions do
+                defsNode.AppendChild (result.toXml doc) |> ignore<XmlNode>
+
+            node.AppendChild defsNode |> ignore<XmlNode>
+
+        do
+            let testsNode = doc.CreateElement "TestEntries"
+
+            for result in this.TestEntries do
+                testsNode.AppendChild (result.toXml doc) |> ignore<XmlNode>
+
+            node.AppendChild testsNode |> ignore<XmlNode>
+
+        do
+            let listsNode = doc.CreateElement "TestLists"
+
+            for result in this.TestLists do
+                listsNode.AppendChild (result.toXml doc) |> ignore<XmlNode>
+
+            node.AppendChild listsNode |> ignore<XmlNode>
+
+        do node.AppendChild (this.ResultsSummary.toXml doc) |> ignore<XmlNode>
+
+        node
 
     static member internal ofXml (node : XmlNode) : Result<TrxReport, string> =
         let attrs =
@@ -1275,3 +1722,13 @@ module TrxReport =
         match node with
         | NodeWithNamedChild "TestRun" node -> TrxReport.ofXml node
         | _ -> Error "XML document did not have a TestRun node"
+
+    /// Render this report as XML, suitable to save in a .TRX file.
+    let toXml (report : TrxReport) : XmlDocument =
+        let doc = XmlDocument ()
+
+        doc.AppendChild (doc.CreateXmlDeclaration ("1.0", "utf-8", ""))
+        |> ignore<XmlNode>
+
+        doc.AppendChild (report.toXml doc) |> ignore<XmlNode>
+        doc

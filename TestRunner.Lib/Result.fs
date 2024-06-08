@@ -8,7 +8,7 @@ module internal Result =
         | Ok _ -> None
         | Error e -> Some e
 
-    let inline get<'r, 'e> (r : Result<'r, 'e>) : 'r option =
+    let get<'r, 'e> (r : Result<'r, 'e>) : 'r option =
         match r with
         | Ok r -> Some r
         | Error _ -> None
