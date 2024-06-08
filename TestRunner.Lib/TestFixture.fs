@@ -379,7 +379,10 @@ module TestFixture =
             [ Error e, failureMetadata ]
         | Ok individualTests ->
 
-        individualTests
+        let count = test.Repeat |> Option.defaultValue 1
+
+        Seq.init count (fun _ -> individualTests)
+        |> Seq.concat
         |> Seq.map (fun (testGuid, args) ->
             let results, summary =
                 runOne setUp tearDown testGuid test.Method containingObject args
