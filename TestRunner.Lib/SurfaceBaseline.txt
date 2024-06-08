@@ -66,13 +66,13 @@ TestRunner.FilterModule inherit obj
 TestRunner.FilterModule.parse [static method]: string -> TestRunner.Filter
 TestRunner.FilterModule.shouldRun [static method]: TestRunner.Filter -> (TestRunner.TestFixture -> TestRunner.SingleTestMethod -> bool)
 TestRunner.FixtureRunResults inherit obj, implements TestRunner.FixtureRunResults System.IEquatable, System.Collections.IStructuralEquatable
-TestRunner.FixtureRunResults..ctor [constructor]: (TestRunner.TestMemberFailure list, int, TestRunner.UserMethodFailure list)
+TestRunner.FixtureRunResults..ctor [constructor]: (TestRunner.TestMemberFailure list, (TestRunner.SingleTestMethod * TestRunner.TestMemberSuccess) list, TestRunner.UserMethodFailure list)
 TestRunner.FixtureRunResults.Failed [property]: [read-only] TestRunner.TestMemberFailure list
 TestRunner.FixtureRunResults.get_Failed [method]: unit -> TestRunner.TestMemberFailure list
 TestRunner.FixtureRunResults.get_OtherFailures [method]: unit -> TestRunner.UserMethodFailure list
-TestRunner.FixtureRunResults.get_SuccessCount [method]: unit -> int
+TestRunner.FixtureRunResults.get_Success [method]: unit -> (TestRunner.SingleTestMethod * TestRunner.TestMemberSuccess) list
 TestRunner.FixtureRunResults.OtherFailures [property]: [read-only] TestRunner.UserMethodFailure list
-TestRunner.FixtureRunResults.SuccessCount [property]: [read-only] int
+TestRunner.FixtureRunResults.Success [property]: [read-only] (TestRunner.SingleTestMethod * TestRunner.TestMemberSuccess) list
 TestRunner.ITestProgress - interface with 5 member(s)
 TestRunner.ITestProgress.OnTestFailed [method]: string -> TestRunner.TestMemberFailure -> unit
 TestRunner.ITestProgress.OnTestFixtureStart [method]: string -> int -> unit

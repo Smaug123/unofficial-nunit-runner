@@ -121,35 +121,40 @@ module Program =
         let ctx = Ctx (testDll, locateRuntimes testDll)
         let assy = ctx.LoadFromAssemblyPath testDll.FullName
 
-        let anyFailures =
+        let results =
             assy.ExportedTypes
-            |> Seq.fold
-                (fun anyFailures ty ->
-                    let testFixture = TestFixture.parse ty
+            |> Seq.map (fun ty ->
+                let testFixture = TestFixture.parse ty
 
-                    let results = TestFixture.run progress filter testFixture
+                TestFixture.run progress filter testFixture
+            )
+            |> Seq.toList
 
-                    let anyFailures =
-                        match results.Failed with
-                        | [] -> anyFailures
-                        | _ :: _ ->
-                            eprintfn $"%i{results.Failed.Length} tests failed"
-                            true
+        (*
+        let report : TrxReport =
+            let now = DateTime.Now
+            let nowHumanReadable = now.ToString @"yyyy-MM-dd HH:mm:ss"
+            let nowMachine = now.ToString @"yyyy-MM-dd_HH_mm_ss"
+            let hostname = Environment.MachineName
+            {
+                Id = Guid.NewGuid ()
+                Name = $"@%s{hostname} %s{nowHumanReadable}"
+                Times = failwith "todo"
+                Settings =
+                    {
+                        Name = "default"
+                        Id = Guid.NewGuid ()
+                        Deployment = { RunDeploymentRoot = $"_%s{hostname}_%s{nowMachine}" }
+                    }
+                Results = failwith "todo"
+                TestDefinitions = failwith "todo"
+                TestEntries = failwith "todo"
+                TestLists = failwith "todo"
+                ResultsSummary = failwith "todo"
+            }
+        *)
 
-                    let anyFailures =
-                        match results.OtherFailures with
-                        | [] -> anyFailures
-                        | otherFailures ->
-                            eprintfn "Other failures encountered: "
-
-                            for failure in otherFailures do
-                                eprintfn $"  %s{failure.Name}"
-
-                            true
-
-                    anyFailures
-                )
-                false
+        let anyFailures = results |> List.exists (fun r -> not r.Failed.IsEmpty)
 
         if anyFailures then 1 else 0
 

@@ -11,8 +11,8 @@ type FixtureRunResults =
     {
         /// These tests failed.
         Failed : TestMemberFailure list
-        /// This many tests succeeded (including multiple runs of a single test, if specified).
-        SuccessCount : int
+        /// These tests succeeded (including multiple runs of a single test, if specified).
+        Success : (SingleTestMethod * TestMemberSuccess) list
         /// These failures occurred outside the context of a test - e.g. in setup or tear-down logic.
         OtherFailures : UserMethodFailure list
     }
@@ -311,8 +311,8 @@ module TestFixture =
                     Some (UserMethodFailure.Threw (su.Name, e.InnerException))
             | _ -> None
 
-        let totalTestSuccess = ref 0
         let testFailures = ResizeArray ()
+        let successes = ResizeArray ()
 
         match setupResult with
         | Some _ ->
@@ -331,9 +331,10 @@ module TestFixture =
                         | Error failure ->
                             testFailures.Add failure
                             progress.OnTestFailed test.Name failure
-                        | Ok _ -> Interlocked.Increment testSuccess |> ignore<int>
+                        | Ok result ->
+                            Interlocked.Increment testSuccess |> ignore<int>
+                            lock successes (fun () -> successes.Add (test, result))
 
-                    Interlocked.Add (totalTestSuccess, testSuccess.Value) |> ignore<int>
                     progress.OnTestMemberFinished test.Name
                 else
                     progress.OnTestMemberSkipped test.Name
@@ -354,7 +355,7 @@ module TestFixture =
 
         {
             Failed = testFailures |> Seq.toList
-            SuccessCount = totalTestSuccess.Value
+            Success = successes |> Seq.toList
             OtherFailures = [ tearDownError ; setupResult ] |> List.choose id
         }
 
