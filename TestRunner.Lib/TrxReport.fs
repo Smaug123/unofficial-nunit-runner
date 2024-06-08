@@ -27,35 +27,35 @@ type TrxReportTimes =
 
         let creation =
             match node.Attributes.["creation"] with
-            | NoChildrenNode v ->
-                match DateTimeOffset.TryParse v with
-                | false, _ -> Error $"could not parse '%s{v}' as a creation time"
+            | null -> Error "got no creation node"
+            | v ->
+                match DateTimeOffset.TryParse v.Value with
+                | false, _ -> Error $"could not parse '%s{v.Value}' as a creation time"
                 | true, t -> Ok t
-            | _ -> Error "got no creation node"
 
         let queuing =
             match node.Attributes.["queuing"] with
-            | NoChildrenNode v ->
-                match DateTimeOffset.TryParse v with
-                | false, _ -> Error $"could not parse '%s{v}' as a queuing time"
+            | null -> Error "got no queuing node"
+            | v ->
+                match DateTimeOffset.TryParse v.Value with
+                | false, _ -> Error $"could not parse '%s{v.Value}' as a queuing time"
                 | true, t -> Ok t
-            | _ -> Error "got no queuing node"
 
         let start =
             match node.Attributes.["start"] with
-            | NoChildrenNode v ->
-                match DateTimeOffset.TryParse v with
-                | false, _ -> Error $"could not parse '%s{v}' as a start time"
+            | null -> Error "got no start node"
+            | v ->
+                match DateTimeOffset.TryParse v.Value with
+                | false, _ -> Error $"could not parse '%s{v.Value}' as a start time"
                 | true, t -> Ok t
-            | _ -> Error "got no start node"
 
         let finish =
             match node.Attributes.["finish"] with
-            | NoChildrenNode v ->
-                match DateTimeOffset.TryParse v with
-                | false, _ -> Error $"could not parse '%s{v}' as a finish time"
+            | null -> Error "got no finish node"
+            | v ->
+                match DateTimeOffset.TryParse v.Value with
+                | false, _ -> Error $"could not parse '%s{v.Value}' as a finish time"
                 | true, t -> Ok t
-            | _ -> Error "got no finish node"
 
         match creation, queuing, start, finish with
         | Ok creation, Ok queuing, Ok start, Ok finish ->
@@ -73,7 +73,7 @@ type TrxReportTimes =
                 | Ok _ -> None
                 | Error e -> Some e
             )
-            |> String.concat ";"
+            |> String.concat "; "
             |> Error
 
 /// Information about this particular instance of the test runner in space and time.
@@ -90,12 +90,12 @@ type TrxDeployment =
         else
 
         match node.Attributes.["runDeploymentRoot"] with
-        | NoChildrenNode v ->
+        | null -> Error "got no runDeploymentRoot node"
+        | v ->
             {
-                RunDeploymentRoot = v
+                RunDeploymentRoot = v.Value
             }
             |> Ok
-        | _ -> Error "got no runDeploymentRoot node"
 
 /// Don't really know what this is; I'm guessing it identifies a configuration of one of the various test runners
 /// that may have taken part in this test run?
@@ -112,20 +112,20 @@ type TrxTestSettings =
     static member internal ofXml (node : XmlNode) : Result<TrxTestSettings, string> =
         let name =
             match node.Attributes.["name"] with
-            | NoChildrenNode v -> Ok v
-            | _ -> Error "expected a name field on TestSettings"
+            | null -> Error "expected a name field on TestSettings"
+            | v -> Ok v.Value
 
         let guid =
             match node.Attributes.["id"] with
-            | NoChildrenNode v ->
-                match Guid.TryParse v with
+            | null -> Error "expected an id field on TestSettings"
+            | v ->
+                match Guid.TryParse v.Value with
                 | true, v -> Ok v
                 | false, _ -> Error "could not parse id field as a GUID"
-            | _ -> Error "expected an id field on TestSettings"
 
         let deployment =
             match node with
-            | OneChildNode "Deployment" v -> TrxDeployment.ofXml v
+            | NodeWithNamedChild "Deployment" v -> TrxDeployment.ofXml v
             | _ -> Error "expected a <Deployment> child of TestSettings"
 
         match name, guid, deployment with
@@ -139,7 +139,7 @@ type TrxTestSettings =
         | _ ->
             [ Result.getError name ; Result.getError guid ; Result.getError deployment ]
             |> Seq.choose id
-            |> String.concat ";"
+            |> String.concat "; "
             |> Error
 
 /// The outcome of a specific single test.
@@ -148,18 +148,23 @@ type TrxTestOutcome =
     | Passed
     /// The test failed.
     | Failed
+    /// The test was not executed.
+    | NotExecuted
 
     /// Serialisation suitable for direct interpolation into a TRX report.
     override this.ToString () =
         match this with
         | TrxTestOutcome.Passed -> "Passed"
         | TrxTestOutcome.Failed -> "Failed"
+        | TrxTestOutcome.NotExecuted -> "NotExecuted"
 
     static member Parse (s : string) : TrxTestOutcome option =
         if s.Equals ("passed", StringComparison.OrdinalIgnoreCase) then
             Some TrxTestOutcome.Passed
         elif s.Equals ("failed", StringComparison.OrdinalIgnoreCase) then
             Some TrxTestOutcome.Failed
+        elif s.Equals ("notexecuted", StringComparison.OrdinalIgnoreCase) then
+            Some TrxTestOutcome.NotExecuted
         else
             None
 
@@ -168,7 +173,7 @@ type TrxTestOutcome =
 type TrxErrorInfo =
     {
         /// Description of the error.
-        Message : string
+        Message : string option
         /// Stack trace if this error arose from an exception.
         StackTrace : string option
     }
@@ -184,14 +189,11 @@ type TrxErrorInfo =
             | NodeWithNamedChild "StackTrace" (NoChildrenNode stackTrace) -> Some stackTrace
             | _ -> None
 
-        match message with
-        | None -> Error "Expected a Message node"
-        | Some message ->
-            {
-                Message = message
-                StackTrace = stackTrace
-            }
-            |> Ok
+        {
+            Message = message
+            StackTrace = stackTrace
+        }
+        |> Ok
 
 /// Information output by something that runs (e.g. the test harness itself, or an individual test).
 type TrxOutput =
@@ -745,7 +747,7 @@ type TrxRunInfo =
             match node with
             | NodeWithNamedChild "Text" n ->
                 match n with
-                | NoChildrenNode n -> Ok n
+                | OneChildNode "Text" (NoChildrenNode n) -> Ok n
                 | _ -> Error "Text node unexpectedly had children"
             | _ -> Error "Expected a Text node, but found none"
 
@@ -837,8 +839,8 @@ type TrxCounters =
                 | false, _ -> Error $"Could not parse integer: %s{v}"
 
         let errors =
-            match attrs.TryGetValue "errors" with
-            | false, _ -> Error "Expected errors attribute"
+            match attrs.TryGetValue "error" with
+            | false, _ -> Error "Expected error attribute"
             | true, v ->
                 match UInt32.TryParse v with
                 | true, v -> Ok v
@@ -1122,10 +1124,10 @@ type TrxReport =
             | NodeWithNamedChild "TestSettings" n -> TrxTestSettings.ofXml n
             | _ -> Error "Expected TestSettings node on TrxReport"
 
-        let resultsSummary =
+        let resultSummary =
             match node with
-            | NodeWithNamedChild "ResultsSummary" n -> TrxResultsSummary.ofXml n
-            | _ -> Error "Expected ResultsSummary node on TrxReport"
+            | NodeWithNamedChild "ResultSummary" n -> TrxResultsSummary.ofXml n
+            | _ -> Error "Expected ResultSummary node on TrxReport"
 
         let testEntries =
             match node with
@@ -1162,14 +1164,14 @@ type TrxReport =
 
         let testResults =
             match node with
-            | NodeWithNamedChild "TestResults" v ->
+            | NodeWithNamedChild "Results" v ->
                 v.ChildNodes
                 |> Seq.cast
                 |> Seq.map TrxUnitTestResult.ofXml
                 |> Seq.toList
                 |> Result.allOkOrError
                 |> Result.mapError (fun (_, errors) -> String.concat "; " errors)
-            | _ -> Error "Expected TestResults node on TrxReport"
+            | _ -> Error "Expected Results node on TrxReport"
 
         let errors =
             [
@@ -1177,7 +1179,7 @@ type TrxReport =
                 ident |> Result.getError
                 times |> Result.getError
                 testSettings |> Result.getError
-                resultsSummary |> Result.getError
+                resultSummary |> Result.getError
                 testEntries |> Result.getError
                 testLists |> Result.getError
                 testDefinitions |> Result.getError
@@ -1193,7 +1195,7 @@ type TrxReport =
         let ident = ident |> Result.get |> Option.get
         let times = times |> Result.get |> Option.get
         let testSettings = testSettings |> Result.get |> Option.get
-        let resultsSummary = resultsSummary |> Result.get |> Option.get
+        let resultSummary = resultSummary |> Result.get |> Option.get
         let testEntries = testEntries |> Result.get |> Option.get
         let testLists = testLists |> Result.get |> Option.get
         let testDefinitions = testDefinitions |> Result.get |> Option.get
@@ -1208,7 +1210,7 @@ type TrxReport =
             TestDefinitions = testDefinitions
             TestEntries = testEntries
             TestLists = testLists
-            ResultsSummary = resultsSummary
+            ResultsSummary = resultSummary
         }
         |> Ok
 
