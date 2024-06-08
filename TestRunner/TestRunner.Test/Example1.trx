@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="ccbc0600-fe62-46d9-a3d9-6551da338a3e" name="@Patricks-MacBook-Pro 2024-06-06 22:51:47" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2024-06-06T22:51:47.0155230+01:00" queuing="2024-06-06T22:51:47.0155230+01:00" start="2024-06-06T22:51:46.6031940+01:00" finish="2024-06-06T22:51:47.1574390+01:00" />
+  <TestSettings name="default" id="542f16c8-664f-40a7-9829-0d13fc32f19f">
+    <Deployment runDeploymentRoot="_Patricks-MacBook-Pro_2024-06-06_22_51_47" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="0f224761-6bbd-43f2-9559-1327816450d9" testId="099ab0d7-e616-e3ed-18e1-8238c2e316c4" testName="Doc examples(&quot;FullyQualifiedName!=MSTestNamespace.UnitTest1.TestMethod1&quot;,Not (Equal (FullyQualifiedName, String &quot;MSTestNamespace.UnitTest1.TestMethod1&quot;)))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000330" startTime="2024-06-06T22:51:46.9663480+01:00" endTime="2024-06-06T22:51:46.9663800+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0f224761-6bbd-43f2-9559-1327816450d9" />
+    <UnitTestResult executionId="a382138f-5b4d-4c86-adb0-b6238efacdd4" testId="00c1848d-a05e-9a06-2781-1fa11ce95eb9" testName="Doc examples, refined(&quot;FullyQualifiedName!~IntegrationTests&quot;,Not (FullyQualifiedName (Contains &quot;IntegrationTests&quot;)))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000100" startTime="2024-06-06T22:51:46.9679160+01:00" endTime="2024-06-06T22:51:46.9679260+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a382138f-5b4d-4c86-adb0-b6238efacdd4" />
+    <UnitTestResult executionId="ba434804-1ada-466d-8f9b-1b4b694193cc" testId="df13938a-7ab7-ffa5-3032-b0360d3ac165" testName="Doc examples, refined(&quot;FullyQualifiedName~UnitTest1|TestCategory=CategoryA&quot;,Or (FullyQualifiedName (Contains &quot;UnitTest1&quot;), TestCategory (Exact &quot;CategoryA&quot;)))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000080" startTime="2024-06-06T22:51:46.9679770+01:00" endTime="2024-06-06T22:51:46.9679850+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ba434804-1ada-466d-8f9b-1b4b694193cc" />
+    <UnitTestResult executionId="0405711d-fa10-4175-9e60-2f2df1e95226" testId="ce1a6a79-d333-550c-9440-42aa00b8a965" testName="Doc examples(&quot;(Name~MyClass) | (Name~MyClass2)&quot;,Or (Contains (Name, String &quot;MyClass&quot;), Contains (Name, String &quot;MyClass2&quot;)))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0191880" startTime="2024-06-06T22:51:46.9462310+01:00" endTime="2024-06-06T22:51:46.9653920+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0405711d-fa10-4175-9e60-2f2df1e95226" />
+    <UnitTestResult executionId="a884d69f-5783-4d8f-be3b-81310a903e3a" testId="4074d63b-6752-050c-966d-d5216c2b1c71" testName="Doc examples, refined(&quot;(Name~MyClass) | (Name~MyClass2)&quot;,Or (Name (Contains &quot;MyClass&quot;), Name (Contains &quot;MyClass2&quot;)))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0006660" startTime="2024-06-06T22:51:46.9671560+01:00" endTime="2024-06-06T22:51:46.9678220+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a884d69f-5783-4d8f-be3b-81310a903e3a" />
+    <UnitTestResult executionId="663a073f-f01c-400e-bffe-dd8d68355b83" testId="1bd5500a-baad-f37f-76eb-3905c00e9884" testName="Ensure API surface has not been modified" computerName="Patricks-MacBook-Pro" duration="00:00:00.0329610" startTime="2024-06-06T22:51:47.0636370+01:00" endTime="2024-06-06T22:51:47.0965980+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="663a073f-f01c-400e-bffe-dd8d68355b83">
+      <Output>
+        <ErrorInfo>
+          <Message>System.Exception : Unexpected difference.
+
+The following 205 member(s) have been added (i.e. are NOT present in the baseline):
+  + TestRunner.TrxCounters inherit obj, implements TestRunner.TrxCounters System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxCounters System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+  + TestRunner.TrxCounters..ctor [constructor]: (System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32)
+  + TestRunner.TrxCounters.Aborted [property]: [read-only] System.UInt32
+  + TestRunner.TrxCounters.Completed [property]: [read-only] System.UInt32
+  + TestRunner.TrxCounters.Disconnected [property]: [read-only] System.UInt32
+  + TestRunner.TrxCounters.Errors [property]: [read-only] System.UInt32
+  + TestRunner.TrxCounters.Executed [property]: [read-only] System.UInt32
+  + TestRunner.TrxCounters.Failed [property]: [read-only] System.UInt32
+  + TestRunner.TrxCounters.InProgress [property]: [read-only] System.UInt32
+  + TestRunner.TrxCounters.Inconclusive [property]: [read-only] System.UInt32
+  + TestRunner.TrxCounters.NotExecuted [property]: [read-only] System.UInt32
+  + TestRunner.TrxCounters.NotRunnable [property]: [read-only] System.UInt32
+  + TestRunner.TrxCounters.Passed [property]: [read-only] System.UInt32
+  + TestRunner.TrxCounters.PassedButRunAborted [property]: [read-only] System.UInt32
+  + TestRunner.TrxCounters.Pending [property]: [read-only] System.UInt32
+  + TestRunner.TrxCounters.Timeout [property]: [read-only] System.UInt32
+  + TestRunner.TrxCounters.Total [property]: [read-only] System.UInt32
+  + TestRunner.TrxCounters.Warning [property]: [read-only] System.UInt32
+  + TestRunner.TrxCounters.Zero [static property]: [read-only] TestRunner.TrxCounters
+  + TestRunner.TrxCounters.get_Aborted [method]: unit -&gt; System.UInt32
+  + TestRunner.TrxCounters.get_Completed [method]: unit -&gt; System.UInt32
+  + TestRunner.TrxCounters.get_Disconnected [method]: unit -&gt; System.UInt32
+  + TestRunner.TrxCounters.get_Errors [method]: unit -&gt; System.UInt32
+  + TestRunner.TrxCounters.get_Executed [method]: unit -&gt; System.UInt32
+  + TestRunner.TrxCounters.get_Failed [method]: unit -&gt; System.UInt32
+  + TestRunner.TrxCounters.get_InProgress [method]: unit -&gt; System.UInt32
+  + TestRunner.TrxCounters.get_Inconclusive [method]: unit -&gt; System.UInt32
+  + TestRunner.TrxCounters.get_NotExecuted [method]: unit -&gt; System.UInt32
+  + TestRunner.TrxCounters.get_NotRunnable [method]: unit -&gt; System.UInt32
+  + TestRunner.TrxCounters.get_Passed [method]: unit -&gt; System.UInt32
+  + TestRunner.TrxCounters.get_PassedButRunAborted [method]: unit -&gt; System.UInt32
+  + TestRunner.TrxCounters.get_Pending [method]: unit -&gt; System.UInt32
+  + TestRunner.TrxCounters.get_Timeout [method]: unit -&gt; System.UInt32
+  + TestRunner.TrxCounters.get_Total [method]: unit -&gt; System.UInt32
+  + TestRunner.TrxCounters.get_Warning [method]: unit -&gt; System.UInt32
+  + TestRunner.TrxCounters.get_Zero [static method]: unit -&gt; TestRunner.TrxCounters
+  + TestRunner.TrxDeployment inherit obj, implements TestRunner.TrxDeployment System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxDeployment System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+  + TestRunner.TrxDeployment..ctor [constructor]: string
+  + TestRunner.TrxDeployment.RunDeploymentRoot [property]: [read-only] string
+  + TestRunner.TrxDeployment.get_RunDeploymentRoot [method]: unit -&gt; string
+  + TestRunner.TrxErrorInfo inherit obj, implements TestRunner.TrxErrorInfo System.IEquatable, System.Collections.IStructuralEquatable
+  + TestRunner.TrxErrorInfo..ctor [constructor]: (string, System.Diagnostics.StackTrace option)
+  + TestRunner.TrxErrorInfo.Message [property]: [read-only] string
+  + TestRunner.TrxErrorInfo.StackTrace [property]: [read-only] System.Diagnostics.StackTrace option
+  + TestRunner.TrxErrorInfo.get_Message [method]: unit -&gt; string
+  + TestRunner.TrxErrorInfo.get_StackTrace [method]: unit -&gt; System.Diagnostics.StackTrace option
+  + TestRunner.TrxOutcome inherit obj, implements TestRunner.TrxOutcome System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxOutcome System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 3 cases
+  + TestRunner.TrxOutcome+Tags inherit obj
+  + TestRunner.TrxOutcome+Tags.Completed [static field]: int = 0
+  + TestRunner.TrxOutcome+Tags.Failed [static field]: int = 2
+  + TestRunner.TrxOutcome+Tags.Warning [static field]: int = 1
+  + TestRunner.TrxOutcome.Completed [static property]: [read-only] TestRunner.TrxOutcome
+  + TestRunner.TrxOutcome.Failed [static property]: [read-only] TestRunner.TrxOutcome
+  + TestRunner.TrxOutcome.IsCompleted [property]: [read-only] bool
+  + TestRunner.TrxOutcome.IsFailed [property]: [read-only] bool
+  + TestRunner.TrxOutcome.IsWarning [property]: [read-only] bool
+  + TestRunner.TrxOutcome.Tag [property]: [read-only] int
+  + TestRunner.TrxOutcome.Warning [static property]: [read-only] TestRunner.TrxOutcome
+  + TestRunner.TrxOutcome.get_Completed [static method]: unit -&gt; TestRunner.TrxOutcome
+  + TestRunner.TrxOutcome.get_Failed [static method]: unit -&gt; TestRunner.TrxOutcome
+  + TestRunner.TrxOutcome.get_IsCompleted [method]: unit -&gt; bool
+  + TestRunner.TrxOutcome.get_IsFailed [method]: unit -&gt; bool
+  + TestRunner.TrxOutcome.get_IsWarning [method]: unit -&gt; bool
+  + TestRunner.TrxOutcome.get_Tag [method]: unit -&gt; int
+  + TestRunner.TrxOutcome.get_Warning [static method]: unit -&gt; TestRunner.TrxOutcome
+  + TestRunner.TrxOutput inherit obj, implements TestRunner.TrxOutput System.IEquatable, System.Collections.IStructuralEquatable
+  + TestRunner.TrxOutput..ctor [constructor]: (string option, TestRunner.TrxErrorInfo option)
+  + TestRunner.TrxOutput.ErrorInfo [property]: [read-only] TestRunner.TrxErrorInfo option
+  + TestRunner.TrxOutput.StdOut [property]: [read-only] string option
+  + TestRunner.TrxOutput.get_ErrorInfo [method]: unit -&gt; TestRunner.TrxErrorInfo option
+  + TestRunner.TrxOutput.get_StdOut [method]: unit -&gt; string option
+  + TestRunner.TrxReport inherit obj, implements TestRunner.TrxReport System.IEquatable, System.Collections.IStructuralEquatable
+  + TestRunner.TrxReport..ctor [constructor]: (System.Guid, string, TestRunner.TrxReportTimes, TestRunner.TrxTestSettings, TestRunner.TrxUnitTestResult list, TestRunner.TrxUnitTest list, TestRunner.TrxTestEntry list, TestRunner.TrxTestList list, TestRunner.TrxResultsSummary)
+  + TestRunner.TrxReport.Id [property]: [read-only] System.Guid
+  + TestRunner.TrxReport.Name [property]: [read-only] string
+  + TestRunner.TrxReport.Results [property]: [read-only] TestRunner.TrxUnitTestResult list
+  + TestRunner.TrxReport.ResultsSummary [property]: [read-only] TestRunner.TrxResultsSummary
+  + TestRunner.TrxReport.Settings [property]: [read-only] TestRunner.TrxTestSettings
+  + TestRunner.TrxReport.TestDefinitions [property]: [read-only] TestRunner.TrxUnitTest list
+  + TestRunner.TrxReport.TestEntries [property]: [read-only] TestRunner.TrxTestEntry list
+  + TestRunner.TrxReport.TestLists [property]: [read-only] TestRunner.TrxTestList list
+  + TestRunner.TrxReport.Times [property]: [read-only] TestRunner.TrxReportTimes
+  + TestRunner.TrxReport.get_Id [method]: unit -&gt; System.Guid
+  + TestRunner.TrxReport.get_Name [method]: unit -&gt; string
+  + TestRunner.TrxReport.get_Results [method]: unit -&gt; TestRunner.TrxUnitTestResult list
+  + TestRunner.TrxReport.get_ResultsSummary [method]: unit -&gt; TestRunner.TrxResultsSummary
+  + TestRunner.TrxReport.get_Settings [method]: unit -&gt; TestRunner.TrxTestSettings
+  + TestRunner.TrxReport.get_TestDefinitions [method]: unit -&gt; TestRunner.TrxUnitTest list
+  + TestRunner.TrxReport.get_TestEntries [method]: unit -&gt; TestRunner.TrxTestEntry list
+  + TestRunner.TrxReport.get_TestLists [method]: unit -&gt; TestRunner.TrxTestList list
+  + TestRunner.TrxReport.get_Times [method]: unit -&gt; TestRunner.TrxReportTimes
+  + TestRunner.TrxReportTimes inherit obj, implements TestRunner.TrxReportTimes System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxReportTimes System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+  + TestRunner.TrxReportTimes..ctor [constructor]: (System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset)
+  + TestRunner.TrxReportTimes.Creation [property]: [read-only] System.DateTimeOffset
+  + TestRunner.TrxReportTimes.Finish [property]: [read-only] System.DateTimeOffset
+  + TestRunner.TrxReportTimes.Queuing [property]: [read-only] System.DateTimeOffset
+  + TestRunner.TrxReportTimes.Start [property]: [read-only] System.DateTimeOffset
+  + TestRunner.TrxReportTimes.get_Creation [method]: unit -&gt; System.DateTimeOffset
+  + TestRunner.TrxReportTimes.get_Finish [method]: unit -&gt; System.DateTimeOffset
+  + TestRunner.TrxReportTimes.get_Queuing [method]: unit -&gt; System.DateTimeOffset
+  + TestRunner.TrxReportTimes.get_Start [method]: unit -&gt; System.DateTimeOffset
+  + TestRunner.TrxResultsSummary inherit obj, implements TestRunner.TrxResultsSummary System.IEquatable, System.Collections.IStructuralEquatable
+  + TestRunner.TrxResultsSummary..ctor [constructor]: (TestRunner.TrxOutcome, TestRunner.TrxCounters, TestRunner.TrxOutput, TestRunner.TrxRunInfo list)
+  + TestRunner.TrxResultsSummary.Counters [property]: [read-only] TestRunner.TrxCounters
+  + TestRunner.TrxResultsSummary.Outcome [property]: [read-only] TestRunner.TrxOutcome
+  + TestRunner.TrxResultsSummary.Output [property]: [read-only] TestRunner.TrxOutput
+  + TestRunner.TrxResultsSummary.RunInfos [property]: [read-only] TestRunner.TrxRunInfo list
+  + TestRunner.TrxResultsSummary.get_Counters [method]: unit -&gt; TestRunner.TrxCounters
+  + TestRunner.TrxResultsSummary.get_Outcome [method]: unit -&gt; TestRunner.TrxOutcome
+  + TestRunner.TrxResultsSummary.get_Output [method]: unit -&gt; TestRunner.TrxOutput
+  + TestRunner.TrxResultsSummary.get_RunInfos [method]: unit -&gt; TestRunner.TrxRunInfo list
+  + TestRunner.TrxRunInfo inherit obj, implements TestRunner.TrxRunInfo System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxRunInfo System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+  + TestRunner.TrxRunInfo..ctor [constructor]: (string, TestRunner.TrxOutcome, System.DateTimeOffset, string)
+  + TestRunner.TrxRunInfo.ComputerName [property]: [read-only] string
+  + TestRunner.TrxRunInfo.Outcome [property]: [read-only] TestRunner.TrxOutcome
+  + TestRunner.TrxRunInfo.Text [property]: [read-only] string
+  + TestRunner.TrxRunInfo.Timestamp [property]: [read-only] System.DateTimeOffset
+  + TestRunner.TrxRunInfo.get_ComputerName [method]: unit -&gt; string
+  + TestRunner.TrxRunInfo.get_Outcome [method]: unit -&gt; TestRunner.TrxOutcome
+  + TestRunner.TrxRunInfo.get_Text [method]: unit -&gt; string
+  + TestRunner.TrxRunInfo.get_Timestamp [method]: unit -&gt; System.DateTimeOffset
+  + TestRunner.TrxTestEntry inherit obj, implements TestRunner.TrxTestEntry System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxTestEntry System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+  + TestRunner.TrxTestEntry..ctor [constructor]: (System.Guid, System.Guid, System.Guid)
+  + TestRunner.TrxTestEntry.ExecutionId [property]: [read-only] System.Guid
+  + TestRunner.TrxTestEntry.TestId [property]: [read-only] System.Guid
+  + TestRunner.TrxTestEntry.TestListId [property]: [read-only] System.Guid
+  + TestRunner.TrxTestEntry.get_ExecutionId [method]: unit -&gt; System.Guid
+  + TestRunner.TrxTestEntry.get_TestId [method]: unit -&gt; System.Guid
+  + TestRunner.TrxTestEntry.get_TestListId [method]: unit -&gt; System.Guid
+  + TestRunner.TrxTestList inherit obj, implements TestRunner.TrxTestList System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxTestList System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+  + TestRunner.TrxTestList..ctor [constructor]: (string, System.Guid)
+  + TestRunner.TrxTestList.Id [property]: [read-only] System.Guid
+  + TestRunner.TrxTestList.Name [property]: [read-only] string
+  + TestRunner.TrxTestList.get_Id [method]: unit -&gt; System.Guid
+  + TestRunner.TrxTestList.get_Name [method]: unit -&gt; string
+  + TestRunner.TrxTestMethod inherit obj, implements TestRunner.TrxTestMethod System.IEquatable, System.Collections.IStructuralEquatable
+  + TestRunner.TrxTestMethod..ctor [constructor]: (System.IO.FileInfo, System.Uri, string, string)
+  + TestRunner.TrxTestMethod.AdapterTypeName [property]: [read-only] System.Uri
+  + TestRunner.TrxTestMethod.ClassName [property]: [read-only] string
+  + TestRunner.TrxTestMethod.CodeBase [property]: [read-only] System.IO.FileInfo
+  + TestRunner.TrxTestMethod.Name [property]: [read-only] string
+  + TestRunner.TrxTestMethod.get_AdapterTypeName [method]: unit -&gt; System.Uri
+  + TestRunner.TrxTestMethod.get_ClassName [method]: unit -&gt; string
+  + TestRunner.TrxTestMethod.get_CodeBase [method]: unit -&gt; System.IO.FileInfo
+  + TestRunner.TrxTestMethod.get_Name [method]: unit -&gt; string
+  + TestRunner.TrxTestOutcome inherit obj, implements TestRunner.TrxTestOutcome System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxTestOutcome System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 2 cases
+  + TestRunner.TrxTestOutcome+Tags inherit obj
+  + TestRunner.TrxTestOutcome+Tags.Failed [static field]: int = 1
+  + TestRunner.TrxTestOutcome+Tags.Passed [static field]: int = 0
+  + TestRunner.TrxTestOutcome.Failed [static property]: [read-only] TestRunner.TrxTestOutcome
+  + TestRunner.TrxTestOutcome.IsFailed [property]: [read-only] bool
+  + TestRunner.TrxTestOutcome.IsPassed [property]: [read-only] bool
+  + TestRunner.TrxTestOutcome.Passed [static property]: [read-only] TestRunner.TrxTestOutcome
+  + TestRunner.TrxTestOutcome.Tag [property]: [read-only] int
+  + TestRunner.TrxTestOutcome.get_Failed [static method]: unit -&gt; TestRunner.TrxTestOutcome
+  + TestRunner.TrxTestOutcome.get_IsFailed [method]: unit -&gt; bool
+  + TestRunner.TrxTestOutcome.get_IsPassed [method]: unit -&gt; bool
+  + TestRunner.TrxTestOutcome.get_Passed [static method]: unit -&gt; TestRunner.TrxTestOutcome
+  + TestRunner.TrxTestOutcome.get_Tag [method]: unit -&gt; int
+  + TestRunner.TrxTestSettings inherit obj, implements TestRunner.TrxTestSettings System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxTestSettings System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+  + TestRunner.TrxTestSettings..ctor [constructor]: (string, System.Guid, TestRunner.TrxDeployment)
+  + TestRunner.TrxTestSettings.Deployment [property]: [read-only] TestRunner.TrxDeployment
+  + TestRunner.TrxTestSettings.Id [property]: [read-only] System.Guid
+  + TestRunner.TrxTestSettings.Name [property]: [read-only] string
+  + TestRunner.TrxTestSettings.get_Deployment [method]: unit -&gt; TestRunner.TrxDeployment
+  + TestRunner.TrxTestSettings.get_Id [method]: unit -&gt; System.Guid
+  + TestRunner.TrxTestSettings.get_Name [method]: unit -&gt; string
+  + TestRunner.TrxUnitTest inherit obj, implements TestRunner.TrxUnitTest System.IEquatable, System.Collections.IStructuralEquatable
+  + TestRunner.TrxUnitTest..ctor [constructor]: (string, System.IO.FileInfo, System.Guid, System.Guid, TestRunner.TrxTestMethod)
+  + TestRunner.TrxUnitTest.ExecutionId [property]: [read-only] System.Guid
+  + TestRunner.TrxUnitTest.Id [property]: [read-only] System.Guid
+  + TestRunner.TrxUnitTest.Name [property]: [read-only] string
+  + TestRunner.TrxUnitTest.Storage [property]: [read-only] System.IO.FileInfo
+  + TestRunner.TrxUnitTest.TestMethod [property]: [read-only] TestRunner.TrxTestMethod
+  + TestRunner.TrxUnitTest.get_ExecutionId [method]: unit -&gt; System.Guid
+  + TestRunner.TrxUnitTest.get_Id [method]: unit -&gt; System.Guid
+  + TestRunner.TrxUnitTest.get_Name [method]: unit -&gt; string
+  + TestRunner.TrxUnitTest.get_Storage [method]: unit -&gt; System.IO.FileInfo
+  + TestRunner.TrxUnitTest.get_TestMethod [method]: unit -&gt; TestRunner.TrxTestMethod
+  + TestRunner.TrxUnitTestResult inherit obj, implements TestRunner.TrxUnitTestResult System.IEquatable, System.Collections.IStructuralEquatable
+  + TestRunner.TrxUnitTestResult..ctor [constructor]: (System.Guid, System.Guid, string, string, System.TimeSpan, System.DateTimeOffset, System.DateTimeOffset, System.Guid, TestRunner.TrxTestOutcome, System.Guid, System.Guid, TestRunner.TrxOutput option)
+  + TestRunner.TrxUnitTestResult.ComputerName [property]: [read-only] string
+  + TestRunner.TrxUnitTestResult.Duration [property]: [read-only] System.TimeSpan
+  + TestRunner.TrxUnitTestResult.EndTime [property]: [read-only] System.DateTimeOffset
+  + TestRunner.TrxUnitTestResult.ExecutionId [property]: [read-only] System.Guid
+  + TestRunner.TrxUnitTestResult.Outcome [property]: [read-only] TestRunner.TrxTestOutcome
+  + TestRunner.TrxUnitTestResult.Output [property]: [read-only] TestRunner.TrxOutput option
+  + TestRunner.TrxUnitTestResult.RelativeResultsDirectory [property]: [read-only] System.Guid
+  + TestRunner.TrxUnitTestResult.StartTime [property]: [read-only] System.DateTimeOffset
+  + TestRunner.TrxUnitTestResult.TestId [property]: [read-only] System.Guid
+  + TestRunner.TrxUnitTestResult.TestListId [property]: [read-only] System.Guid
+  + TestRunner.TrxUnitTestResult.TestName [property]: [read-only] string
+  + TestRunner.TrxUnitTestResult.TestType [property]: [read-only] System.Guid
+  + TestRunner.TrxUnitTestResult.get_ComputerName [method]: unit -&gt; string
+  + TestRunner.TrxUnitTestResult.get_Duration [method]: unit -&gt; System.TimeSpan
+  + TestRunner.TrxUnitTestResult.get_EndTime [method]: unit -&gt; System.DateTimeOffset
+  + TestRunner.TrxUnitTestResult.get_ExecutionId [method]: unit -&gt; System.Guid
+  + TestRunner.TrxUnitTestResult.get_Outcome [method]: unit -&gt; TestRunner.TrxTestOutcome
+  + TestRunner.TrxUnitTestResult.get_Output [method]: unit -&gt; TestRunner.TrxOutput option
+  + TestRunner.TrxUnitTestResult.get_RelativeResultsDirectory [method]: unit -&gt; System.Guid
+  + TestRunner.TrxUnitTestResult.get_StartTime [method]: unit -&gt; System.DateTimeOffset
+  + TestRunner.TrxUnitTestResult.get_TestId [method]: unit -&gt; System.Guid
+  + TestRunner.TrxUnitTestResult.get_TestListId [method]: unit -&gt; System.Guid
+  + TestRunner.TrxUnitTestResult.get_TestName [method]: unit -&gt; string
+  + TestRunner.TrxUnitTestResult.get_TestType [method]: unit -&gt; System.Guid
+</Message>
+          <StackTrace>   at Microsoft.FSharp.Core.PrintfModule.PrintFormatToStringThenFail@1448.Invoke(String message)
+   at ApiSurface.SurfaceComparisonModule.AssertIdentical(SurfaceComparison _arg1) in /_//ApiSurface/SurfaceComparison.fs:line 41
+   at TestRunner.Test.TestSurface.Ensure API surface has not been modified() in /Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/TestSurface.fs:line 12
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a943407b-8ba2-4565-a7e4-85caf4802524" testId="ec7f1a3e-77d9-4c85-40b6-a2be454fc7d7" testName="Update API surface" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000050" startTime="2024-06-06T22:51:47.1180690+01:00" endTime="2024-06-06T22:51:47.1180740+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a943407b-8ba2-4565-a7e4-85caf4802524" />
+    <UnitTestResult executionId="d50faae3-4ba3-4f2b-9ec8-028698e51b75" testId="a8381c2d-9147-f725-faa5-3e652b00175b" testName="Ensure version is monotonic" computerName="Patricks-MacBook-Pro" duration="00:00:00.0001350" startTime="2024-06-06T22:51:47.1179300+01:00" endTime="2024-06-06T22:51:47.1180650+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d50faae3-4ba3-4f2b-9ec8-028698e51b75">
+      <Output>
+        <StdOut>Not yet published</StdOut>
+        <ErrorInfo>
+          <Message>Not yet published</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0348ed3b-c625-44fd-a9b8-26402367db2e" testId="8f20f899-4287-617e-b654-b7db066494fa" testName="Ensure public API is fully documented" computerName="Patricks-MacBook-Pro" duration="00:00:00.0212370" startTime="2024-06-06T22:51:47.0966500+01:00" endTime="2024-06-06T22:51:47.1178870+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0348ed3b-c625-44fd-a9b8-26402367db2e">
+      <Output>
+        <ErrorInfo>
+          <Message>System.Exception : Unexpected difference.
+
+The following 3 member(s) are only in 'TestRunner.Lib.xml':
+  + T:TestRunner.FilterModule
+  + T:TestRunner.SingleTestMethodModule
+  + T:TestRunner.TestFixtureModule
+
+The following 74 member(s) are only in 'TestRunner.Lib.dll':
+  - T:TestRunner.TrxCounters
+  - P:TestRunner.TrxCounters.Aborted
+  - P:TestRunner.TrxCounters.Completed
+  - P:TestRunner.TrxCounters.Disconnected
+  - P:TestRunner.TrxCounters.Errors
+  - P:TestRunner.TrxCounters.Executed
+  - P:TestRunner.TrxCounters.Failed
+  - P:TestRunner.TrxCounters.InProgress
+  - P:TestRunner.TrxCounters.Inconclusive
+  - P:TestRunner.TrxCounters.NotExecuted
+  - P:TestRunner.TrxCounters.NotRunnable
+  - P:TestRunner.TrxCounters.Passed
+  - P:TestRunner.TrxCounters.PassedButRunAborted
+  - P:TestRunner.TrxCounters.Pending
+  - P:TestRunner.TrxCounters.Timeout
+  - P:TestRunner.TrxCounters.Total
+  - P:TestRunner.TrxCounters.Warning
+  - T:TestRunner.TrxDeployment
+  - P:TestRunner.TrxDeployment.RunDeploymentRoot
+  - T:TestRunner.TrxOutcome
+  - T:TestRunner.TrxOutcome.Completed
+  - T:TestRunner.TrxOutcome.Failed
+  - T:TestRunner.TrxOutcome.Warning
+  - T:TestRunner.TrxReport
+  - P:TestRunner.TrxReport.Id
+  - P:TestRunner.TrxReport.Name
+  - P:TestRunner.TrxReport.Results
+  - P:TestRunner.TrxReport.ResultsSummary
+  - P:TestRunner.TrxReport.Settings
+  - P:TestRunner.TrxReport.TestDefinitions
+  - P:TestRunner.TrxReport.TestEntries
+  - P:TestRunner.TrxReport.TestLists
+  - P:TestRunner.TrxReport.Times
+  - P:TestRunner.TrxReportTimes.Queuing
+  - T:TestRunner.TrxResultsSummary
+  - P:TestRunner.TrxResultsSummary.Counters
+  - P:TestRunner.TrxResultsSummary.Outcome
+  - P:TestRunner.TrxResultsSummary.Output
+  - P:TestRunner.TrxResultsSummary.RunInfos
+  - P:TestRunner.TrxRunInfo.Outcome
+  - T:TestRunner.TrxTestEntry
+  - P:TestRunner.TrxTestEntry.ExecutionId
+  - P:TestRunner.TrxTestEntry.TestId
+  - P:TestRunner.TrxTestEntry.TestListId
+  - T:TestRunner.TrxTestList
+  - P:TestRunner.TrxTestList.Id
+  - P:TestRunner.TrxTestList.Name
+  - T:TestRunner.TrxTestMethod
+  - P:TestRunner.TrxTestMethod.AdapterTypeName
+  - P:TestRunner.TrxTestMethod.ClassName
+  - P:TestRunner.TrxTestMethod.CodeBase
+  - P:TestRunner.TrxTestMethod.Name
+  - T:TestRunner.TrxTestSettings
+  - P:TestRunner.TrxTestSettings.Deployment
+  - P:TestRunner.TrxTestSettings.Id
+  - P:TestRunner.TrxTestSettings.Name
+  - T:TestRunner.TrxUnitTest
+  - P:TestRunner.TrxUnitTest.ExecutionId
+  - P:TestRunner.TrxUnitTest.Id
+  - P:TestRunner.TrxUnitTest.Name
+  - P:TestRunner.TrxUnitTest.Storage
+  - P:TestRunner.TrxUnitTest.TestMethod
+  - T:TestRunner.TrxUnitTestResult
+  - P:TestRunner.TrxUnitTestResult.ComputerName
+  - P:TestRunner.TrxUnitTestResult.Duration
+  - P:TestRunner.TrxUnitTestResult.EndTime
+  - P:TestRunner.TrxUnitTestResult.ExecutionId
+  - P:TestRunner.TrxUnitTestResult.Outcome
+  - P:TestRunner.TrxUnitTestResult.Output
+  - P:TestRunner.TrxUnitTestResult.RelativeResultsDirectory
+  - P:TestRunner.TrxUnitTestResult.StartTime
+  - P:TestRunner.TrxUnitTestResult.TestId
+  - P:TestRunner.TrxUnitTestResult.TestListId
+  - P:TestRunner.TrxUnitTestResult.TestType
+</Message>
+          <StackTrace>   at Microsoft.FSharp.Core.PrintfModule.PrintFormatToStringThenFail@1448.Invoke(String message)
+   at ApiSurface.SurfaceComparisonModule.assertNoneRemoved$cont@48(Boolean shouldPrint, SurfaceComparison comparison, Unit unitVar) in /_//ApiSurface/SurfaceComparison.fs:line 70
+   at TestRunner.Test.TestSurface.Ensure public API is fully documented() in /Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/TestSurface.fs:line 20
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="589fdef2-d601-4104-9319-27982a0b03c2" testId="54f7e9c6-642e-4408-18f7-2f88d592e478" testName="Doc examples, refined(&quot;FullyQualifiedName!=MSTestNamespace.UnitTest1.TestMethod1&quot;,Not (FullyQualifiedName (Exact &quot;MSTestNamespace.UnitTest1.TestMethod1&quot;)))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000070" startTime="2024-06-06T22:51:46.9679560+01:00" endTime="2024-06-06T22:51:46.9679630+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="589fdef2-d601-4104-9319-27982a0b03c2" />
+    <UnitTestResult executionId="5af71b23-3a6c-4087-b4af-786ea6f24a23" testId="94df793c-aa9b-7761-e8cc-fd71193cb683" testName="Doc examples, refined(&quot;(FullyQualifiedName~UnitTest1&amp;TestCategory=CategoryA)|TestCategory=1&quot;,Or&#xA;  (And&#xA;     (FullyQualifiedName (Contains &quot;UnitTest1&quot;),&#xA;      TestCategory (Exact &quot;CategoryA&quot;)), TestCategory (Exact &quot;1&quot;)))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000120" startTime="2024-06-06T22:51:46.9679970+01:00" endTime="2024-06-06T22:51:46.9680090+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5af71b23-3a6c-4087-b4af-786ea6f24a23" />
+    <UnitTestResult executionId="3acdf7b0-79c4-4dff-8a42-2ac89723a6dd" testId="a103bfc3-83f7-770a-d0fe-9d706c1eb3e4" testName="Doc examples(&quot;FullyQualifiedName!~IntegrationTests&quot;,Not (Contains (FullyQualifiedName, String &quot;IntegrationTests&quot;)))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000520" startTime="2024-06-06T22:51:46.9662360+01:00" endTime="2024-06-06T22:51:46.9662880+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3acdf7b0-79c4-4dff-8a42-2ac89723a6dd" />
+    <UnitTestResult executionId="68443f21-a319-4b3b-a4d9-b3753f5d8523" testId="6cd03969-ef9a-6d86-a2e6-2fd8b0849fe4" testName="Doc examples, refined(&quot;FullyQualifiedName~xyz&quot;,FullyQualifiedName (Contains &quot;xyz&quot;))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000080" startTime="2024-06-06T22:51:46.9679060+01:00" endTime="2024-06-06T22:51:46.9679140+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="68443f21-a319-4b3b-a4d9-b3753f5d8523" />
+    <UnitTestResult executionId="111d7ced-8dda-49b9-a13f-227d4a7e5321" testId="f6679088-93ed-d80b-8f88-7079d9e37967" testName="Doc examples(&quot;FullyQualifiedName~UnitTest1&amp;TestCategory=CategoryA&quot;,And&#xA;  (Contains (FullyQualifiedName, String &quot;UnitTest1&quot;),&#xA;   Equal (TestCategory, String &quot;CategoryA&quot;)))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000320" startTime="2024-06-06T22:51:46.9664610+01:00" endTime="2024-06-06T22:51:46.9664930+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="111d7ced-8dda-49b9-a13f-227d4a7e5321" />
+    <UnitTestResult executionId="d1467ce7-89db-466d-8bce-d12aac12d8bc" testId="c398fd88-221a-5cb5-fd83-58826b32aadc" testName="Doc examples, refined(&quot;FullyQualifiedName~UnitTest1&amp;TestCategory=CategoryA&quot;,And&#xA;  (FullyQualifiedName (Contains &quot;UnitTest1&quot;), TestCategory (Exact &quot;CategoryA&quot;)))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000090" startTime="2024-06-06T22:51:46.9679860+01:00" endTime="2024-06-06T22:51:46.9679950+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d1467ce7-89db-466d-8bce-d12aac12d8bc" />
+    <UnitTestResult executionId="c1bd8051-4713-4900-8104-81d35bd1044e" testId="e0b80408-0788-25db-0152-798f8af05264" testName="Doc examples(&quot;FullyQualifiedName=MyNamespace.MyTestsClass&lt;ParameterType1%2CParameterType2&gt;.MyTestMethod&quot;,Equal&#xA;  (FullyQualifiedName,&#xA;   String&#xA;     &quot;MyNamespace.MyTestsClass&lt;ParameterType1%2CParameterType2&gt;.MyTestMethod&quot;))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000440" startTime="2024-06-06T22:51:46.9662910+01:00" endTime="2024-06-06T22:51:46.9663360+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c1bd8051-4713-4900-8104-81d35bd1044e" />
+    <UnitTestResult executionId="05610646-1016-42f1-a9ce-9924d518a649" testId="4cd1fed0-221b-2488-5651-4056b23a0279" testName="Doc examples, refined(&quot;xyz&quot;,FullyQualifiedName (Contains &quot;xyz&quot;))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000770" startTime="2024-06-06T22:51:46.9678260+01:00" endTime="2024-06-06T22:51:46.9679030+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="05610646-1016-42f1-a9ce-9924d518a649" />
+    <UnitTestResult executionId="102d8433-e372-4955-abb6-41c89c83ce38" testId="07cec6c0-3329-4eca-95b4-f5c8e06c672e" testName="Doc examples(&quot;Name~Method&quot;,Contains (Name, String &quot;Method&quot;))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000070" startTime="2024-06-06T22:51:46.9663390+01:00" endTime="2024-06-06T22:51:46.9663460+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="102d8433-e372-4955-abb6-41c89c83ce38" />
+    <UnitTestResult executionId="c9308953-40f8-40e4-ae0b-0392a7fd46bd" testId="4fe35dcf-149c-1eb3-2146-3eaf9cd77db0" testName="Doc examples(&quot;FullyQualifiedName~xyz&quot;,Contains (FullyQualifiedName, String &quot;xyz&quot;))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000490" startTime="2024-06-06T22:51:46.9661830+01:00" endTime="2024-06-06T22:51:46.9662320+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c9308953-40f8-40e4-ae0b-0392a7fd46bd" />
+    <UnitTestResult executionId="a734daf7-094e-4fde-aee4-11ed8616040f" testId="94b0ecf3-6f00-39dc-f3b2-ad50879f7ed5" testName="Doc examples(&quot;FullyQualifiedName~UnitTest1|TestCategory=CategoryA&quot;,Or&#xA;  (Contains (FullyQualifiedName, String &quot;UnitTest1&quot;),&#xA;   Equal (TestCategory, String &quot;CategoryA&quot;)))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000090" startTime="2024-06-06T22:51:46.9664490+01:00" endTime="2024-06-06T22:51:46.9664590+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a734daf7-094e-4fde-aee4-11ed8616040f" />
+    <UnitTestResult executionId="3b33c345-6569-413a-a016-5c4416108282" testId="e46ebf05-6d5c-52a6-cbb2-48eb67b32b42" testName="Doc examples, refined(&quot;FullyQualifiedName=MyNamespace.MyTestsClass&lt;ParameterType1%2CParameterType2&gt;.MyTestMethod&quot;,FullyQualifiedName&#xA;  (Exact&#xA;     &quot;MyNamespace.MyTestsClass&lt;ParameterType1%2CParameterType2&gt;.MyTestMethod&quot;))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000120" startTime="2024-06-06T22:51:46.9679280+01:00" endTime="2024-06-06T22:51:46.9679400+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3b33c345-6569-413a-a016-5c4416108282" />
+    <UnitTestResult executionId="adb817f1-c9fc-462a-8efd-9bb5008d7fa2" testId="b62009a7-3738-0b30-e183-862aac477c4e" testName="combinations has right size" computerName="Patricks-MacBook-Pro" duration="00:00:00.0777940" startTime="2024-06-06T22:51:46.9684920+01:00" endTime="2024-06-06T22:51:47.0462870+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="adb817f1-c9fc-462a-8efd-9bb5008d7fa2">
+      <Output>
+        <StdOut>Ok, passed 100 tests.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3e466940-9612-4a7f-ae85-de45e12a2666" testId="c9f875e8-8c5b-45ab-ce03-7f0dbd247c5b" testName="Doc examples, refined(&quot;TestCategory=CategoryA&quot;,TestCategory (Exact &quot;CategoryA&quot;))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000100" startTime="2024-06-06T22:51:46.9679650+01:00" endTime="2024-06-06T22:51:46.9679750+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3e466940-9612-4a7f-ae85-de45e12a2666" />
+    <UnitTestResult executionId="331bdde3-bc99-4c0f-8e40-4857c3f41bf6" testId="94b5920d-623b-242f-6562-612f644ada4b" testName="Doc examples, refined(&quot;Name~Method&quot;,Name (Contains &quot;Method&quot;))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000090" startTime="2024-06-06T22:51:46.9679450+01:00" endTime="2024-06-06T22:51:46.9679540+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="331bdde3-bc99-4c0f-8e40-4857c3f41bf6" />
+    <UnitTestResult executionId="25551cfd-3a4a-47f5-8ab6-0d2982949e1d" testId="fd2905e8-f961-c324-ec48-045e9c7f9c68" testName="Doc examples(&quot;(FullyQualifiedName~UnitTest1&amp;TestCategory=CategoryA)|TestCategory=1&quot;,Or&#xA;  (And&#xA;     (Contains (FullyQualifiedName, String &quot;UnitTest1&quot;),&#xA;      Equal (TestCategory, String &quot;CategoryA&quot;)),&#xA;   Equal (TestCategory, String &quot;1&quot;)))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000150" startTime="2024-06-06T22:51:46.9664950+01:00" endTime="2024-06-06T22:51:46.9665110+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="25551cfd-3a4a-47f5-8ab6-0d2982949e1d" />
+    <UnitTestResult executionId="9a0b2595-6baa-4b7a-aab8-9dfba7099213" testId="f3da37a1-7feb-0259-c6a2-4db2614a4bdc" testName="Doc examples(&quot;TestCategory=CategoryA&quot;,Equal (TestCategory, String &quot;CategoryA&quot;))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0000640" startTime="2024-06-06T22:51:46.9663830+01:00" endTime="2024-06-06T22:51:46.9664470+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9a0b2595-6baa-4b7a-aab8-9dfba7099213" />
+    <UnitTestResult executionId="e5720565-2ba2-401a-9e40-b5e3088af67b" testId="c19803c5-66d3-11ce-1328-8ba7452d9127" testName="Doc examples(&quot;xyz&quot;,Contains (FullyQualifiedName, String &quot;xyz&quot;))" computerName="Patricks-MacBook-Pro" duration="00:00:00.0001130" startTime="2024-06-06T22:51:46.9660500+01:00" endTime="2024-06-06T22:51:46.9661630+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e5720565-2ba2-401a-9e40-b5e3088af67b" />
+    <UnitTestResult executionId="c63454b1-8b07-48c3-a777-4272b9321932" testId="b19fe9a0-ce05-189a-49ce-573b23b4e871" testName="each combination is drawn from the right set" computerName="Patricks-MacBook-Pro" duration="00:00:00.0171900" startTime="2024-06-06T22:51:47.0463120+01:00" endTime="2024-06-06T22:51:47.0635020+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c63454b1-8b07-48c3-a777-4272b9321932">
+      <Output>
+        <StdOut>Ok, passed 100 tests.</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Ensure API surface has not been modified" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="1bd5500a-baad-f37f-76eb-3905c00e9884">
+      <Execution id="663a073f-f01c-400e-bffe-dd8d68355b83" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestSurface" name="Ensure API surface has not been modified" />
+    </UnitTest>
+    <UnitTest name="Ensure public API is fully documented" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="8f20f899-4287-617e-b654-b7db066494fa">
+      <Execution id="0348ed3b-c625-44fd-a9b8-26402367db2e" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestSurface" name="Ensure public API is fully documented" />
+    </UnitTest>
+    <UnitTest name="Doc examples(&quot;FullyQualifiedName=MyNamespace.MyTestsClass&lt;ParameterType1%2CParameterType2&gt;.MyTestMethod&quot;,Equal&#xA;  (FullyQualifiedName,&#xA;   String&#xA;     &quot;MyNamespace.MyTestsClass&lt;ParameterType1%2CParameterType2&gt;.MyTestMethod&quot;))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="e0b80408-0788-25db-0152-798f8af05264">
+      <Execution id="c1bd8051-4713-4900-8104-81d35bd1044e" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples(&quot;FullyQualifiedName=MyNamespace.MyTestsClass&lt;ParameterType1%2CParameterType2&gt;.MyTestMethod&quot;,Equal&#xA;  (FullyQualifiedName,&#xA;   String&#xA;     &quot;MyNamespace.MyTestsClass&lt;ParameterType1%2CParameterType2&gt;.MyTestMethod&quot;))" />
+    </UnitTest>
+    <UnitTest name="Doc examples(&quot;FullyQualifiedName~UnitTest1&amp;TestCategory=CategoryA&quot;,And&#xA;  (Contains (FullyQualifiedName, String &quot;UnitTest1&quot;),&#xA;   Equal (TestCategory, String &quot;CategoryA&quot;)))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="f6679088-93ed-d80b-8f88-7079d9e37967">
+      <Execution id="111d7ced-8dda-49b9-a13f-227d4a7e5321" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples(&quot;FullyQualifiedName~UnitTest1&amp;TestCategory=CategoryA&quot;,And&#xA;  (Contains (FullyQualifiedName, String &quot;UnitTest1&quot;),&#xA;   Equal (TestCategory, String &quot;CategoryA&quot;)))" />
+    </UnitTest>
+    <UnitTest name="Doc examples(&quot;(Name~MyClass) | (Name~MyClass2)&quot;,Or (Contains (Name, String &quot;MyClass&quot;), Contains (Name, String &quot;MyClass2&quot;)))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="ce1a6a79-d333-550c-9440-42aa00b8a965">
+      <Execution id="0405711d-fa10-4175-9e60-2f2df1e95226" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples(&quot;(Name~MyClass) | (Name~MyClass2)&quot;,Or (Contains (Name, String &quot;MyClass&quot;), Contains (Name, String &quot;MyClass2&quot;)))" />
+    </UnitTest>
+    <UnitTest name="Ensure version is monotonic" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="a8381c2d-9147-f725-faa5-3e652b00175b">
+      <Execution id="d50faae3-4ba3-4f2b-9ec8-028698e51b75" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestSurface" name="Ensure version is monotonic" />
+    </UnitTest>
+    <UnitTest name="Doc examples, refined(&quot;FullyQualifiedName!~IntegrationTests&quot;,Not (FullyQualifiedName (Contains &quot;IntegrationTests&quot;)))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="00c1848d-a05e-9a06-2781-1fa11ce95eb9">
+      <Execution id="a382138f-5b4d-4c86-adb0-b6238efacdd4" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples, refined(&quot;FullyQualifiedName!~IntegrationTests&quot;,Not (FullyQualifiedName (Contains &quot;IntegrationTests&quot;)))" />
+    </UnitTest>
+    <UnitTest name="Doc examples, refined(&quot;TestCategory=CategoryA&quot;,TestCategory (Exact &quot;CategoryA&quot;))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="c9f875e8-8c5b-45ab-ce03-7f0dbd247c5b">
+      <Execution id="3e466940-9612-4a7f-ae85-de45e12a2666" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples, refined(&quot;TestCategory=CategoryA&quot;,TestCategory (Exact &quot;CategoryA&quot;))" />
+    </UnitTest>
+    <UnitTest name="Doc examples, refined(&quot;FullyQualifiedName~UnitTest1&amp;TestCategory=CategoryA&quot;,And&#xA;  (FullyQualifiedName (Contains &quot;UnitTest1&quot;), TestCategory (Exact &quot;CategoryA&quot;)))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="c398fd88-221a-5cb5-fd83-58826b32aadc">
+      <Execution id="d1467ce7-89db-466d-8bce-d12aac12d8bc" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples, refined(&quot;FullyQualifiedName~UnitTest1&amp;TestCategory=CategoryA&quot;,And&#xA;  (FullyQualifiedName (Contains &quot;UnitTest1&quot;), TestCategory (Exact &quot;CategoryA&quot;)))" />
+    </UnitTest>
+    <UnitTest name="Doc examples(&quot;FullyQualifiedName~xyz&quot;,Contains (FullyQualifiedName, String &quot;xyz&quot;))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="4fe35dcf-149c-1eb3-2146-3eaf9cd77db0">
+      <Execution id="c9308953-40f8-40e4-ae0b-0392a7fd46bd" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples(&quot;FullyQualifiedName~xyz&quot;,Contains (FullyQualifiedName, String &quot;xyz&quot;))" />
+    </UnitTest>
+    <UnitTest name="Doc examples, refined(&quot;Name~Method&quot;,Name (Contains &quot;Method&quot;))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="94b5920d-623b-242f-6562-612f644ada4b">
+      <Execution id="331bdde3-bc99-4c0f-8e40-4857c3f41bf6" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples, refined(&quot;Name~Method&quot;,Name (Contains &quot;Method&quot;))" />
+    </UnitTest>
+    <UnitTest name="Doc examples(&quot;FullyQualifiedName!~IntegrationTests&quot;,Not (Contains (FullyQualifiedName, String &quot;IntegrationTests&quot;)))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="a103bfc3-83f7-770a-d0fe-9d706c1eb3e4">
+      <Execution id="3acdf7b0-79c4-4dff-8a42-2ac89723a6dd" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples(&quot;FullyQualifiedName!~IntegrationTests&quot;,Not (Contains (FullyQualifiedName, String &quot;IntegrationTests&quot;)))" />
+    </UnitTest>
+    <UnitTest name="combinations has right size" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="b62009a7-3738-0b30-e183-862aac477c4e">
+      <Execution id="adb817f1-c9fc-462a-8efd-9bb5008d7fa2" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestList" name="combinations has right size" />
+    </UnitTest>
+    <UnitTest name="Update API surface" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="ec7f1a3e-77d9-4c85-40b6-a2be454fc7d7">
+      <Execution id="a943407b-8ba2-4565-a7e4-85caf4802524" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestSurface" name="Update API surface" />
+    </UnitTest>
+    <UnitTest name="Doc examples(&quot;FullyQualifiedName~UnitTest1|TestCategory=CategoryA&quot;,Or&#xA;  (Contains (FullyQualifiedName, String &quot;UnitTest1&quot;),&#xA;   Equal (TestCategory, String &quot;CategoryA&quot;)))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="94b0ecf3-6f00-39dc-f3b2-ad50879f7ed5">
+      <Execution id="a734daf7-094e-4fde-aee4-11ed8616040f" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples(&quot;FullyQualifiedName~UnitTest1|TestCategory=CategoryA&quot;,Or&#xA;  (Contains (FullyQualifiedName, String &quot;UnitTest1&quot;),&#xA;   Equal (TestCategory, String &quot;CategoryA&quot;)))" />
+    </UnitTest>
+    <UnitTest name="Doc examples, refined(&quot;(FullyQualifiedName~UnitTest1&amp;TestCategory=CategoryA)|TestCategory=1&quot;,Or&#xA;  (And&#xA;     (FullyQualifiedName (Contains &quot;UnitTest1&quot;),&#xA;      TestCategory (Exact &quot;CategoryA&quot;)), TestCategory (Exact &quot;1&quot;)))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="94df793c-aa9b-7761-e8cc-fd71193cb683">
+      <Execution id="5af71b23-3a6c-4087-b4af-786ea6f24a23" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples, refined(&quot;(FullyQualifiedName~UnitTest1&amp;TestCategory=CategoryA)|TestCategory=1&quot;,Or&#xA;  (And&#xA;     (FullyQualifiedName (Contains &quot;UnitTest1&quot;),&#xA;      TestCategory (Exact &quot;CategoryA&quot;)), TestCategory (Exact &quot;1&quot;)))" />
+    </UnitTest>
+    <UnitTest name="Doc examples, refined(&quot;FullyQualifiedName!=MSTestNamespace.UnitTest1.TestMethod1&quot;,Not (FullyQualifiedName (Exact &quot;MSTestNamespace.UnitTest1.TestMethod1&quot;)))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="54f7e9c6-642e-4408-18f7-2f88d592e478">
+      <Execution id="589fdef2-d601-4104-9319-27982a0b03c2" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples, refined(&quot;FullyQualifiedName!=MSTestNamespace.UnitTest1.TestMethod1&quot;,Not (FullyQualifiedName (Exact &quot;MSTestNamespace.UnitTest1.TestMethod1&quot;)))" />
+    </UnitTest>
+    <UnitTest name="Doc examples(&quot;FullyQualifiedName!=MSTestNamespace.UnitTest1.TestMethod1&quot;,Not (Equal (FullyQualifiedName, String &quot;MSTestNamespace.UnitTest1.TestMethod1&quot;)))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="099ab0d7-e616-e3ed-18e1-8238c2e316c4">
+      <Execution id="0f224761-6bbd-43f2-9559-1327816450d9" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples(&quot;FullyQualifiedName!=MSTestNamespace.UnitTest1.TestMethod1&quot;,Not (Equal (FullyQualifiedName, String &quot;MSTestNamespace.UnitTest1.TestMethod1&quot;)))" />
+    </UnitTest>
+    <UnitTest name="Doc examples, refined(&quot;FullyQualifiedName=MyNamespace.MyTestsClass&lt;ParameterType1%2CParameterType2&gt;.MyTestMethod&quot;,FullyQualifiedName&#xA;  (Exact&#xA;     &quot;MyNamespace.MyTestsClass&lt;ParameterType1%2CParameterType2&gt;.MyTestMethod&quot;))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="e46ebf05-6d5c-52a6-cbb2-48eb67b32b42">
+      <Execution id="3b33c345-6569-413a-a016-5c4416108282" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples, refined(&quot;FullyQualifiedName=MyNamespace.MyTestsClass&lt;ParameterType1%2CParameterType2&gt;.MyTestMethod&quot;,FullyQualifiedName&#xA;  (Exact&#xA;     &quot;MyNamespace.MyTestsClass&lt;ParameterType1%2CParameterType2&gt;.MyTestMethod&quot;))" />
+    </UnitTest>
+    <UnitTest name="Doc examples(&quot;(FullyQualifiedName~UnitTest1&amp;TestCategory=CategoryA)|TestCategory=1&quot;,Or&#xA;  (And&#xA;     (Contains (FullyQualifiedName, String &quot;UnitTest1&quot;),&#xA;      Equal (TestCategory, String &quot;CategoryA&quot;)),&#xA;   Equal (TestCategory, String &quot;1&quot;)))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="fd2905e8-f961-c324-ec48-045e9c7f9c68">
+      <Execution id="25551cfd-3a4a-47f5-8ab6-0d2982949e1d" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples(&quot;(FullyQualifiedName~UnitTest1&amp;TestCategory=CategoryA)|TestCategory=1&quot;,Or&#xA;  (And&#xA;     (Contains (FullyQualifiedName, String &quot;UnitTest1&quot;),&#xA;      Equal (TestCategory, String &quot;CategoryA&quot;)),&#xA;   Equal (TestCategory, String &quot;1&quot;)))" />
+    </UnitTest>
+    <UnitTest name="Doc examples, refined(&quot;(Name~MyClass) | (Name~MyClass2)&quot;,Or (Name (Contains &quot;MyClass&quot;), Name (Contains &quot;MyClass2&quot;)))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="4074d63b-6752-050c-966d-d5216c2b1c71">
+      <Execution id="a884d69f-5783-4d8f-be3b-81310a903e3a" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples, refined(&quot;(Name~MyClass) | (Name~MyClass2)&quot;,Or (Name (Contains &quot;MyClass&quot;), Name (Contains &quot;MyClass2&quot;)))" />
+    </UnitTest>
+    <UnitTest name="Doc examples, refined(&quot;FullyQualifiedName~xyz&quot;,FullyQualifiedName (Contains &quot;xyz&quot;))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="6cd03969-ef9a-6d86-a2e6-2fd8b0849fe4">
+      <Execution id="68443f21-a319-4b3b-a4d9-b3753f5d8523" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples, refined(&quot;FullyQualifiedName~xyz&quot;,FullyQualifiedName (Contains &quot;xyz&quot;))" />
+    </UnitTest>
+    <UnitTest name="Doc examples(&quot;xyz&quot;,Contains (FullyQualifiedName, String &quot;xyz&quot;))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="c19803c5-66d3-11ce-1328-8ba7452d9127">
+      <Execution id="e5720565-2ba2-401a-9e40-b5e3088af67b" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples(&quot;xyz&quot;,Contains (FullyQualifiedName, String &quot;xyz&quot;))" />
+    </UnitTest>
+    <UnitTest name="Doc examples, refined(&quot;xyz&quot;,FullyQualifiedName (Contains &quot;xyz&quot;))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="4cd1fed0-221b-2488-5651-4056b23a0279">
+      <Execution id="05610646-1016-42f1-a9ce-9924d518a649" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples, refined(&quot;xyz&quot;,FullyQualifiedName (Contains &quot;xyz&quot;))" />
+    </UnitTest>
+    <UnitTest name="Doc examples(&quot;TestCategory=CategoryA&quot;,Equal (TestCategory, String &quot;CategoryA&quot;))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="f3da37a1-7feb-0259-c6a2-4db2614a4bdc">
+      <Execution id="9a0b2595-6baa-4b7a-aab8-9dfba7099213" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples(&quot;TestCategory=CategoryA&quot;,Equal (TestCategory, String &quot;CategoryA&quot;))" />
+    </UnitTest>
+    <UnitTest name="each combination is drawn from the right set" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="b19fe9a0-ce05-189a-49ce-573b23b4e871">
+      <Execution id="c63454b1-8b07-48c3-a777-4272b9321932" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestList" name="each combination is drawn from the right set" />
+    </UnitTest>
+    <UnitTest name="Doc examples, refined(&quot;FullyQualifiedName~UnitTest1|TestCategory=CategoryA&quot;,Or (FullyQualifiedName (Contains &quot;UnitTest1&quot;), TestCategory (Exact &quot;CategoryA&quot;)))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="df13938a-7ab7-ffa5-3032-b0360d3ac165">
+      <Execution id="ba434804-1ada-466d-8f9b-1b4b694193cc" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples, refined(&quot;FullyQualifiedName~UnitTest1|TestCategory=CategoryA&quot;,Or (FullyQualifiedName (Contains &quot;UnitTest1&quot;), TestCategory (Exact &quot;CategoryA&quot;)))" />
+    </UnitTest>
+    <UnitTest name="Doc examples(&quot;Name~Method&quot;,Contains (Name, String &quot;Method&quot;))" storage="/users/patrick/documents/github/testrunner/testrunner/testrunner.test/bin/debug/net8.0/testrunner.test.dll" id="07cec6c0-3329-4eca-95b4-f5c8e06c672e">
+      <Execution id="102d8433-e372-4955-abb6-41c89c83ce38" />
+      <TestMethod codeBase="/Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll" adapterTypeName="executor://nunit3testexecutor/" className="TestRunner.Test.TestFilter" name="Doc examples(&quot;Name~Method&quot;,Contains (Name, String &quot;Method&quot;))" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="099ab0d7-e616-e3ed-18e1-8238c2e316c4" executionId="0f224761-6bbd-43f2-9559-1327816450d9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="00c1848d-a05e-9a06-2781-1fa11ce95eb9" executionId="a382138f-5b4d-4c86-adb0-b6238efacdd4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="df13938a-7ab7-ffa5-3032-b0360d3ac165" executionId="ba434804-1ada-466d-8f9b-1b4b694193cc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ce1a6a79-d333-550c-9440-42aa00b8a965" executionId="0405711d-fa10-4175-9e60-2f2df1e95226" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4074d63b-6752-050c-966d-d5216c2b1c71" executionId="a884d69f-5783-4d8f-be3b-81310a903e3a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1bd5500a-baad-f37f-76eb-3905c00e9884" executionId="663a073f-f01c-400e-bffe-dd8d68355b83" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ec7f1a3e-77d9-4c85-40b6-a2be454fc7d7" executionId="a943407b-8ba2-4565-a7e4-85caf4802524" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a8381c2d-9147-f725-faa5-3e652b00175b" executionId="d50faae3-4ba3-4f2b-9ec8-028698e51b75" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8f20f899-4287-617e-b654-b7db066494fa" executionId="0348ed3b-c625-44fd-a9b8-26402367db2e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="54f7e9c6-642e-4408-18f7-2f88d592e478" executionId="589fdef2-d601-4104-9319-27982a0b03c2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="94df793c-aa9b-7761-e8cc-fd71193cb683" executionId="5af71b23-3a6c-4087-b4af-786ea6f24a23" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a103bfc3-83f7-770a-d0fe-9d706c1eb3e4" executionId="3acdf7b0-79c4-4dff-8a42-2ac89723a6dd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6cd03969-ef9a-6d86-a2e6-2fd8b0849fe4" executionId="68443f21-a319-4b3b-a4d9-b3753f5d8523" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f6679088-93ed-d80b-8f88-7079d9e37967" executionId="111d7ced-8dda-49b9-a13f-227d4a7e5321" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c398fd88-221a-5cb5-fd83-58826b32aadc" executionId="d1467ce7-89db-466d-8bce-d12aac12d8bc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e0b80408-0788-25db-0152-798f8af05264" executionId="c1bd8051-4713-4900-8104-81d35bd1044e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4cd1fed0-221b-2488-5651-4056b23a0279" executionId="05610646-1016-42f1-a9ce-9924d518a649" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="07cec6c0-3329-4eca-95b4-f5c8e06c672e" executionId="102d8433-e372-4955-abb6-41c89c83ce38" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4fe35dcf-149c-1eb3-2146-3eaf9cd77db0" executionId="c9308953-40f8-40e4-ae0b-0392a7fd46bd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="94b0ecf3-6f00-39dc-f3b2-ad50879f7ed5" executionId="a734daf7-094e-4fde-aee4-11ed8616040f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e46ebf05-6d5c-52a6-cbb2-48eb67b32b42" executionId="3b33c345-6569-413a-a016-5c4416108282" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b62009a7-3738-0b30-e183-862aac477c4e" executionId="adb817f1-c9fc-462a-8efd-9bb5008d7fa2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c9f875e8-8c5b-45ab-ce03-7f0dbd247c5b" executionId="3e466940-9612-4a7f-ae85-de45e12a2666" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="94b5920d-623b-242f-6562-612f644ada4b" executionId="331bdde3-bc99-4c0f-8e40-4857c3f41bf6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fd2905e8-f961-c324-ec48-045e9c7f9c68" executionId="25551cfd-3a4a-47f5-8ab6-0d2982949e1d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f3da37a1-7feb-0259-c6a2-4db2614a4bdc" executionId="9a0b2595-6baa-4b7a-aab8-9dfba7099213" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c19803c5-66d3-11ce-1328-8ba7452d9127" executionId="e5720565-2ba2-401a-9e40-b5e3088af67b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b19fe9a0-ce05-189a-49ce-573b23b4e871" executionId="c63454b1-8b07-48c3-a777-4272b9321932" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="28" executed="26" passed="24" failed="2" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>NUnit Adapter 4.5.0.0: Test execution started
+Running all tests in /Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestRunner.Test/bin/Debug/net8.0/TestRunner.Test.dll
+   NUnit3TestExecutor discovered 26 of 28 NUnit test cases using Current Discovery mode, Non-Explicit run
+Ensure version is monotonic: Not yet published
+NUnit Adapter 4.5.0.0: Test execution complete
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="Patricks-MacBook-Pro" outcome="Warning" timestamp="2024-06-06T22:51:47.0471530+01:00">
+        <Text>Ok, passed 100 tests.
+</Text>
+      </RunInfo>
+      <RunInfo computerName="Patricks-MacBook-Pro" outcome="Warning" timestamp="2024-06-06T22:51:47.0640360+01:00">
+        <Text>Ok, passed 100 tests.
+</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>
+

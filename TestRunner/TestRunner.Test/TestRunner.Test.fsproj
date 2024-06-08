@@ -2,15 +2,17 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="EmbeddedResource.fs" />
         <Compile Include="TestFilter.fs" />
         <Compile Include="TestList.fs" />
         <Compile Include="TestSurface.fs" />
+        <Compile Include="TestTrx.fs" />
+        <EmbeddedResource Include="Example1.trx" />
     </ItemGroup>
 
     <ItemGroup>

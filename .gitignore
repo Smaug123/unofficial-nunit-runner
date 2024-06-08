@@ -10,4 +10,5 @@ result
 .analyzerpackages/
 analysis.sarif
 .direnv/
+TestResults/
 Generated*.fs

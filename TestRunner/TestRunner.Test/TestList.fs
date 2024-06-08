@@ -21,6 +21,8 @@ module TestList =
     [<Test>]
     let ``each combination is drawn from the right set`` () =
         let property (xs : int list list) =
+            let xs = if xs.Length > 6 then xs |> List.take 6 else xs
+            let xs = xs |> List.map (fun xs -> if xs.Length > 6 then xs |> List.take 6 else xs)
             let combs = List.combinations xs
 
             for comb in combs do

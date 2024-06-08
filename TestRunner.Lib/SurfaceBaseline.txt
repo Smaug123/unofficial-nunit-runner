@@ -253,6 +253,224 @@ TestRunner.TestMemberSuccess.Ok [static property]: [read-only] TestRunner.TestMe
 TestRunner.TestMemberSuccess.Tag [property]: [read-only] int
 TestRunner.TestProgress inherit obj
 TestRunner.TestProgress.toStderr [static method]: unit -> TestRunner.ITestProgress
+TestRunner.TrxCounters inherit obj, implements TestRunner.TrxCounters System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxCounters System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+TestRunner.TrxCounters..ctor [constructor]: (System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32)
+TestRunner.TrxCounters.Aborted [property]: [read-only] System.UInt32
+TestRunner.TrxCounters.Completed [property]: [read-only] System.UInt32
+TestRunner.TrxCounters.Disconnected [property]: [read-only] System.UInt32
+TestRunner.TrxCounters.Errors [property]: [read-only] System.UInt32
+TestRunner.TrxCounters.Executed [property]: [read-only] System.UInt32
+TestRunner.TrxCounters.Failed [property]: [read-only] System.UInt32
+TestRunner.TrxCounters.get_Aborted [method]: unit -> System.UInt32
+TestRunner.TrxCounters.get_Completed [method]: unit -> System.UInt32
+TestRunner.TrxCounters.get_Disconnected [method]: unit -> System.UInt32
+TestRunner.TrxCounters.get_Errors [method]: unit -> System.UInt32
+TestRunner.TrxCounters.get_Executed [method]: unit -> System.UInt32
+TestRunner.TrxCounters.get_Failed [method]: unit -> System.UInt32
+TestRunner.TrxCounters.get_Inconclusive [method]: unit -> System.UInt32
+TestRunner.TrxCounters.get_InProgress [method]: unit -> System.UInt32
+TestRunner.TrxCounters.get_NotExecuted [method]: unit -> System.UInt32
+TestRunner.TrxCounters.get_NotRunnable [method]: unit -> System.UInt32
+TestRunner.TrxCounters.get_Passed [method]: unit -> System.UInt32
+TestRunner.TrxCounters.get_PassedButRunAborted [method]: unit -> System.UInt32
+TestRunner.TrxCounters.get_Pending [method]: unit -> System.UInt32
+TestRunner.TrxCounters.get_Timeout [method]: unit -> System.UInt32
+TestRunner.TrxCounters.get_Total [method]: unit -> System.UInt32
+TestRunner.TrxCounters.get_Warning [method]: unit -> System.UInt32
+TestRunner.TrxCounters.get_Zero [static method]: unit -> TestRunner.TrxCounters
+TestRunner.TrxCounters.Inconclusive [property]: [read-only] System.UInt32
+TestRunner.TrxCounters.InProgress [property]: [read-only] System.UInt32
+TestRunner.TrxCounters.NotExecuted [property]: [read-only] System.UInt32
+TestRunner.TrxCounters.NotRunnable [property]: [read-only] System.UInt32
+TestRunner.TrxCounters.Passed [property]: [read-only] System.UInt32
+TestRunner.TrxCounters.PassedButRunAborted [property]: [read-only] System.UInt32
+TestRunner.TrxCounters.Pending [property]: [read-only] System.UInt32
+TestRunner.TrxCounters.Timeout [property]: [read-only] System.UInt32
+TestRunner.TrxCounters.Total [property]: [read-only] System.UInt32
+TestRunner.TrxCounters.Warning [property]: [read-only] System.UInt32
+TestRunner.TrxCounters.Zero [static property]: [read-only] TestRunner.TrxCounters
+TestRunner.TrxDeployment inherit obj, implements TestRunner.TrxDeployment System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxDeployment System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+TestRunner.TrxDeployment..ctor [constructor]: string
+TestRunner.TrxDeployment.get_RunDeploymentRoot [method]: unit -> string
+TestRunner.TrxDeployment.RunDeploymentRoot [property]: [read-only] string
+TestRunner.TrxErrorInfo inherit obj, implements TestRunner.TrxErrorInfo System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxErrorInfo System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+TestRunner.TrxErrorInfo..ctor [constructor]: (string option, string option)
+TestRunner.TrxErrorInfo.get_Message [method]: unit -> string option
+TestRunner.TrxErrorInfo.get_StackTrace [method]: unit -> string option
+TestRunner.TrxErrorInfo.Message [property]: [read-only] string option
+TestRunner.TrxErrorInfo.StackTrace [property]: [read-only] string option
+TestRunner.TrxExecution inherit obj, implements TestRunner.TrxExecution System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxExecution System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+TestRunner.TrxExecution..ctor [constructor]: System.Guid
+TestRunner.TrxExecution.get_Id [method]: unit -> System.Guid
+TestRunner.TrxExecution.Id [property]: [read-only] System.Guid
+TestRunner.TrxOutcome inherit obj, implements TestRunner.TrxOutcome System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxOutcome System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 3 cases
+TestRunner.TrxOutcome+Tags inherit obj
+TestRunner.TrxOutcome+Tags.Completed [static field]: int = 0
+TestRunner.TrxOutcome+Tags.Failed [static field]: int = 2
+TestRunner.TrxOutcome+Tags.Warning [static field]: int = 1
+TestRunner.TrxOutcome.Completed [static property]: [read-only] TestRunner.TrxOutcome
+TestRunner.TrxOutcome.Failed [static property]: [read-only] TestRunner.TrxOutcome
+TestRunner.TrxOutcome.get_Completed [static method]: unit -> TestRunner.TrxOutcome
+TestRunner.TrxOutcome.get_Failed [static method]: unit -> TestRunner.TrxOutcome
+TestRunner.TrxOutcome.get_IsCompleted [method]: unit -> bool
+TestRunner.TrxOutcome.get_IsFailed [method]: unit -> bool
+TestRunner.TrxOutcome.get_IsWarning [method]: unit -> bool
+TestRunner.TrxOutcome.get_Tag [method]: unit -> int
+TestRunner.TrxOutcome.get_Warning [static method]: unit -> TestRunner.TrxOutcome
+TestRunner.TrxOutcome.IsCompleted [property]: [read-only] bool
+TestRunner.TrxOutcome.IsFailed [property]: [read-only] bool
+TestRunner.TrxOutcome.IsWarning [property]: [read-only] bool
+TestRunner.TrxOutcome.Parse [static method]: string -> TestRunner.TrxOutcome option
+TestRunner.TrxOutcome.Tag [property]: [read-only] int
+TestRunner.TrxOutcome.Warning [static property]: [read-only] TestRunner.TrxOutcome
+TestRunner.TrxOutput inherit obj, implements TestRunner.TrxOutput System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxOutput System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+TestRunner.TrxOutput..ctor [constructor]: (string option, TestRunner.TrxErrorInfo option)
+TestRunner.TrxOutput.ErrorInfo [property]: [read-only] TestRunner.TrxErrorInfo option
+TestRunner.TrxOutput.get_ErrorInfo [method]: unit -> TestRunner.TrxErrorInfo option
+TestRunner.TrxOutput.get_StdOut [method]: unit -> string option
+TestRunner.TrxOutput.StdOut [property]: [read-only] string option
+TestRunner.TrxReport inherit obj, implements TestRunner.TrxReport System.IEquatable, System.Collections.IStructuralEquatable
+TestRunner.TrxReport..ctor [constructor]: (System.Guid, string, TestRunner.TrxReportTimes, TestRunner.TrxTestSettings, TestRunner.TrxUnitTestResult list, TestRunner.TrxUnitTest list, TestRunner.TrxTestEntry list, TestRunner.TrxTestListEntry list, TestRunner.TrxResultsSummary)
+TestRunner.TrxReport.get_Id [method]: unit -> System.Guid
+TestRunner.TrxReport.get_Name [method]: unit -> string
+TestRunner.TrxReport.get_Results [method]: unit -> TestRunner.TrxUnitTestResult list
+TestRunner.TrxReport.get_ResultsSummary [method]: unit -> TestRunner.TrxResultsSummary
+TestRunner.TrxReport.get_Settings [method]: unit -> TestRunner.TrxTestSettings
+TestRunner.TrxReport.get_TestDefinitions [method]: unit -> TestRunner.TrxUnitTest list
+TestRunner.TrxReport.get_TestEntries [method]: unit -> TestRunner.TrxTestEntry list
+TestRunner.TrxReport.get_TestLists [method]: unit -> TestRunner.TrxTestListEntry list
+TestRunner.TrxReport.get_Times [method]: unit -> TestRunner.TrxReportTimes
+TestRunner.TrxReport.Id [property]: [read-only] System.Guid
+TestRunner.TrxReport.Name [property]: [read-only] string
+TestRunner.TrxReport.Results [property]: [read-only] TestRunner.TrxUnitTestResult list
+TestRunner.TrxReport.ResultsSummary [property]: [read-only] TestRunner.TrxResultsSummary
+TestRunner.TrxReport.Settings [property]: [read-only] TestRunner.TrxTestSettings
+TestRunner.TrxReport.TestDefinitions [property]: [read-only] TestRunner.TrxUnitTest list
+TestRunner.TrxReport.TestEntries [property]: [read-only] TestRunner.TrxTestEntry list
+TestRunner.TrxReport.TestLists [property]: [read-only] TestRunner.TrxTestListEntry list
+TestRunner.TrxReport.Times [property]: [read-only] TestRunner.TrxReportTimes
+TestRunner.TrxReportModule inherit obj
+TestRunner.TrxReportModule.parse [static method]: string -> Microsoft.FSharp.Core.FSharpResult<TestRunner.TrxReport, string>
+TestRunner.TrxReportTimes inherit obj, implements TestRunner.TrxReportTimes System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxReportTimes System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+TestRunner.TrxReportTimes..ctor [constructor]: (System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset)
+TestRunner.TrxReportTimes.Creation [property]: [read-only] System.DateTimeOffset
+TestRunner.TrxReportTimes.Finish [property]: [read-only] System.DateTimeOffset
+TestRunner.TrxReportTimes.get_Creation [method]: unit -> System.DateTimeOffset
+TestRunner.TrxReportTimes.get_Finish [method]: unit -> System.DateTimeOffset
+TestRunner.TrxReportTimes.get_Queuing [method]: unit -> System.DateTimeOffset
+TestRunner.TrxReportTimes.get_Start [method]: unit -> System.DateTimeOffset
+TestRunner.TrxReportTimes.Queuing [property]: [read-only] System.DateTimeOffset
+TestRunner.TrxReportTimes.Start [property]: [read-only] System.DateTimeOffset
+TestRunner.TrxResultsSummary inherit obj, implements TestRunner.TrxResultsSummary System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxResultsSummary System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+TestRunner.TrxResultsSummary..ctor [constructor]: (TestRunner.TrxOutcome, TestRunner.TrxCounters, TestRunner.TrxOutput, TestRunner.TrxRunInfo list)
+TestRunner.TrxResultsSummary.Counters [property]: [read-only] TestRunner.TrxCounters
+TestRunner.TrxResultsSummary.get_Counters [method]: unit -> TestRunner.TrxCounters
+TestRunner.TrxResultsSummary.get_Outcome [method]: unit -> TestRunner.TrxOutcome
+TestRunner.TrxResultsSummary.get_Output [method]: unit -> TestRunner.TrxOutput
+TestRunner.TrxResultsSummary.get_RunInfos [method]: unit -> TestRunner.TrxRunInfo list
+TestRunner.TrxResultsSummary.Outcome [property]: [read-only] TestRunner.TrxOutcome
+TestRunner.TrxResultsSummary.Output [property]: [read-only] TestRunner.TrxOutput
+TestRunner.TrxResultsSummary.RunInfos [property]: [read-only] TestRunner.TrxRunInfo list
+TestRunner.TrxRunInfo inherit obj, implements TestRunner.TrxRunInfo System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxRunInfo System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+TestRunner.TrxRunInfo..ctor [constructor]: (string, TestRunner.TrxOutcome, System.DateTimeOffset, string)
+TestRunner.TrxRunInfo.ComputerName [property]: [read-only] string
+TestRunner.TrxRunInfo.get_ComputerName [method]: unit -> string
+TestRunner.TrxRunInfo.get_Outcome [method]: unit -> TestRunner.TrxOutcome
+TestRunner.TrxRunInfo.get_Text [method]: unit -> string
+TestRunner.TrxRunInfo.get_Timestamp [method]: unit -> System.DateTimeOffset
+TestRunner.TrxRunInfo.Outcome [property]: [read-only] TestRunner.TrxOutcome
+TestRunner.TrxRunInfo.Text [property]: [read-only] string
+TestRunner.TrxRunInfo.Timestamp [property]: [read-only] System.DateTimeOffset
+TestRunner.TrxTestEntry inherit obj, implements TestRunner.TrxTestEntry System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxTestEntry System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+TestRunner.TrxTestEntry..ctor [constructor]: (System.Guid, System.Guid, System.Guid)
+TestRunner.TrxTestEntry.ExecutionId [property]: [read-only] System.Guid
+TestRunner.TrxTestEntry.get_ExecutionId [method]: unit -> System.Guid
+TestRunner.TrxTestEntry.get_TestId [method]: unit -> System.Guid
+TestRunner.TrxTestEntry.get_TestListId [method]: unit -> System.Guid
+TestRunner.TrxTestEntry.TestId [property]: [read-only] System.Guid
+TestRunner.TrxTestEntry.TestListId [property]: [read-only] System.Guid
+TestRunner.TrxTestListEntry inherit obj, implements TestRunner.TrxTestListEntry System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxTestListEntry System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+TestRunner.TrxTestListEntry..ctor [constructor]: (string, System.Guid)
+TestRunner.TrxTestListEntry.get_Id [method]: unit -> System.Guid
+TestRunner.TrxTestListEntry.get_Name [method]: unit -> string
+TestRunner.TrxTestListEntry.Id [property]: [read-only] System.Guid
+TestRunner.TrxTestListEntry.Name [property]: [read-only] string
+TestRunner.TrxTestMethod inherit obj, implements TestRunner.TrxTestMethod System.IEquatable, System.Collections.IStructuralEquatable
+TestRunner.TrxTestMethod..ctor [constructor]: (string, System.Uri, string, string)
+TestRunner.TrxTestMethod.AdapterTypeName [property]: [read-only] System.Uri
+TestRunner.TrxTestMethod.ClassName [property]: [read-only] string
+TestRunner.TrxTestMethod.CodeBase [property]: [read-only] string
+TestRunner.TrxTestMethod.get_AdapterTypeName [method]: unit -> System.Uri
+TestRunner.TrxTestMethod.get_ClassName [method]: unit -> string
+TestRunner.TrxTestMethod.get_CodeBase [method]: unit -> string
+TestRunner.TrxTestMethod.get_Name [method]: unit -> string
+TestRunner.TrxTestMethod.Name [property]: [read-only] string
+TestRunner.TrxTestOutcome inherit obj, implements TestRunner.TrxTestOutcome System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxTestOutcome System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 3 cases
+TestRunner.TrxTestOutcome+Tags inherit obj
+TestRunner.TrxTestOutcome+Tags.Failed [static field]: int = 1
+TestRunner.TrxTestOutcome+Tags.NotExecuted [static field]: int = 2
+TestRunner.TrxTestOutcome+Tags.Passed [static field]: int = 0
+TestRunner.TrxTestOutcome.Failed [static property]: [read-only] TestRunner.TrxTestOutcome
+TestRunner.TrxTestOutcome.get_Failed [static method]: unit -> TestRunner.TrxTestOutcome
+TestRunner.TrxTestOutcome.get_IsFailed [method]: unit -> bool
+TestRunner.TrxTestOutcome.get_IsNotExecuted [method]: unit -> bool
+TestRunner.TrxTestOutcome.get_IsPassed [method]: unit -> bool
+TestRunner.TrxTestOutcome.get_NotExecuted [static method]: unit -> TestRunner.TrxTestOutcome
+TestRunner.TrxTestOutcome.get_Passed [static method]: unit -> TestRunner.TrxTestOutcome
+TestRunner.TrxTestOutcome.get_Tag [method]: unit -> int
+TestRunner.TrxTestOutcome.IsFailed [property]: [read-only] bool
+TestRunner.TrxTestOutcome.IsNotExecuted [property]: [read-only] bool
+TestRunner.TrxTestOutcome.IsPassed [property]: [read-only] bool
+TestRunner.TrxTestOutcome.NotExecuted [static property]: [read-only] TestRunner.TrxTestOutcome
+TestRunner.TrxTestOutcome.Parse [static method]: string -> TestRunner.TrxTestOutcome option
+TestRunner.TrxTestOutcome.Passed [static property]: [read-only] TestRunner.TrxTestOutcome
+TestRunner.TrxTestOutcome.Tag [property]: [read-only] int
+TestRunner.TrxTestSettings inherit obj, implements TestRunner.TrxTestSettings System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxTestSettings System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+TestRunner.TrxTestSettings..ctor [constructor]: (string, System.Guid, TestRunner.TrxDeployment)
+TestRunner.TrxTestSettings.Deployment [property]: [read-only] TestRunner.TrxDeployment
+TestRunner.TrxTestSettings.get_Deployment [method]: unit -> TestRunner.TrxDeployment
+TestRunner.TrxTestSettings.get_Id [method]: unit -> System.Guid
+TestRunner.TrxTestSettings.get_Name [method]: unit -> string
+TestRunner.TrxTestSettings.Id [property]: [read-only] System.Guid
+TestRunner.TrxTestSettings.Name [property]: [read-only] string
+TestRunner.TrxUnitTest inherit obj, implements TestRunner.TrxUnitTest System.IEquatable, System.Collections.IStructuralEquatable
+TestRunner.TrxUnitTest..ctor [constructor]: (string, string, System.Guid, TestRunner.TrxExecution, TestRunner.TrxTestMethod)
+TestRunner.TrxUnitTest.Execution [property]: [read-only] TestRunner.TrxExecution
+TestRunner.TrxUnitTest.get_Execution [method]: unit -> TestRunner.TrxExecution
+TestRunner.TrxUnitTest.get_Id [method]: unit -> System.Guid
+TestRunner.TrxUnitTest.get_Name [method]: unit -> string
+TestRunner.TrxUnitTest.get_Storage [method]: unit -> string
+TestRunner.TrxUnitTest.get_TestMethod [method]: unit -> TestRunner.TrxTestMethod
+TestRunner.TrxUnitTest.Id [property]: [read-only] System.Guid
+TestRunner.TrxUnitTest.Name [property]: [read-only] string
+TestRunner.TrxUnitTest.Storage [property]: [read-only] string
+TestRunner.TrxUnitTest.TestMethod [property]: [read-only] TestRunner.TrxTestMethod
+TestRunner.TrxUnitTestResult inherit obj, implements TestRunner.TrxUnitTestResult System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.TrxUnitTestResult System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+TestRunner.TrxUnitTestResult..ctor [constructor]: (System.Guid, System.Guid, string, string, System.TimeSpan, System.DateTimeOffset, System.DateTimeOffset, System.Guid, TestRunner.TrxTestOutcome, System.Guid, string, TestRunner.TrxOutput option)
+TestRunner.TrxUnitTestResult.ComputerName [property]: [read-only] string
+TestRunner.TrxUnitTestResult.Duration [property]: [read-only] System.TimeSpan
+TestRunner.TrxUnitTestResult.EndTime [property]: [read-only] System.DateTimeOffset
+TestRunner.TrxUnitTestResult.ExecutionId [property]: [read-only] System.Guid
+TestRunner.TrxUnitTestResult.get_ComputerName [method]: unit -> string
+TestRunner.TrxUnitTestResult.get_Duration [method]: unit -> System.TimeSpan
+TestRunner.TrxUnitTestResult.get_EndTime [method]: unit -> System.DateTimeOffset
+TestRunner.TrxUnitTestResult.get_ExecutionId [method]: unit -> System.Guid
+TestRunner.TrxUnitTestResult.get_Outcome [method]: unit -> TestRunner.TrxTestOutcome
+TestRunner.TrxUnitTestResult.get_Output [method]: unit -> TestRunner.TrxOutput option
+TestRunner.TrxUnitTestResult.get_RelativeResultsDirectory [method]: unit -> string
+TestRunner.TrxUnitTestResult.get_StartTime [method]: unit -> System.DateTimeOffset
+TestRunner.TrxUnitTestResult.get_TestId [method]: unit -> System.Guid
+TestRunner.TrxUnitTestResult.get_TestListId [method]: unit -> System.Guid
+TestRunner.TrxUnitTestResult.get_TestName [method]: unit -> string
+TestRunner.TrxUnitTestResult.get_TestType [method]: unit -> System.Guid
+TestRunner.TrxUnitTestResult.Outcome [property]: [read-only] TestRunner.TrxTestOutcome
+TestRunner.TrxUnitTestResult.Output [property]: [read-only] TestRunner.TrxOutput option
+TestRunner.TrxUnitTestResult.RelativeResultsDirectory [property]: [read-only] string
+TestRunner.TrxUnitTestResult.StartTime [property]: [read-only] System.DateTimeOffset
+TestRunner.TrxUnitTestResult.TestId [property]: [read-only] System.Guid
+TestRunner.TrxUnitTestResult.TestListId [property]: [read-only] System.Guid
+TestRunner.TrxUnitTestResult.TestName [property]: [read-only] string
+TestRunner.TrxUnitTestResult.TestType [property]: [read-only] System.Guid
 TestRunner.UserMethodFailure inherit obj, implements TestRunner.UserMethodFailure System.IEquatable, System.Collections.IStructuralEquatable - union type with 2 cases
 TestRunner.UserMethodFailure+ReturnedNonUnit inherit TestRunner.UserMethodFailure
 TestRunner.UserMethodFailure+ReturnedNonUnit.get_name [method]: unit -> string
