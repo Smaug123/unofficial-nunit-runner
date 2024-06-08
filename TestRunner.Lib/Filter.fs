@@ -1,6 +1,7 @@
 namespace TestRunner
 
 open System
+open System.IO
 open PrattParser
 
 // Documentation:
@@ -33,6 +34,14 @@ type internal TokenType =
     | Contains
     | NotContains
     | String
+
+    static member canTerminateUnquotedString (t : TokenType) : bool =
+        // Here we essentially choose that unquoted strings can only appear on the RHS of an operation.
+        match t with
+        | TokenType.CloseParen
+        | TokenType.And
+        | TokenType.Or -> true
+        | _ -> false
 
 type internal Token =
     {
@@ -67,15 +76,19 @@ module internal Token =
 
 [<RequireQualifiedAccess>]
 module internal Lexer =
+    type State =
+        | UnquotedString of startPos : int
+        | Awaiting
+
     let lex (s : string) : Token seq =
         seq {
             let mutable i = 0
-            let mutable stringAcc : int option = None
+            let mutable state = State.Awaiting
 
             while i < s.Length do
-                match (i, s.[i]), stringAcc with
+                match (i, s.[i]), state with
                 // This one has to come before the check for prefix Not
-                | (startI, '!'), None when i + 1 < s.Length ->
+                | (startI, '!'), State.Awaiting when i + 1 < s.Length ->
                     i <- i + 1
 
                     match s.[i] with
@@ -88,36 +101,42 @@ module internal Lexer =
                     | _ ->
                         yield Token.single TokenType.Not startI 1
                         i <- i + 1
-                | Token.SingleChar token, None ->
+                | Token.SingleChar token, State.Awaiting ->
                     i <- i + 1
                     yield token
-                | Token.SingleChar _, Some stringStart ->
-                    yield Token.single TokenType.String stringStart (i - stringStart)
-                    stringAcc <- None // and we'll do the match again
-                | (_, 'F'), None when
+                | Token.SingleChar t, State.UnquotedString stringStart ->
+                    if TokenType.canTerminateUnquotedString t.Type then
+                        yield Token.single TokenType.String stringStart (i - stringStart)
+                        // don't increment `i`, we'll just do the match again
+                        state <- State.Awaiting
+                    else
+                        i <- i + 1
+                | (_, 'F'), State.Awaiting when
                     i + 1 < s.Length
                     && s.[i + 1 ..].StartsWith ("ullyQualifiedName", StringComparison.Ordinal)
                     ->
                     yield Token.single TokenType.FullyQualifiedName i "FullyQualifiedName".Length
                     i <- i + "FullyQualifiedName".Length
-                | (_, 'N'), None when i + 1 < s.Length && s.[i + 1 ..].StartsWith ("ame", StringComparison.Ordinal) ->
+                | (_, 'N'), State.Awaiting when
+                    i + 1 < s.Length && s.[i + 1 ..].StartsWith ("ame", StringComparison.Ordinal)
+                    ->
                     yield Token.single TokenType.Name i "Name".Length
                     i <- i + "Name".Length
-                | (_, 'T'), None when
+                | (_, 'T'), State.Awaiting when
                     i + 1 < s.Length
                     && s.[i + 1 ..].StartsWith ("estCategory", StringComparison.Ordinal)
                     ->
                     yield Token.single TokenType.TestCategory i "TestCategory".Length
                     i <- i + "TestCategory".Length
-                | (_, ' '), None -> i <- i + 1
-                | (_, _), None ->
-                    stringAcc <- Some i
+                | (_, ' '), State.Awaiting -> i <- i + 1
+                | (_, _), State.Awaiting ->
+                    state <- State.UnquotedString i
                     i <- i + 1
-                | (_, _), Some _ -> i <- i + 1
+                | (_, _), State.UnquotedString _ -> i <- i + 1
 
-            match stringAcc with
-            | None -> ()
-            | Some start -> yield Token.single TokenType.String start (s.Length - start)
+            match state with
+            | State.Awaiting -> ()
+            | State.UnquotedString start -> yield Token.single TokenType.String start (s.Length - start)
         }
 
 [<RequireQualifiedAccess>]
@@ -195,8 +214,9 @@ type Filter =
 [<RequireQualifiedAccess>]
 module Filter =
     let private unescape (s : string) : string =
-        // TODO: XML escaping
-        s
+        System.Xml.XmlReader
+            .Create(new StringReader ("<r>" + s + "</r>"))
+            .ReadElementString ()
 
     let rec internal makeParsed (fi : ParsedFilter) : Filter =
         match fi with
