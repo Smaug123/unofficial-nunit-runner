@@ -1,8 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
       <TargetFramework>netstandard2.1</TargetFramework>
-      <PackAsTool>true</PackAsTool>
       <GenerateDocumentationFile>true</GenerateDocumentationFile>
       <Authors>Patrick Stevens</Authors>
       <Copyright>Copyright (c) Patrick Stevens 2024</Copyright>
@@ -12,6 +11,7 @@
       <PackageLicenseExpression>MIT</PackageLicenseExpression>
       <PackageReadmeFile>README.md</PackageReadmeFile>
       <PackageTags>nunit;test;runner</PackageTags>
+      <PackageId>WoofWare.NUnitTestRunner.Lib</PackageId>
       <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
       <WarnOn>FS3559</WarnOn>
     </PropertyGroup>

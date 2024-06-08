@@ -1,6 +1,6 @@
 {
-  "version": "0.7",
-  "publicReleaseRefSpec": null,
+  "version": "0.7-prerelease",
+  "publicReleaseRefSpec": ["^refs/heads/main$"],
   "pathFilters": [
     "./",
     ":/Directory.Build.props",
