@@ -22,6 +22,10 @@ type IndividualTestRunMetadata =
         ExecutionId : Guid
         /// An identifier for this test (possibly shared across repeats of this exact test with the same args).
         TestId : Guid
+        /// Human-readable string representing this individual single test run, including any parameters.
+        TestName : string
+        /// Name of the class from which this test derived
+        ClassName : string
     }
 
 /// The results of running a single TestFixture.
@@ -36,6 +40,16 @@ type FixtureRunResults =
         /// These failures occurred outside the context of a test - e.g. in setup or tear-down logic.
         OtherFailures : (UserMethodFailure * IndividualTestRunMetadata) list
     }
+
+    member this.IndividualTestRunMetadata : IndividualTestRunMetadata list =
+        [
+            for _, d in this.Failed do
+                yield d
+            for _, _, d in this.Success do
+                yield d
+            for _, d in this.OtherFailures do
+                yield d
+        ]
 
 /// A test fixture (usually represented by the [<TestFixture>]` attribute), which may contain many tests,
 /// each of which may run many times.
@@ -79,6 +93,13 @@ module TestFixture =
         let start = DateTimeOffset.Now
 
         let metadata =
+            let name =
+                if args.Length = 0 then
+                    test.Name
+                else
+                    let argsStr = args |> Seq.map string |> String.concat ","
+                    $"%s{test.Name}(%s{argsStr})"
+
             {
                 End = DateTimeOffset.UnixEpoch
                 Start = start
@@ -86,6 +107,8 @@ module TestFixture =
                 ComputerName = Environment.MachineName
                 ExecutionId = Guid.NewGuid ()
                 TestId = testId
+                TestName = name
+                ClassName = test.DeclaringType.FullName
             }
 
         let sw = Stopwatch.StartNew ()
@@ -210,6 +233,8 @@ module TestFixture =
                     ExecutionId = Guid.NewGuid ()
                     // No need to keep these test GUIDs stable: no point trying to run an explicit test multiple times.
                     TestId = Guid.NewGuid ()
+                    TestName = test.Name
+                    ClassName = test.Method.DeclaringType.FullName
                 }
 
             [ Ok result, failureMetadata ]
@@ -317,6 +342,8 @@ module TestFixture =
                     // No need to keep these test GUIDs stable: we're not going to run them multiple times,
                     // because we're not going to run anything at all.
                     TestId = Guid.NewGuid ()
+                    TestName = test.Name
+                    ClassName = test.Method.DeclaringType.FullName
                 }
 
             [ Error e, failureMetadata ]
@@ -380,8 +407,10 @@ module TestFixture =
                 ComputerName = Environment.MachineName
                 ExecutionId = Guid.NewGuid ()
                 TestId = Guid.NewGuid ()
+                // This one is a bit dubious, because we don't actually have a test name at all
+                TestName = tests.Name
+                ClassName = tests.Name
             }
-
 
         let setupResult =
             match tests.OneTimeSetUp with

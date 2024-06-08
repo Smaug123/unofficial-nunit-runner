@@ -69,23 +69,29 @@ TestRunner.FixtureRunResults inherit obj, implements TestRunner.FixtureRunResult
 TestRunner.FixtureRunResults..ctor [constructor]: ((TestRunner.TestMemberFailure * TestRunner.IndividualTestRunMetadata) list, (TestRunner.SingleTestMethod * TestRunner.TestMemberSuccess * TestRunner.IndividualTestRunMetadata) list, (TestRunner.UserMethodFailure * TestRunner.IndividualTestRunMetadata) list)
 TestRunner.FixtureRunResults.Failed [property]: [read-only] (TestRunner.TestMemberFailure * TestRunner.IndividualTestRunMetadata) list
 TestRunner.FixtureRunResults.get_Failed [method]: unit -> (TestRunner.TestMemberFailure * TestRunner.IndividualTestRunMetadata) list
+TestRunner.FixtureRunResults.get_IndividualTestRunMetadata [method]: unit -> TestRunner.IndividualTestRunMetadata list
 TestRunner.FixtureRunResults.get_OtherFailures [method]: unit -> (TestRunner.UserMethodFailure * TestRunner.IndividualTestRunMetadata) list
 TestRunner.FixtureRunResults.get_Success [method]: unit -> (TestRunner.SingleTestMethod * TestRunner.TestMemberSuccess * TestRunner.IndividualTestRunMetadata) list
+TestRunner.FixtureRunResults.IndividualTestRunMetadata [property]: [read-only] TestRunner.IndividualTestRunMetadata list
 TestRunner.FixtureRunResults.OtherFailures [property]: [read-only] (TestRunner.UserMethodFailure * TestRunner.IndividualTestRunMetadata) list
 TestRunner.FixtureRunResults.Success [property]: [read-only] (TestRunner.SingleTestMethod * TestRunner.TestMemberSuccess * TestRunner.IndividualTestRunMetadata) list
 TestRunner.IndividualTestRunMetadata inherit obj, implements TestRunner.IndividualTestRunMetadata System.IEquatable, System.Collections.IStructuralEquatable, TestRunner.IndividualTestRunMetadata System.IComparable, System.IComparable, System.Collections.IStructuralComparable
-TestRunner.IndividualTestRunMetadata..ctor [constructor]: (System.TimeSpan, System.DateTimeOffset, System.DateTimeOffset, string, System.Guid, System.Guid)
+TestRunner.IndividualTestRunMetadata..ctor [constructor]: (System.TimeSpan, System.DateTimeOffset, System.DateTimeOffset, string, System.Guid, System.Guid, string, string)
+TestRunner.IndividualTestRunMetadata.ClassName [property]: [read-only] string
 TestRunner.IndividualTestRunMetadata.ComputerName [property]: [read-only] string
 TestRunner.IndividualTestRunMetadata.End [property]: [read-only] System.DateTimeOffset
 TestRunner.IndividualTestRunMetadata.ExecutionId [property]: [read-only] System.Guid
+TestRunner.IndividualTestRunMetadata.get_ClassName [method]: unit -> string
 TestRunner.IndividualTestRunMetadata.get_ComputerName [method]: unit -> string
 TestRunner.IndividualTestRunMetadata.get_End [method]: unit -> System.DateTimeOffset
 TestRunner.IndividualTestRunMetadata.get_ExecutionId [method]: unit -> System.Guid
 TestRunner.IndividualTestRunMetadata.get_Start [method]: unit -> System.DateTimeOffset
 TestRunner.IndividualTestRunMetadata.get_TestId [method]: unit -> System.Guid
+TestRunner.IndividualTestRunMetadata.get_TestName [method]: unit -> string
 TestRunner.IndividualTestRunMetadata.get_Total [method]: unit -> System.TimeSpan
 TestRunner.IndividualTestRunMetadata.Start [property]: [read-only] System.DateTimeOffset
 TestRunner.IndividualTestRunMetadata.TestId [property]: [read-only] System.Guid
+TestRunner.IndividualTestRunMetadata.TestName [property]: [read-only] string
 TestRunner.IndividualTestRunMetadata.Total [property]: [read-only] System.TimeSpan
 TestRunner.ITestProgress - interface with 5 member(s)
 TestRunner.ITestProgress.OnTestFailed [method]: string -> TestRunner.TestMemberFailure -> unit

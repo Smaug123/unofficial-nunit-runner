@@ -130,26 +130,75 @@ module Program =
             )
             |> Seq.toList
 
+        let now = DateTime.Now
+        let nowHumanReadable = now.ToString @"yyyy-MM-dd HH:mm:ss"
+        let nowMachine = now.ToString @"yyyy-MM-dd_HH_mm_ss"
+
+        let testListId = Guid.NewGuid ()
+
+        let testDefinitions, testEntries =
+            results
+            |> List.collect (fun results -> results.IndividualTestRunMetadata)
+            |> List.map (fun data ->
+                let defn =
+                    {
+                        Name = data.TestName
+                        Storage = assy.Location.ToLowerInvariant ()
+                        Id = data.TestId
+                        Execution =
+                            {
+                                Id = data.ExecutionId
+                            }
+                        TestMethod =
+                            {
+                                CodeBase = assy.Location
+                                AdapterTypeName = Uri "executor://woofware/"
+                                ClassName = data.ClassName
+                                Name = data.TestName
+                            }
+                    }
+
+                let entry : TrxTestEntry =
+                    {
+                        TestListId = testListId
+                        ExecutionId = data.ExecutionId
+                        TestId = data.TestId
+
+                    }
+
+                defn, entry
+            )
+            |> List.unzip
+
+        let hostname = Environment.MachineName
+
+        let settings =
+            {
+                Name = "default"
+                Id = Guid.NewGuid ()
+                Deployment =
+                    {
+                        RunDeploymentRoot = $"_%s{hostname}_%s{nowMachine}"
+                    }
+            }
+
+        let testList : TrxTestListEntry =
+            {
+                Id = testListId
+                Name = "All"
+            }
+
         (*
         let report : TrxReport =
-            let now = DateTime.Now
-            let nowHumanReadable = now.ToString @"yyyy-MM-dd HH:mm:ss"
-            let nowMachine = now.ToString @"yyyy-MM-dd_HH_mm_ss"
-            let hostname = Environment.MachineName
             {
                 Id = Guid.NewGuid ()
                 Name = $"@%s{hostname} %s{nowHumanReadable}"
                 Times = failwith "todo"
-                Settings =
-                    {
-                        Name = "default"
-                        Id = Guid.NewGuid ()
-                        Deployment = { RunDeploymentRoot = $"_%s{hostname}_%s{nowMachine}" }
-                    }
+                Settings = settings
                 Results = failwith "todo"
-                TestDefinitions = failwith "todo"
-                TestEntries = failwith "todo"
-                TestLists = failwith "todo"
+                TestDefinitions = testDefinitions
+                TestEntries = testEntries
+                TestLists = [ testList ]
                 ResultsSummary = failwith "todo"
             }
         *)
