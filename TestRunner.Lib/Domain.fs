@@ -161,6 +161,7 @@ type TestMemberFailure =
     | Malformed of reasons : string list
     /// We tried to run the test, but it failed. (A single test can fail many times, e.g. if it failed and also
     /// the tear-down logic failed afterwards.)
+    /// TODO: the domain is squiffy here. We report many failures, but then we also report many IndividualRunMetadata.
     | Failed of TestFailure list
 
     /// Human-readable string representation
