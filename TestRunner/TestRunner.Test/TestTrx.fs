@@ -1,13 +1,53 @@
 namespace TestRunner.Test
 
 open System
-open NuGet.Packaging.Signing
 open TestRunner
 open NUnit.Framework
 open FsUnitTyped
 
 [<TestFixture>]
 module TestTrx =
+
+    let outputShouldEqual (expected : TrxOutput option) (actual : TrxOutput option) =
+        match expected, actual with
+        | None, None -> ()
+        | None, Some actual -> failwith $"Expected no output, actual: %O{actual}"
+        | Some expected, None -> failwith $"Got no output, but expected: %O{expected}"
+        | Some expected, Some actual ->
+            actual.StdOut |> shouldEqual expected.StdOut
+            actual.ErrorInfo |> shouldEqual expected.ErrorInfo
+
+    let resultShouldEqual (index : int) (expected : TrxUnitTestResult) (actual : TrxUnitTestResult) =
+        try
+            actual.Duration |> shouldEqual expected.Duration
+            actual.Outcome |> shouldEqual expected.Outcome
+            actual.Output |> outputShouldEqual expected.Output
+            actual.ComputerName |> shouldEqual expected.ComputerName
+            actual.EndTime |> shouldEqual expected.EndTime
+            actual.ExecutionId |> shouldEqual expected.ExecutionId
+            actual.StartTime |> shouldEqual expected.StartTime
+            actual.TestId |> shouldEqual expected.TestId
+            actual.TestName |> shouldEqual expected.TestName
+            actual.TestType |> shouldEqual expected.TestType
+            actual.RelativeResultsDirectory |> shouldEqual expected.RelativeResultsDirectory
+            actual.TestListId |> shouldEqual expected.TestListId
+        with e ->
+            raise (AggregateException ($"At element %i{index}", e))
+
+    let reportShouldEqual (expected : TrxReport) (actual : TrxReport) =
+        actual.Id |> shouldEqual expected.Id
+        actual.Name |> shouldEqual expected.Name
+        actual.Results |> shouldHaveLength expected.Results.Length
+
+        for i, (actual, expected) in List.zip actual.Results expected.Results |> List.indexed do
+            resultShouldEqual i expected actual
+
+        actual.Settings |> shouldEqual expected.Settings
+        actual.Times |> shouldEqual expected.Times
+        actual.ResultsSummary |> shouldEqual expected.ResultsSummary
+        actual.TestDefinitions |> shouldEqual expected.TestDefinitions
+        actual.TestEntries |> shouldEqual expected.TestEntries
+        actual.TestLists |> shouldEqual expected.TestLists
 
     [<Test>]
     let ``Can parse the first example`` () =
@@ -178,3 +218,18 @@ NUnit Adapter 4.5.0.0: Test execution complete
             }
 
         parsed.ResultsSummary |> shouldEqual expectedResultsSummary
+
+    [<Test>]
+    let ``Can round-trip`` () =
+        let original =
+            EmbeddedResource.read "Example1.trx"
+            |> TrxReport.parse
+            |> Result.get
+            |> Option.get
+
+        let afterwards = TrxReport.toXml original
+
+        let andParsedAgain =
+            afterwards.OuterXml |> TrxReport.parse |> Result.get |> Option.get
+
+        andParsedAgain |> reportShouldEqual original
