@@ -42,6 +42,20 @@ jobs:
 
   selftest:
     runs-on: ubuntu-latest
+    permissions:
+      actions: none
+      checks: none
+      contents: read
+      deployments: none
+      id-token: none
+      issues: none
+      discussions: none
+      packages: none
+      pages: none
+      pull-requests: read
+      repository-projects: none
+      security-events: none
+      statuses: read
 
     steps:
     - uses: actions/checkout@v4
@@ -63,6 +77,7 @@ jobs:
       id: trx-parser
       with:
         TRX_PATH: ${{ github.workspace }}/TrxOut
+        REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   analyzers:
     runs-on: ubuntu-latest
