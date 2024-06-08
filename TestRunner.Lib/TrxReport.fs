@@ -33,6 +33,7 @@ type TrxReportTimes =
                 | false, _ -> Error $"could not parse '%s{v}' as a creation time"
                 | true, t -> Ok t
             | _ -> Error "got no creation node"
+
         let queuing =
             match node.Attributes.["queuing"] with
             | NoChildrenNode v ->
@@ -40,6 +41,7 @@ type TrxReportTimes =
                 | false, _ -> Error $"could not parse '%s{v}' as a queuing time"
                 | true, t -> Ok t
             | _ -> Error "got no queuing node"
+
         let start =
             match node.Attributes.["start"] with
             | NoChildrenNode v ->
@@ -47,6 +49,7 @@ type TrxReportTimes =
                 | false, _ -> Error $"could not parse '%s{v}' as a start time"
                 | true, t -> Ok t
             | _ -> Error "got no start node"
+
         let finish =
             match node.Attributes.["finish"] with
             | NoChildrenNode v ->
@@ -65,7 +68,13 @@ type TrxReportTimes =
             }
             |> Ok
         | _ ->
-            [ creation ; queuing ; start ; finish ] |> Seq.choose (function | Ok _ -> None | Error e -> Some e) |> String.concat ";"
+            [ creation ; queuing ; start ; finish ]
+            |> Seq.choose (
+                function
+                | Ok _ -> None
+                | Error e -> Some e
+            )
+            |> String.concat ";"
             |> Error
 
 /// Information about this particular instance of the test runner in space and time.
@@ -106,6 +115,7 @@ type TrxTestSettings =
             match node.Attributes.["name"] with
             | NoChildrenNode v -> Ok v
             | _ -> Error "expected a name field on TestSettings"
+
         let guid =
             match node.Attributes.["id"] with
             | NoChildrenNode v ->
@@ -113,10 +123,10 @@ type TrxTestSettings =
                 | true, v -> Ok v
                 | false, _ -> Error "could not parse id field as a GUID"
             | _ -> Error "expected an id field on TestSettings"
+
         let deployment =
             match node with
-            | OneChildNode "Deployment" v ->
-                TrxDeployment.ofXml v
+            | OneChildNode "Deployment" v -> TrxDeployment.ofXml v
             | _ -> Error "expected a <Deployment> child of TestSettings"
 
         match name, guid, deployment with
@@ -128,7 +138,9 @@ type TrxTestSettings =
             }
             |> Ok
         | _ ->
-            [ Result.getError name ; Result.getError guid ; Result.getError deployment ] |> Seq.choose id |> String.concat ";"
+            [ Result.getError name ; Result.getError guid ; Result.getError deployment ]
+            |> Seq.choose id
+            |> String.concat ";"
             |> Error
 
 /// The outcome of a specific single test.
@@ -143,6 +155,14 @@ type TrxTestOutcome =
         match this with
         | TrxTestOutcome.Passed -> "Passed"
         | TrxTestOutcome.Failed -> "Failed"
+
+    static member Parse (s : string) : TrxTestOutcome option =
+        if s.Equals ("passed", StringComparison.OrdinalIgnoreCase) then
+            Some TrxTestOutcome.Passed
+        elif s.Equals ("failed", StringComparison.OrdinalIgnoreCase) then
+            Some TrxTestOutcome.Failed
+        else
+            None
 
 /// Description of an error emitted by something that runs (e.g. the test harness or an individual test).
 /// This is not a description of a test *failure*.
@@ -159,6 +179,7 @@ type TrxErrorInfo =
             match node with
             | NodeWithNamedChild "Message" (NoChildrenNode message) -> Some message
             | _ -> None
+
         let stackTrace =
             match node with
             | NodeWithNamedChild "StackTrace" (NoChildrenNode stackTrace) -> Some stackTrace
@@ -233,8 +254,147 @@ type TrxUnitTestResult =
         /// Any output the test had, beyond its passed/failed (etc) outcome.
         Output : TrxOutput option
     }
+
     static member internal ofXml (node : XmlNode) : Result<TrxUnitTestResult, string> =
-        failwith ""
+        let attrs =
+            node.Attributes
+            |> Seq.cast<XmlAttribute>
+            |> Seq.map (fun attr -> attr.Name, attr.Value)
+            |> Map.ofSeq // silently ignore duplicates
+
+        let executionId =
+            match attrs.TryGetValue "executionId" with
+            | false, _ -> Error "executionId"
+            | true, v ->
+                match Guid.TryParse v with
+                | false, _ -> Error $"executionId was not a GUID: %s{v}"
+                | true, v -> Ok v
+
+        let testId =
+            match attrs.TryGetValue "testId" with
+            | false, _ -> Error "testId"
+            | true, v ->
+                match Guid.TryParse v with
+                | false, _ -> Error $"testId was not a GUID: %s{v}"
+                | true, v -> Ok v
+
+        let testName =
+            match attrs.TryGetValue "testName" with
+            | false, _ -> Error "testName"
+            | true, v -> Ok v
+
+        let computerName =
+            match attrs.TryGetValue "computerName" with
+            | false, _ -> Error "computerName"
+            | true, v -> Ok v
+
+        let duration =
+            match attrs.TryGetValue "duration" with
+            | false, _ -> Error "duration"
+            | true, v ->
+                match TimeSpan.TryParse v with
+                | false, _ -> Error $"duration was not a TimeSpan: %s{v}"
+                | true, v -> Ok v
+
+        let startTime =
+            match attrs.TryGetValue "startTime" with
+            | false, _ -> Error "startTime"
+            | true, v ->
+                match DateTimeOffset.TryParse v with
+                | false, _ -> Error $"startTime was not a DateTimeOffset: %s{v}"
+                | true, v -> Ok v
+
+        let endTime =
+            match attrs.TryGetValue "endTime" with
+            | false, _ -> Error "endTime"
+            | true, v ->
+                match DateTimeOffset.TryParse v with
+                | false, _ -> Error $"endTime was not a DateTimeOffset: %s{v}"
+                | true, v -> Ok v
+
+        let testType =
+            match attrs.TryGetValue "testType" with
+            | false, _ -> Error "testType"
+            | true, v ->
+                match Guid.TryParse v with
+                | false, _ -> Error $"testType was not a GUID: %s{v}"
+                | true, v -> Ok v
+
+        let outcome =
+            match attrs.TryGetValue "outcome" with
+            | false, _ -> Error "outcome"
+            | true, v ->
+                match TrxTestOutcome.Parse v with
+                | None -> Error $"Outcome was not recognised: %s{v}"
+                | Some v -> Ok v
+
+        let testListId =
+            match attrs.TryGetValue "testListId" with
+            | false, _ -> Error "testListId"
+            | true, v ->
+                match Guid.TryParse v with
+                | false, _ -> Error $"testListId was not a GUID: %s{v}"
+                | true, v -> Ok v
+
+        let relativeResultsDirectory =
+            match attrs.TryGetValue "relativeResultsDirectory" with
+            | false, _ -> Error "relativeResultsDirectory"
+            | true, v -> Ok v
+
+        let output =
+            match node with
+            | NodeWithNamedChild "Output" node -> Some (TrxOutput.ofXml node)
+            | _ -> None
+
+        let errors =
+            [
+                executionId |> Result.getError
+                testId |> Result.getError
+                testName |> Result.getError
+                computerName |> Result.getError
+                duration |> Result.getError
+                startTime |> Result.getError
+                endTime |> Result.getError
+                testType |> Result.getError
+                outcome |> Result.getError
+                testListId |> Result.getError
+                relativeResultsDirectory |> Result.getError
+                output |> Option.bind Result.getError
+            ]
+            |> List.choose id
+
+        if not errors.IsEmpty then
+            errors |> String.concat "; " |> Error
+        else
+
+        let executionId = executionId |> Result.get |> Option.get
+        let testId = testId |> Result.get |> Option.get
+        let testName = testName |> Result.get |> Option.get
+        let computerName = computerName |> Result.get |> Option.get
+        let duration = duration |> Result.get |> Option.get
+        let startTime = startTime |> Result.get |> Option.get
+        let endTime = endTime |> Result.get |> Option.get
+        let testType = testType |> Result.get |> Option.get
+        let outcome = outcome |> Result.get |> Option.get
+        let testListId = testListId |> Result.get |> Option.get
+        let relativeResultsDirectory = relativeResultsDirectory |> Result.get |> Option.get
+        let output = output |> Option.bind Result.get
+
+        {
+            ExecutionId = executionId
+            TestId = testId
+            TestName = testName
+            ComputerName = computerName
+            Duration = duration
+            StartTime = startTime
+            EndTime = endTime
+            TestType = testType
+            Outcome = outcome
+            TestListId = testListId
+            RelativeResultsDirectory = relativeResultsDirectory
+            Output = output
+        }
+        |> Ok
 
 type TrxTestMethod =
     {
@@ -243,8 +403,8 @@ type TrxTestMethod =
         ClassName : string
         Name : string
     }
-    static member internal ofXml (node : XmlNode) : Result<TrxTestMethod, string> =
-        failwith ""
+
+    static member internal ofXml (node : XmlNode) : Result<TrxTestMethod, string> = failwith ""
 
 type TrxUnitTest =
     {
@@ -254,8 +414,8 @@ type TrxUnitTest =
         ExecutionId : Guid
         TestMethod : TrxTestMethod
     }
-    static member internal ofXml (node : XmlNode) : Result<TrxUnitTest, string> =
-        failwith ""
+
+    static member internal ofXml (node : XmlNode) : Result<TrxUnitTest, string> = failwith ""
 
 type TrxTestEntry =
     {
@@ -263,16 +423,16 @@ type TrxTestEntry =
         ExecutionId : Guid
         TestId : Guid
     }
-    static member internal ofXml (node : XmlNode) : Result<TrxTestEntry, string> =
-        failwith ""
+
+    static member internal ofXml (node : XmlNode) : Result<TrxTestEntry, string> = failwith ""
 
 type TrxTestList =
     {
         Name : string
         Id : Guid
     }
-    static member internal ofXml (node : XmlNode) : Result<TrxTestList, string> =
-        failwith ""
+
+    static member internal ofXml (node : XmlNode) : Result<TrxTestList, string> = failwith ""
 
 type TrxOutcome =
     | Completed
@@ -297,8 +457,8 @@ type TrxRunInfo =
         /// The text which was emitted in this event within the run.
         Text : string
     }
-    static member internal ofXml (node : XmlNode) : Result<TrxRunInfo, string> =
-        failwith ""
+
+    static member internal ofXml (node : XmlNode) : Result<TrxRunInfo, string> = failwith ""
 
 type TrxCounters =
     {
@@ -319,8 +479,8 @@ type TrxCounters =
         InProgress : uint
         Pending : uint
     }
-    static member internal ofXml (node : XmlNode) : Result<TrxCounters, string> =
-        failwith ""
+
+    static member internal ofXml (node : XmlNode) : Result<TrxCounters, string> = failwith ""
 
     /// A set of counters where every counter is 0.
     static member Zero =
@@ -350,8 +510,8 @@ type TrxResultsSummary =
         Output : TrxOutput
         RunInfos : TrxRunInfo list
     }
-    static member internal ofXml (node : XmlNode) : Result<TrxResultsSummary, string> =
-        failwith ""
+
+    static member internal ofXml (node : XmlNode) : Result<TrxResultsSummary, string> = failwith ""
 
 /// A report on a test run.
 type TrxReport =
@@ -366,8 +526,8 @@ type TrxReport =
         TestLists : TrxTestList list
         ResultsSummary : TrxResultsSummary
     }
-    static member internal ofXml (node : XmlNode) : Result<TrxReport, string> =
-        failwith ""
+
+    static member internal ofXml (node : XmlNode) : Result<TrxReport, string> = failwith ""
 
 /// A report on a test run.
 [<RequireQualifiedAccess>]
