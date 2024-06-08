@@ -73,6 +73,11 @@ module TestFilter =
             "FullyQualifiedName!~IntegrationTests",
             Filter.Not (Filter.FullyQualifiedName (Match.Contains "IntegrationTests"))
 
+            "FullyQualifiedName=MyNamespace.MyTestsClass<ParameterType1%2CParameterType2>.MyTestMethod",
+            Filter.FullyQualifiedName (
+                Match.Exact "MyNamespace.MyTestsClass<ParameterType1%2CParameterType2>.MyTestMethod"
+            )
+
             // This example has been modified: it's in quotes and XML-escaped.
             "FullyQualifiedName=\"MyNamespace.MyTestsClass&lt;ParameterType1&#37;2CParameterType2&gt;.MyTestMethod\"",
             Filter.FullyQualifiedName (
