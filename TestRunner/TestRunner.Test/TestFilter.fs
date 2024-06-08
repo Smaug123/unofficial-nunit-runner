@@ -52,6 +52,9 @@ module TestFilter =
                 ),
                 ParsedFilter.Equal (ParsedFilter.TestCategory, ParsedFilter.String "1")
             )
+
+            "Name ~\"&apos;hello&quot; world^&amp;foo|bar!&gt;&lt;\"",
+            ParsedFilter.Contains (ParsedFilter.Name, ParsedFilter.String """'hello" world^&foo|bar!><""")
         ]
         |> List.map TestCaseData
 
@@ -69,10 +72,18 @@ module TestFilter =
             "FullyQualifiedName~xyz", Filter.FullyQualifiedName (Match.Contains "xyz")
             "FullyQualifiedName!~IntegrationTests",
             Filter.Not (Filter.FullyQualifiedName (Match.Contains "IntegrationTests"))
+
             "FullyQualifiedName=MyNamespace.MyTestsClass<ParameterType1%2CParameterType2>.MyTestMethod",
             Filter.FullyQualifiedName (
                 Match.Exact "MyNamespace.MyTestsClass<ParameterType1%2CParameterType2>.MyTestMethod"
             )
+
+            // This example has been modified: it's in quotes and XML-escaped.
+            "FullyQualifiedName=\"MyNamespace.MyTestsClass&lt;ParameterType1&#37;2CParameterType2&gt;.MyTestMethod\"",
+            Filter.FullyQualifiedName (
+                Match.Exact "MyNamespace.MyTestsClass<ParameterType1%2CParameterType2>.MyTestMethod"
+            )
+
             "Name~Method", Filter.Name (Match.Contains "Method")
             "FullyQualifiedName!=MSTestNamespace.UnitTest1.TestMethod1",
             Filter.Not (Filter.FullyQualifiedName (Match.Exact "MSTestNamespace.UnitTest1.TestMethod1"))
@@ -100,4 +111,15 @@ module TestFilter =
 
     [<TestCaseSource(nameof docExamplesRefined)>]
     let ``Doc examples, refined`` (example : string, expected : Filter) =
+        Filter.parse example |> shouldEqual expected
+
+    let xmlExamples =
+        [
+            "Name ~\"&apos;hello&quot; world^&amp;foo|bar!&gt;&lt;\"",
+            Filter.Name (Match.Contains """'hello" world^&foo|bar!><""")
+        ]
+        |> List.map TestCaseData
+
+    [<TestCaseSource(nameof xmlExamples)>]
+    let ``XML examples`` (example : string, expected : Filter) =
         Filter.parse example |> shouldEqual expected

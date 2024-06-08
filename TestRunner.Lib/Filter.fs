@@ -1,6 +1,7 @@
 namespace TestRunner
 
 open System
+open System.IO
 open PrattParser
 
 // Documentation:
@@ -33,6 +34,15 @@ type internal TokenType =
     | Contains
     | NotContains
     | String
+    | QuotedString
+
+    static member canTerminateUnquotedString (t : TokenType) : bool =
+        // Here we essentially choose that unquoted strings can only appear on the RHS of an operation.
+        match t with
+        | TokenType.CloseParen
+        | TokenType.And
+        | TokenType.Or -> true
+        | _ -> false
 
 type internal Token =
     {
@@ -67,15 +77,26 @@ module internal Token =
 
 [<RequireQualifiedAccess>]
 module internal Lexer =
+    type State =
+        | UnquotedString of startPos : int
+        | Awaiting
+        | QuotedString of startPos : int
+
     let lex (s : string) : Token seq =
         seq {
             let mutable i = 0
-            let mutable stringAcc : int option = None
+            let mutable state = State.Awaiting
 
             while i < s.Length do
-                match (i, s.[i]), stringAcc with
+                match (i, s.[i]), state with
+                | (endI, '"'), State.QuotedString startI ->
+                    yield Token.single TokenType.QuotedString startI (endI - startI)
+                    i <- i + 1
+                    state <- State.Awaiting
+                | _, State.QuotedString _ -> i <- i + 1
+
                 // This one has to come before the check for prefix Not
-                | (startI, '!'), None when i + 1 < s.Length ->
+                | (startI, '!'), State.Awaiting when i + 1 < s.Length ->
                     i <- i + 1
 
                     match s.[i] with
@@ -88,44 +109,66 @@ module internal Lexer =
                     | _ ->
                         yield Token.single TokenType.Not startI 1
                         i <- i + 1
-                | Token.SingleChar token, None ->
+                | Token.SingleChar token, State.Awaiting ->
                     i <- i + 1
                     yield token
-                | Token.SingleChar _, Some stringStart ->
-                    yield Token.single TokenType.String stringStart (i - stringStart)
-                    stringAcc <- None // and we'll do the match again
-                | (_, 'F'), None when
+                | Token.SingleChar t, State.UnquotedString stringStart ->
+                    if TokenType.canTerminateUnquotedString t.Type then
+                        yield Token.single TokenType.String stringStart (i - stringStart)
+                        // don't increment `i`, we'll just do the match again
+                        state <- State.Awaiting
+                    else
+                        i <- i + 1
+                | (_, 'F'), State.Awaiting when
                     i + 1 < s.Length
                     && s.[i + 1 ..].StartsWith ("ullyQualifiedName", StringComparison.Ordinal)
                     ->
                     yield Token.single TokenType.FullyQualifiedName i "FullyQualifiedName".Length
                     i <- i + "FullyQualifiedName".Length
-                | (_, 'N'), None when i + 1 < s.Length && s.[i + 1 ..].StartsWith ("ame", StringComparison.Ordinal) ->
+                | (_, 'N'), State.Awaiting when
+                    i + 1 < s.Length && s.[i + 1 ..].StartsWith ("ame", StringComparison.Ordinal)
+                    ->
                     yield Token.single TokenType.Name i "Name".Length
                     i <- i + "Name".Length
-                | (_, 'T'), None when
+                | (_, 'T'), State.Awaiting when
                     i + 1 < s.Length
                     && s.[i + 1 ..].StartsWith ("estCategory", StringComparison.Ordinal)
                     ->
                     yield Token.single TokenType.TestCategory i "TestCategory".Length
                     i <- i + "TestCategory".Length
-                | (_, ' '), None -> i <- i + 1
-                | (_, _), None ->
-                    stringAcc <- Some i
+                | (_, ' '), State.Awaiting -> i <- i + 1
+                | (_, '"'), State.Awaiting ->
+                    state <- State.QuotedString i
                     i <- i + 1
-                | (_, _), Some _ -> i <- i + 1
+                | (_, _), State.Awaiting ->
+                    state <- State.UnquotedString i
+                    i <- i + 1
+                | (_, _), State.UnquotedString _ -> i <- i + 1
 
-            match stringAcc with
-            | None -> ()
-            | Some start -> yield Token.single TokenType.String start (s.Length - start)
+            match state with
+            | State.Awaiting -> ()
+            | State.UnquotedString start -> yield Token.single TokenType.String start (s.Length - start)
+            | State.QuotedString i ->
+                failwith $"Parse failed: we never closed the string which started at position %i{i}"
         }
 
 [<RequireQualifiedAccess>]
 module internal ParsedFilter =
+    let private unescape (s : string) : string =
+        System.Xml.XmlReader
+            .Create(new StringReader ("<r>" + s + "</r>"))
+            .ReadElementString ()
+
     let private atom (inputString : string) (token : Token) : ParsedFilter option =
         let start, len = token.Trivia
 
         match token.Type with
+        | TokenType.QuotedString ->
+            // +1 and -1, because the trivia contains the initial and terminal quote mark
+            inputString.Substring (start + 1, len - 1)
+            |> unescape
+            |> ParsedFilter.String
+            |> Some
         | TokenType.String -> Some (ParsedFilter.String (inputString.Substring (start, len)))
         | TokenType.FullyQualifiedName -> Some ParsedFilter.FullyQualifiedName
         | TokenType.Name -> Some ParsedFilter.Name
@@ -159,7 +202,8 @@ module internal ParsedFilter =
             }
 
     let parse (s : string) : ParsedFilter =
-        let parsed, remaining = Parser.execute parser s (Lexer.lex s |> Seq.toList)
+        let tokens = Lexer.lex s |> Seq.toList
+        let parsed, remaining = Parser.execute parser s tokens
 
         if not remaining.IsEmpty then
             failwith $"Leftover tokens: %O{remaining}"
@@ -194,10 +238,6 @@ type Filter =
 /// Methods for manipulating filters.
 [<RequireQualifiedAccess>]
 module Filter =
-    let private unescape (s : string) : string =
-        // TODO: XML escaping
-        s
-
     let rec internal makeParsed (fi : ParsedFilter) : Filter =
         match fi with
         | ParsedFilter.Not x -> Filter.Not (makeParsed x)
@@ -209,7 +249,7 @@ module Filter =
         | ParsedFilter.Equal (key, value) ->
             let value =
                 match value with
-                | ParsedFilter.String s -> unescape s
+                | ParsedFilter.String s -> s
                 | _ -> failwith $"malformed filter: found non-string operand on RHS of equality, '%O{value}'"
 
             match key with
@@ -220,7 +260,7 @@ module Filter =
         | ParsedFilter.Contains (key, value) ->
             let value =
                 match value with
-                | ParsedFilter.String s -> unescape s
+                | ParsedFilter.String s -> s
                 | _ -> failwith $"malformed filter: found non-string operand on RHS of containment, '%O{value}'"
 
             match key with
