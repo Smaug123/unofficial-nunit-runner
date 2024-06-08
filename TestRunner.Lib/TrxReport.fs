@@ -182,12 +182,12 @@ type TrxErrorInfo =
     static member internal ofXml (node : XmlNode) : Result<TrxErrorInfo, string> =
         let message =
             match node with
-            | NodeWithNamedChild "Message" (NoChildrenNode message) -> Some message
+            | NodeWithNamedChild "Message" (OneChildNode "Message" (NoChildrenNode message)) -> Some message
             | _ -> None
 
         let stackTrace =
             match node with
-            | NodeWithNamedChild "StackTrace" (NoChildrenNode stackTrace) -> Some stackTrace
+            | NodeWithNamedChild "StackTrace" (OneChildNode "StackTrace" (NoChildrenNode stackTrace)) -> Some stackTrace
             | _ -> None
 
         {
@@ -208,7 +208,7 @@ type TrxOutput =
     static member internal ofXml (node : XmlNode) : Result<TrxOutput, string> =
         let stdout =
             match node with
-            | NodeWithNamedChild "StdOut" (NoChildrenNode stdout) -> Some stdout
+            | NodeWithNamedChild "StdOut" (OneChildNode "StdOut" (NoChildrenNode stdout)) -> Some stdout
             | _ -> None
 
         let errorInfo =
