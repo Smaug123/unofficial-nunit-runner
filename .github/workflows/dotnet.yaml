@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       actions: none
-      checks: none
+      checks: write
       contents: read
       deployments: none
       id-token: none
