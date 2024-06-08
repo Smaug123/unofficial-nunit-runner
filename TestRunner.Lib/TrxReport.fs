@@ -1024,7 +1024,59 @@ type TrxResultsSummary =
         RunInfos : TrxRunInfo list
     }
 
-    static member internal ofXml (node : XmlNode) : Result<TrxResultsSummary, string> = failwith ""
+    static member internal ofXml (node : XmlNode) : Result<TrxResultsSummary, string> =
+        match node.Attributes.["outcome"] with
+        | null -> Error "Expected outcome node"
+        | outcome ->
+
+        match TrxOutcome.Parse outcome.Value with
+        | None -> Error $"Could not parse outcome attribute: %s{outcome.Value}"
+        | Some outcome ->
+
+        let counters =
+            match node with
+            | NodeWithNamedChild "Counters" n -> TrxCounters.ofXml n
+            | _ -> Error "Expected Counters node on ResultsSummary"
+
+        let output =
+            match node with
+            | NodeWithNamedChild "Output" n -> TrxOutput.ofXml n
+            | _ -> Error "Expected Output node on ResultsSummary"
+
+        let runInfos =
+            match node with
+            | NodeWithNamedChild "RunInfos" v ->
+                v.ChildNodes
+                |> Seq.cast
+                |> Seq.map TrxRunInfo.ofXml
+                |> Seq.toList
+                |> Result.allOkOrError
+                |> Result.mapError (fun (_, errors) -> String.concat "; " errors)
+            | _ -> Error "Expected Counters node on ResultsSummary"
+
+        let errors =
+            [
+                counters |> Result.getError
+                runInfos |> Result.getError
+                output |> Result.getError
+            ]
+            |> List.choose id
+
+        if not errors.IsEmpty then
+            errors |> String.concat "; " |> Error
+        else
+
+        let counters = counters |> Result.get |> Option.get
+        let runInfos = runInfos |> Result.get |> Option.get
+        let output = output |> Result.get |> Option.get
+
+        {
+            Outcome = outcome
+            Counters = counters
+            RunInfos = runInfos
+            Output = output
+        }
+        |> Ok
 
 /// A report on a test run.
 type TrxReport =
@@ -1040,7 +1092,125 @@ type TrxReport =
         ResultsSummary : TrxResultsSummary
     }
 
-    static member internal ofXml (node : XmlNode) : Result<TrxReport, string> = failwith ""
+    static member internal ofXml (node : XmlNode) : Result<TrxReport, string> =
+        let attrs =
+            node.Attributes
+            |> Seq.cast<XmlAttribute>
+            |> Seq.map (fun attr -> attr.Name, attr.Value)
+            |> Map.ofSeq // silently ignore duplicates
+
+        let name =
+            match attrs.TryGetValue "name" with
+            | false, _ -> Error "Expected name attribute"
+            | true, v -> Ok v
+
+        let ident =
+            match attrs.TryGetValue "id" with
+            | false, _ -> Error "Expected id attribute"
+            | true, v ->
+                match Guid.TryParse v with
+                | false, _ -> Error $"Could not parse GUID: %s{v}"
+                | true, v -> Ok v
+
+        let times =
+            match node with
+            | NodeWithNamedChild "Times" n -> TrxReportTimes.ofXml n
+            | _ -> Error "Expected Times node on TrxReport"
+
+        let testSettings =
+            match node with
+            | NodeWithNamedChild "TestSettings" n -> TrxTestSettings.ofXml n
+            | _ -> Error "Expected TestSettings node on TrxReport"
+
+        let resultsSummary =
+            match node with
+            | NodeWithNamedChild "ResultsSummary" n -> TrxResultsSummary.ofXml n
+            | _ -> Error "Expected ResultsSummary node on TrxReport"
+
+        let testEntries =
+            match node with
+            | NodeWithNamedChild "TestEntries" v ->
+                v.ChildNodes
+                |> Seq.cast
+                |> Seq.map TrxTestEntry.ofXml
+                |> Seq.toList
+                |> Result.allOkOrError
+                |> Result.mapError (fun (_, errors) -> String.concat "; " errors)
+            | _ -> Error "Expected TestEntries node on TrxReport"
+
+        let testLists =
+            match node with
+            | NodeWithNamedChild "TestLists" v ->
+                v.ChildNodes
+                |> Seq.cast
+                |> Seq.map TrxTestList.ofXml
+                |> Seq.toList
+                |> Result.allOkOrError
+                |> Result.mapError (fun (_, errors) -> String.concat "; " errors)
+            | _ -> Error "Expected TestLists node on TrxReport"
+
+        let testDefinitions =
+            match node with
+            | NodeWithNamedChild "TestDefinitions" v ->
+                v.ChildNodes
+                |> Seq.cast
+                |> Seq.map TrxUnitTest.ofXml
+                |> Seq.toList
+                |> Result.allOkOrError
+                |> Result.mapError (fun (_, errors) -> String.concat "; " errors)
+            | _ -> Error "Expected TestDefinitions node on TrxReport"
+
+        let testResults =
+            match node with
+            | NodeWithNamedChild "TestResults" v ->
+                v.ChildNodes
+                |> Seq.cast
+                |> Seq.map TrxUnitTestResult.ofXml
+                |> Seq.toList
+                |> Result.allOkOrError
+                |> Result.mapError (fun (_, errors) -> String.concat "; " errors)
+            | _ -> Error "Expected TestResults node on TrxReport"
+
+        let errors =
+            [
+                name |> Result.getError
+                ident |> Result.getError
+                times |> Result.getError
+                testSettings |> Result.getError
+                resultsSummary |> Result.getError
+                testEntries |> Result.getError
+                testLists |> Result.getError
+                testDefinitions |> Result.getError
+                testResults |> Result.getError
+            ]
+            |> List.choose id
+
+        if not errors.IsEmpty then
+            errors |> String.concat "; " |> Error
+        else
+
+        let name = name |> Result.get |> Option.get
+        let ident = ident |> Result.get |> Option.get
+        let times = times |> Result.get |> Option.get
+        let testSettings = testSettings |> Result.get |> Option.get
+        let resultsSummary = resultsSummary |> Result.get |> Option.get
+        let testEntries = testEntries |> Result.get |> Option.get
+        let testLists = testLists |> Result.get |> Option.get
+        let testDefinitions = testDefinitions |> Result.get |> Option.get
+        let testResults = testResults |> Result.get |> Option.get
+
+        {
+            Id = ident
+            Name = name
+            Times = times
+            Settings = testSettings
+            Results = testResults
+            TestDefinitions = testDefinitions
+            TestEntries = testEntries
+            TestLists = testLists
+            ResultsSummary = resultsSummary
+        }
+        |> Ok
 
 /// A report on a test run.
 [<RequireQualifiedAccess>]
@@ -1049,4 +1219,7 @@ module TrxReport =
     let parse (s : string) : Result<TrxReport, string> =
         let node = XmlDocument ()
         node.LoadXml s
-        TrxReport.ofXml node
+
+        match node with
+        | NodeWithNamedChild "TestRun" node -> TrxReport.ofXml node
+        | _ -> Error "XML document did not have a TestRun node"

@@ -1,5 +1,6 @@
 namespace TestRunner.Test
 
+open TestRunner
 open NUnit.Framework
 
 [<TestFixture>]
