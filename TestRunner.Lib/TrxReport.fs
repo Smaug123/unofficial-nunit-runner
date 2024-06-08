@@ -1,7 +1,6 @@
 namespace TestRunner
 
 open System
-open System.IO
 open System.Xml
 
 /// Describes the times at which a complete test run went through state transitions.
@@ -396,26 +395,186 @@ type TrxUnitTestResult =
         }
         |> Ok
 
+/// A method which, being run, caused a test to run.
+/// You get one of these for each run, so in particular you get a different one for each parameter of the method.
 type TrxTestMethod =
     {
-        CodeBase : FileInfo
+        /// Path to the DLL from which this test was extracted.
+        CodeBase : string
+        /// Identifier for the entity or framework which executed this test.
         AdapterTypeName : Uri
+        /// Name of the .NET class in which this test method was defined.
         ClassName : string
+        /// Name of the test method. This includes string representations of any parameters to the method.
         Name : string
     }
 
-    static member internal ofXml (node : XmlNode) : Result<TrxTestMethod, string> = failwith ""
+    static member internal ofXml (node : XmlNode) : Result<TrxTestMethod, string> =
+        let attrs =
+            node.Attributes
+            |> Seq.cast<XmlAttribute>
+            |> Seq.map (fun attr -> attr.Name, attr.Value)
+            |> Map.ofSeq // silently ignore duplicates
 
+        let codeBase =
+            match attrs.TryGetValue "codeBase" with
+            | false, _ -> Error "Expected codeBase attribute"
+            | true, v -> Ok v
+
+        let adapterTypeName =
+            match attrs.TryGetValue "adapterTypeName" with
+            | false, _ -> Error "Expected adapterTypeName attribute"
+            | true, v -> Uri v |> Ok
+
+        let className =
+            match attrs.TryGetValue "className" with
+            | false, _ -> Error "Expected className attribute"
+            | true, v -> Ok v
+
+        let name =
+            match attrs.TryGetValue "name" with
+            | false, _ -> Error "Expected name attribute"
+            | true, v -> Ok v
+
+        let errors =
+            [
+                codeBase |> Result.getError
+                adapterTypeName |> Result.getError
+                className |> Result.getError
+                name |> Result.getError
+            ]
+            |> List.choose id
+
+        if not errors.IsEmpty then
+            errors |> String.concat "; " |> Error
+        else
+
+        let codeBase = codeBase |> Result.get |> Option.get
+        let adapterTypeName = adapterTypeName |> Result.get |> Option.get
+        let className = className |> Result.get |> Option.get
+        let name = name |> Result.get |> Option.get
+
+        {
+            CodeBase = codeBase
+            AdapterTypeName = adapterTypeName
+            ClassName = className
+            Name = name
+        }
+        |> Ok
+
+type TrxExecution =
+    {
+        /// Identifier for the execution that ran this specific test.
+        Id : Guid
+    }
+
+    static member internal ofXml (node : XmlNode) : Result<TrxExecution, string> =
+        let attrs =
+            node.Attributes
+            |> Seq.cast<XmlAttribute>
+            |> Seq.map (fun attr -> attr.Name, attr.Value)
+            |> Map.ofSeq // silently ignore duplicates
+
+        let ident =
+            match attrs.TryGetValue "id" with
+            | false, _ -> Error "Expected id attribute"
+            | true, v ->
+                match Guid.TryParse v with
+                | false, _ -> Error $"Could not parse GUID: %s{v}"
+                | true, v -> Ok v
+
+        let errors = [ ident |> Result.getError ] |> List.choose id
+
+        if not errors.IsEmpty then
+            errors |> String.concat "; " |> Error
+        else
+
+        let ident = ident |> Result.get |> Option.get
+
+        {
+            Id = ident
+        }
+        |> Ok
+
+
+/// A single test. (So, for example, you get different ones of these for each parameter to the test method.)
 type TrxUnitTest =
     {
+        /// Name of the test, incorporating string representations of any parameters to the test.
         Name : string
-        Storage : FileInfo
+        /// Not really sure what this is, but in my runs it's always been a path to the test DLL.
+        Storage : string
+        /// Identifier for this test, for cross-referencing in the TestEntries and Results lists.
         Id : Guid
-        ExecutionId : Guid
+        /// Identifier for the execution that ran this specific test.
+        Execution : TrxExecution
+        /// The method we ran to run this test.
         TestMethod : TrxTestMethod
     }
 
-    static member internal ofXml (node : XmlNode) : Result<TrxUnitTest, string> = failwith ""
+    static member internal ofXml (node : XmlNode) : Result<TrxUnitTest, string> =
+        let attrs =
+            node.Attributes
+            |> Seq.cast<XmlAttribute>
+            |> Seq.map (fun attr -> attr.Name, attr.Value)
+            |> Map.ofSeq // silently ignore duplicates
+
+        let name =
+            match attrs.TryGetValue "name" with
+            | false, _ -> Error "Expected name attribute"
+            | true, v -> Ok v
+
+        let storage =
+            match attrs.TryGetValue "storage" with
+            | false, _ -> Error "Expected storage attribute"
+            | true, v -> Ok v
+
+        let ident =
+            match attrs.TryGetValue "id" with
+            | false, _ -> Error "Expected id attribute"
+            | true, v ->
+                match Guid.TryParse v with
+                | false, _ -> Error $"Could not parse GUID: %s{v}"
+                | true, v -> Ok v
+
+        let execution =
+            match node with
+            | NodeWithNamedChild "Execution" node -> TrxExecution.ofXml node
+            | _ -> Error "Expected Execution node, but got none"
+
+        let testMethod =
+            match node with
+            | NodeWithNamedChild "TestMethod" node -> TrxTestMethod.ofXml node
+            | _ -> Error "Expected TestMethod node, but got none"
+
+        let errors =
+            [
+                name |> Result.getError
+                storage |> Result.getError
+                ident |> Result.getError
+                execution |> Result.getError
+                testMethod |> Result.getError
+            ]
+            |> List.choose id
+
+        if not errors.IsEmpty then
+            errors |> String.concat "; " |> Error
+        else
+
+        let name = name |> Result.get |> Option.get
+        let storage = storage |> Result.get |> Option.get
+        let ident = ident |> Result.get |> Option.get
+        let execution = execution |> Result.get |> Option.get
+        let testMethod = testMethod |> Result.get |> Option.get
+
+        {
+            Name = name
+            Storage = storage
+            Id = ident
+            Execution = execution
+            TestMethod = testMethod
+        }
+        |> Ok
 
 type TrxTestEntry =
     {
@@ -424,7 +583,59 @@ type TrxTestEntry =
         TestId : Guid
     }
 
-    static member internal ofXml (node : XmlNode) : Result<TrxTestEntry, string> = failwith ""
+    static member internal ofXml (node : XmlNode) : Result<TrxTestEntry, string> =
+        let attrs =
+            node.Attributes
+            |> Seq.cast<XmlAttribute>
+            |> Seq.map (fun attr -> attr.Name, attr.Value)
+            |> Map.ofSeq // silently ignore duplicates
+
+        let testListId =
+            match attrs.TryGetValue "testListId" with
+            | false, _ -> Error "Expected name testListId"
+            | true, v ->
+                match Guid.TryParse v with
+                | false, _ -> Error $"Could not parse GUID: %s{v}"
+                | true, v -> Ok v
+
+        let testId =
+            match attrs.TryGetValue "testId" with
+            | false, _ -> Error "Expected testId attribute"
+            | true, v ->
+                match Guid.TryParse v with
+                | false, _ -> Error $"Could not parse GUID: %s{v}"
+                | true, v -> Ok v
+
+        let executionId =
+            match attrs.TryGetValue "executionId" with
+            | false, _ -> Error "Expected executionId attribute"
+            | true, v ->
+                match Guid.TryParse v with
+                | false, _ -> Error $"Could not parse GUID: %s{v}"
+                | true, v -> Ok v
+
+        let errors =
+            [
+                testListId |> Result.getError
+                testId |> Result.getError
+                executionId |> Result.getError
+            ]
+            |> List.choose id
+
+        if not errors.IsEmpty then
+            errors |> String.concat "; " |> Error
+        else
+
+        let testListId = testListId |> Result.get |> Option.get
+        let testId = testId |> Result.get |> Option.get
+        let executionId = executionId |> Result.get |> Option.get
+
+        {
+            TestListId = testListId
+            TestId = testId
+            ExecutionId = executionId
+        }
+        |> Ok
 
 type TrxTestList =
     {
@@ -432,7 +643,41 @@ type TrxTestList =
         Id : Guid
     }
 
-    static member internal ofXml (node : XmlNode) : Result<TrxTestList, string> = failwith ""
+    static member internal ofXml (node : XmlNode) : Result<TrxTestList, string> =
+        let attrs =
+            node.Attributes
+            |> Seq.cast<XmlAttribute>
+            |> Seq.map (fun attr -> attr.Name, attr.Value)
+            |> Map.ofSeq // silently ignore duplicates
+
+        let name =
+            match attrs.TryGetValue "name" with
+            | false, _ -> Error "Expected name attribute"
+            | true, v -> Ok v
+
+        let ident =
+            match attrs.TryGetValue "id" with
+            | false, _ -> Error "Expected id attribute"
+            | true, v ->
+                match Guid.TryParse v with
+                | false, _ -> Error $"Could not parse GUID: %s{v}"
+                | true, v -> Ok v
+
+        let errors =
+            [ name |> Result.getError ; ident |> Result.getError ] |> List.choose id
+
+        if not errors.IsEmpty then
+            errors |> String.concat "; " |> Error
+        else
+
+        let name = name |> Result.get |> Option.get
+        let ident = ident |> Result.get |> Option.get
+
+        {
+            Name = name
+            Id = ident
+        }
+        |> Ok
 
 type TrxOutcome =
     | Completed
@@ -446,6 +691,16 @@ type TrxOutcome =
         | TrxOutcome.Completed -> "Completed"
         | TrxOutcome.Failed -> "Failed"
 
+    static member Parse (s : string) : TrxOutcome option =
+        if s.Equals ("warning", StringComparison.OrdinalIgnoreCase) then
+            Some TrxOutcome.Warning
+        elif s.Equals ("failed", StringComparison.OrdinalIgnoreCase) then
+            Some TrxOutcome.Failed
+        elif s.Equals ("completed", StringComparison.OrdinalIgnoreCase) then
+            Some TrxOutcome.Completed
+        else
+            None
+
 /// Ancillary information about text emitted during a complete test run.
 type TrxRunInfo =
     {
@@ -458,7 +713,67 @@ type TrxRunInfo =
         Text : string
     }
 
-    static member internal ofXml (node : XmlNode) : Result<TrxRunInfo, string> = failwith ""
+    static member internal ofXml (node : XmlNode) : Result<TrxRunInfo, string> =
+        let attrs =
+            node.Attributes
+            |> Seq.cast<XmlAttribute>
+            |> Seq.map (fun attr -> attr.Name, attr.Value)
+            |> Map.ofSeq // silently ignore duplicates
+
+        let computerName =
+            match attrs.TryGetValue "computerName" with
+            | false, _ -> Error "Expected computerName attribute"
+            | true, v -> Ok v
+
+        let outcome =
+            match attrs.TryGetValue "outcome" with
+            | false, _ -> Error "Expected outcome attribute"
+            | true, v ->
+                match TrxOutcome.Parse v with
+                | Some v -> Ok v
+                | None -> Error $"Could not parse '%s{v}' as an Outcome"
+
+        let timestamp =
+            match attrs.TryGetValue "timestamp" with
+            | false, _ -> Error "Expected timestamp attribute"
+            | true, v ->
+                match DateTimeOffset.TryParse v with
+                | false, _ -> Error $"Could not parse as a timestamp: %s{v}"
+                | true, v -> Ok v
+
+        let text =
+            match node with
+            | NodeWithNamedChild "Text" n ->
+                match n with
+                | NoChildrenNode n -> Ok n
+                | _ -> Error "Text node unexpectedly had children"
+            | _ -> Error "Expected a Text node, but found none"
+
+        let errors =
+            [
+                computerName |> Result.getError
+                outcome |> Result.getError
+                timestamp |> Result.getError
+                text |> Result.getError
+            ]
+            |> List.choose id
+
+        if not errors.IsEmpty then
+            errors |> String.concat "; " |> Error
+        else
+
+        let computerName = computerName |> Result.get |> Option.get
+        let outcome = outcome |> Result.get |> Option.get
+        let timestamp = timestamp |> Result.get |> Option.get
+        let text = text |> Result.get |> Option.get
+
+        {
+            ComputerName = computerName
+            Outcome = outcome
+            Timestamp = timestamp
+            Text = text
+        }
+        |> Ok
 
 type TrxCounters =
     {
@@ -480,7 +795,205 @@ type TrxCounters =
         Pending : uint
     }
 
-    static member internal ofXml (node : XmlNode) : Result<TrxCounters, string> = failwith ""
+    static member internal ofXml (node : XmlNode) : Result<TrxCounters, string> =
+        let attrs =
+            node.Attributes
+            |> Seq.cast<XmlAttribute>
+            |> Seq.map (fun attr -> attr.Name, attr.Value)
+            |> Map.ofSeq // silently ignore duplicates
+
+        // strap in, boys - thank the Lord, or possibly Bram, for Vim macros
+
+        let total =
+            match attrs.TryGetValue "total" with
+            | false, _ -> Error "Expected total attribute"
+            | true, v ->
+                match UInt32.TryParse v with
+                | true, v -> Ok v
+                | false, _ -> Error $"Could not parse integer: %s{v}"
+
+        let executed =
+            match attrs.TryGetValue "executed" with
+            | false, _ -> Error "Expected executed attribute"
+            | true, v ->
+                match UInt32.TryParse v with
+                | true, v -> Ok v
+                | false, _ -> Error $"Could not parse integer: %s{v}"
+
+        let passed =
+            match attrs.TryGetValue "passed" with
+            | false, _ -> Error "Expected passed attribute"
+            | true, v ->
+                match UInt32.TryParse v with
+                | true, v -> Ok v
+                | false, _ -> Error $"Could not parse integer: %s{v}"
+
+        let failed =
+            match attrs.TryGetValue "failed" with
+            | false, _ -> Error "Expected failed attribute"
+            | true, v ->
+                match UInt32.TryParse v with
+                | true, v -> Ok v
+                | false, _ -> Error $"Could not parse integer: %s{v}"
+
+        let errors =
+            match attrs.TryGetValue "errors" with
+            | false, _ -> Error "Expected errors attribute"
+            | true, v ->
+                match UInt32.TryParse v with
+                | true, v -> Ok v
+                | false, _ -> Error $"Could not parse integer: %s{v}"
+
+        let timeout =
+            match attrs.TryGetValue "timeout" with
+            | false, _ -> Error "Expected timeout attribute"
+            | true, v ->
+                match UInt32.TryParse v with
+                | true, v -> Ok v
+                | false, _ -> Error $"Could not parse integer: %s{v}"
+
+        let aborted =
+            match attrs.TryGetValue "aborted" with
+            | false, _ -> Error "Expected aborted attribute"
+            | true, v ->
+                match UInt32.TryParse v with
+                | true, v -> Ok v
+                | false, _ -> Error $"Could not parse integer: %s{v}"
+
+        let inconclusive =
+            match attrs.TryGetValue "inconclusive" with
+            | false, _ -> Error "Expected inconclusive attribute"
+            | true, v ->
+                match UInt32.TryParse v with
+                | true, v -> Ok v
+                | false, _ -> Error $"Could not parse integer: %s{v}"
+
+        let passedButRunAborted =
+            match attrs.TryGetValue "passedButRunAborted" with
+            | false, _ -> Error "Expected passedButRunAborted attribute"
+            | true, v ->
+                match UInt32.TryParse v with
+                | true, v -> Ok v
+                | false, _ -> Error $"Could not parse integer: %s{v}"
+
+        let notRunnable =
+            match attrs.TryGetValue "notRunnable" with
+            | false, _ -> Error "Expected notRunnable attribute"
+            | true, v ->
+                match UInt32.TryParse v with
+                | true, v -> Ok v
+                | false, _ -> Error $"Could not parse integer: %s{v}"
+
+        let notExecuted =
+            match attrs.TryGetValue "notExecuted" with
+            | false, _ -> Error "Expected notExecuted attribute"
+            | true, v ->
+                match UInt32.TryParse v with
+                | true, v -> Ok v
+                | false, _ -> Error $"Could not parse integer: %s{v}"
+
+        let disconnected =
+            match attrs.TryGetValue "disconnected" with
+            | false, _ -> Error "Expected disconnected attribute"
+            | true, v ->
+                match UInt32.TryParse v with
+                | true, v -> Ok v
+                | false, _ -> Error $"Could not parse integer: %s{v}"
+
+        let warning =
+            match attrs.TryGetValue "warning" with
+            | false, _ -> Error "Expected warning attribute"
+            | true, v ->
+                match UInt32.TryParse v with
+                | true, v -> Ok v
+                | false, _ -> Error $"Could not parse integer: %s{v}"
+
+        let completed =
+            match attrs.TryGetValue "completed" with
+            | false, _ -> Error "Expected completed attribute"
+            | true, v ->
+                match UInt32.TryParse v with
+                | true, v -> Ok v
+                | false, _ -> Error $"Could not parse integer: %s{v}"
+
+        let inProgress =
+            match attrs.TryGetValue "inProgress" with
+            | false, _ -> Error "Expected inProgress attribute"
+            | true, v ->
+                match UInt32.TryParse v with
+                | true, v -> Ok v
+                | false, _ -> Error $"Could not parse integer: %s{v}"
+
+        let pending =
+            match attrs.TryGetValue "pending" with
+            | false, _ -> Error "Expected pending attribute"
+            | true, v ->
+                match UInt32.TryParse v with
+                | true, v -> Ok v
+                | false, _ -> Error $"Could not parse integer: %s{v}"
+
+        let parseErrors =
+            [
+                total |> Result.getError
+                executed |> Result.getError
+                passed |> Result.getError
+                failed |> Result.getError
+                errors |> Result.getError
+                timeout |> Result.getError
+                aborted |> Result.getError
+                inconclusive |> Result.getError
+                passedButRunAborted |> Result.getError
+                notRunnable |> Result.getError
+                notExecuted |> Result.getError
+                disconnected |> Result.getError
+                warning |> Result.getError
+                completed |> Result.getError
+                inProgress |> Result.getError
+                pending |> Result.getError
+            ]
+            |> List.choose id
+
+        if not parseErrors.IsEmpty then
+            parseErrors |> String.concat "; " |> Error
+        else
+
+        let total = total |> Result.get |> Option.get
+        let executed = executed |> Result.get |> Option.get
+        let passed = passed |> Result.get |> Option.get
+        let failed = failed |> Result.get |> Option.get
+        let errors = errors |> Result.get |> Option.get
+        let timeout = timeout |> Result.get |> Option.get
+        let aborted = aborted |> Result.get |> Option.get
+        let inconclusive = inconclusive |> Result.get |> Option.get
+        let passedButRunAborted = passedButRunAborted |> Result.get |> Option.get
+        let notRunnable = notRunnable |> Result.get |> Option.get
+        let notExecuted = notExecuted |> Result.get |> Option.get
+        let disconnected = disconnected |> Result.get |> Option.get
+        let warning = warning |> Result.get |> Option.get
+        let completed = completed |> Result.get |> Option.get
+        let inProgress = inProgress |> Result.get |> Option.get
+        let pending = pending |> Result.get |> Option.get
+
+        {
+            Total = total
+            Executed = executed
+            Passed = passed
+            Failed = failed
+            Errors = errors
+            Timeout = timeout
+            Aborted = aborted
+            Inconclusive = inconclusive
+            PassedButRunAborted = passedButRunAborted
+            NotRunnable = notRunnable
+            NotExecuted = notExecuted
+            Disconnected = disconnected
+            Warning = warning
+            Completed = completed
+            InProgress = inProgress
+            Pending = pending
+        }
+        |> Ok
+
 
     /// A set of counters where every counter is 0.
     static member Zero =
