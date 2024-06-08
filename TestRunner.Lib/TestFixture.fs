@@ -7,6 +7,19 @@ open System.Reflection
 open System.Threading
 open Microsoft.FSharp.Core
 
+type private StdoutSetter (newStdout : StreamWriter, newStderr : StreamWriter) =
+    let oldStdout = Console.Out
+    let oldStderr = Console.Error
+
+    do
+        Console.SetOut newStdout
+        Console.SetError newStderr
+
+    interface IDisposable with
+        member _.Dispose () =
+            Console.SetOut oldStdout
+            Console.SetError oldStderr
+
 /// Information about the circumstances of a run of a single test.
 type IndividualTestRunMetadata =
     {
@@ -26,6 +39,10 @@ type IndividualTestRunMetadata =
         TestName : string
         /// Name of the class from which this test derived
         ClassName : string
+        /// Anything that was printed to stdout while the test ran.
+        StdOut : string option
+        /// Anything that was printed to stderr while the test ran.
+        StdErr : string option
     }
 
 /// The results of running a single TestFixture.
@@ -41,14 +58,16 @@ type FixtureRunResults =
         OtherFailures : (UserMethodFailure * IndividualTestRunMetadata) list
     }
 
-    member this.IndividualTestRunMetadata : IndividualTestRunMetadata list =
+    /// Another view on the data contained in this object, transposed.
+    member this.IndividualTestRunMetadata
+        : (IndividualTestRunMetadata * Choice<TestMemberFailure, TestMemberSuccess, UserMethodFailure>) list =
         [
-            for _, d in this.Failed do
-                yield d
-            for _, _, d in this.Success do
-                yield d
-            for _, d in this.OtherFailures do
-                yield d
+            for a, d in this.Failed do
+                yield d, Choice1Of3 a
+            for _, a, d in this.Success do
+                yield d, Choice2Of3 a
+            for a, d in this.OtherFailures do
+                yield d, Choice3Of3 a
         ]
 
 /// A test fixture (usually represented by the [<TestFixture>]` attribute), which may contain many tests,
@@ -92,7 +111,16 @@ module TestFixture =
 
         let start = DateTimeOffset.Now
 
-        let metadata =
+        use stdOutStream = new MemoryStream ()
+        use stdErrStream = new MemoryStream ()
+        use stdOut = new StreamWriter (stdOutStream)
+        use stdErr = new StreamWriter (stdErrStream)
+
+        use _ = new StdoutSetter (stdOut, stdErr)
+
+        let sw = Stopwatch.StartNew ()
+
+        let metadata () =
             let name =
                 if args.Length = 0 then
                     test.Name
@@ -101,27 +129,29 @@ module TestFixture =
                     $"%s{test.Name}(%s{argsStr})"
 
             {
-                End = DateTimeOffset.UnixEpoch
+                End = DateTimeOffset.Now
                 Start = start
-                Total = TimeSpan.Zero
+                Total = sw.Elapsed
                 ComputerName = Environment.MachineName
                 ExecutionId = Guid.NewGuid ()
                 TestId = testId
                 TestName = name
                 ClassName = test.DeclaringType.FullName
+                StdOut =
+                    match stdOutStream.ToArray () with
+                    | [||] -> None
+                    | arr -> Console.OutputEncoding.GetString arr |> Some
+                StdErr =
+                    match stdErrStream.ToArray () with
+                    | [||] -> None
+                    | arr -> Console.OutputEncoding.GetString arr |> Some
             }
 
-        let sw = Stopwatch.StartNew ()
         let setUpResult = runMethods TestFailure.SetUpFailed setUp [||]
         sw.Stop ()
 
         match setUpResult with
-        | Error e ->
-            Error [ e ],
-            { metadata with
-                End = DateTimeOffset.Now
-                Total = sw.Elapsed
-            }
+        | Error e -> Error [ e ], metadata ()
         | Ok () ->
 
         sw.Start ()
@@ -148,11 +178,7 @@ module TestFixture =
         let tearDownResult = runMethods TestFailure.TearDownFailed tearDown [||]
         sw.Stop ()
 
-        let metadata =
-            { metadata with
-                Total = sw.Elapsed
-                End = DateTimeOffset.UtcNow
-            }
+        let metadata = metadata ()
 
         match result, tearDownResult with
         | Ok None, Ok () -> Ok TestMemberSuccess.Ok, metadata
@@ -235,6 +261,8 @@ module TestFixture =
                     TestId = Guid.NewGuid ()
                     TestName = test.Name
                     ClassName = test.Method.DeclaringType.FullName
+                    StdErr = None
+                    StdOut = None
                 }
 
             [ Ok result, failureMetadata ]
@@ -344,6 +372,8 @@ module TestFixture =
                     TestId = Guid.NewGuid ()
                     TestName = test.Name
                     ClassName = test.Method.DeclaringType.FullName
+                    StdErr = None
+                    StdOut = None
                 }
 
             [ Error e, failureMetadata ]
@@ -399,7 +429,16 @@ module TestFixture =
         let sw = Stopwatch.StartNew ()
         let startTime = DateTimeOffset.UtcNow
 
+        use stdOutStream = new MemoryStream ()
+        use stdOut = new StreamWriter (stdOutStream)
+        use stdErrStream = new MemoryStream ()
+        use stdErr = new StreamWriter (stdErrStream)
+        use _ = new StdoutSetter (stdOut, stdErr)
+
         let endMetadata () =
+            let stdOut = stdOutStream.ToArray () |> Console.OutputEncoding.GetString
+            let stdErr = stdErrStream.ToArray () |> Console.OutputEncoding.GetString
+
             {
                 Total = sw.Elapsed
                 Start = startTime
@@ -410,6 +449,8 @@ module TestFixture =
                 // This one is a bit dubious, because we don't actually have a test name at all
                 TestName = tests.Name
                 ClassName = tests.Name
+                StdOut = if String.IsNullOrEmpty stdOut then None else Some stdOut
+                StdErr = if String.IsNullOrEmpty stdErr then None else Some stdErr
             }
 
         let setupResult =

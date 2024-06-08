@@ -207,6 +207,8 @@ type TrxTestOutcome =
     | Failed
     /// The test was not executed.
     | NotExecuted
+    /// The test was inconclusive. (This appears not to be modelled correctly by NUnit! They use NotExecuted.)
+    | Inconclusive
 
     /// Serialisation suitable for direct interpolation into a TRX report.
     override this.ToString () =
@@ -214,6 +216,7 @@ type TrxTestOutcome =
         | TrxTestOutcome.Passed -> "Passed"
         | TrxTestOutcome.Failed -> "Failed"
         | TrxTestOutcome.NotExecuted -> "NotExecuted"
+        | TrxTestOutcome.Inconclusive -> "Inconclusive"
 
     /// Round-trips with `ToString`; returns None if parse was unsuccessful.
     static member Parse (s : string) : TrxTestOutcome option =
@@ -223,6 +226,8 @@ type TrxTestOutcome =
             Some TrxTestOutcome.Failed
         elif s.Equals ("notexecuted", StringComparison.OrdinalIgnoreCase) then
             Some TrxTestOutcome.NotExecuted
+        elif s.Equals ("inconclusive", StringComparison.OrdinalIgnoreCase) then
+            Some TrxTestOutcome.Inconclusive
         else
             None
 
@@ -1116,6 +1121,37 @@ type TrxCounters =
         /// Tests which are waiting to run.
         Pending : uint
     }
+
+    /// Create a new Counters with one more Passed test.
+    member this.AddPassed () =
+        { this with
+            Passed = this.Passed + 1u
+            Total = this.Total + 1u
+            Executed = this.Executed + 1u
+        }
+
+    /// Create a new Counters with one more Inconclusive test.
+    member this.AddInconclusive () =
+        { this with
+            Inconclusive = this.Inconclusive + 1u
+            Total = this.Total + 1u
+            Executed = this.Executed + 1u
+        }
+
+    /// Create a new Counters with one more NotExecuted test.
+    member this.AddNotExecuted () =
+        { this with
+            NotExecuted = this.NotExecuted + 1u
+            Total = this.Total + 1u
+        }
+
+    /// Create a new Counters with one more Failed test.
+    member this.AddFailed () =
+        { this with
+            Executed = this.Executed + 1u
+            Total = this.Total + 1u
+            Failed = this.Failed + 1u
+        }
 
     member internal this.toXml (doc : XmlDocument) : XmlNode =
         let node = doc.CreateElement "Counters"
