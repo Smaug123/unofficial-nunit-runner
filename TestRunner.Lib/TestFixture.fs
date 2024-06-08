@@ -125,7 +125,7 @@ module TestFixture =
                 if args.Length = 0 then
                     test.Name
                 else
-                    let argsStr = args |> Seq.map string |> String.concat ","
+                    let argsStr = args |> Seq.map string<obj> |> String.concat ","
                     $"%s{test.Name}(%s{argsStr})"
 
             {
