@@ -21,7 +21,11 @@ case "$TAG" in
 esac
 
 # target_commitish empty indicates the repo default branch
-curl_body='{"tag_name":"'"$TAG"'","target_commitish":"","name":"'"$TAG"'","draft":false,"prerelease":false,"generate_release_notes":false}'
+IS_PRERELEASE="false"
+if [ "${TAG#*prerelease}" != "$TAG" ]; then
+    IS_PRERELEASE="true"
+fi
+curl_body='{"tag_name":"'"$TAG"'","target_commitish":"","name":"'"$TAG"'","draft":$IS_PRERELEASE,"prerelease":'"$IS_PRERELEASE"',"generate_release_notes":false}'
 
 echo "cURL body: $curl_body"
 
