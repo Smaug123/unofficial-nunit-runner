@@ -165,8 +165,125 @@ jobs:
       - name: Flake check
         run: nix flake check
 
+  nuget-pack:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # so that NerdBank.GitVersioning has access to history
+    - name: Install Nix
+      uses: cachix/install-nix-action@V27
+      with:
+        extra_nix_config: |
+          access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+    - name: Restore dependencies
+      run: nix develop --command dotnet restore
+    - name: Build
+      run: nix develop --command dotnet build --no-restore --configuration Release
+    - name: Pack
+      run: nix develop --command dotnet pack --configuration Release
+    - name: Upload NuGet artifact (lib)
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-package-lib
+        path: TestRunner.Lib/bin/Release/WoofWare.NUnitTestRunner.Lib.*.nupkg
+    - name: Upload NuGet artifact (tool)
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-package-tool
+        path: TestRunner/bin/Release/WoofWare.NUnitTestRunner.*.nupkg
+
+  expected-pack:
+    needs: [nuget-pack]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download NuGet artifact (lib)
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-package-lib
+          path: packed-lib
+      - name: Check NuGet contents (lib)
+        # Verify that there is exactly one nupkg in the artifact that would be NuGet published
+        run: if [[ $(find packed-lib -maxdepth 1 -name 'WoofWare.NUnitTestRunner.Lib.*.nupkg' -printf c | wc -c) -ne "1" ]]; then exit 1; fi
+      - name: Download NuGet artifact (tool)
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-package-tool
+          path: packed-tool
+      - name: Check NuGet contents
+        # Verify that there is exactly one nupkg in the artifact that would be NuGet published
+        run: if [[ $(find packed-tool -maxdepth 1 -name 'WoofWare.NUnitTestRunner.*.nupkg' -printf c | wc -c) -ne "1" ]]; then exit 1; fi
+
+  github-release-tool-dry-run:
+    needs: [nuget-pack]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download NuGet artifact (lib)
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-package-lib
+      - name: Download NuGet artifact (tool)
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-package-tool
+      - name: Tag and release tool
+        env:
+          DRY_RUN: 1
+          GITHUB_TOKEN: mock-token
+        run: sh .github/workflows/tag.sh
+
   all-required-checks-complete:
-    needs: [check-dotnet-format, check-nix-format, build, build-nix, linkcheck, flake-check, analyzers]
+    needs: [check-dotnet-format, check-nix-format, build, build-nix, linkcheck, flake-check, analyzers, nuget-pack, expected-pack, github-release-tool-dry-run]
     runs-on: ubuntu-latest
     steps:
       - run: echo "All required checks complete."
+
+  nuget-publish:
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.repository.fork && github.ref == 'refs/heads/main' }}
+    needs: [all-required-checks-complete]
+    environment: main-deploy
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Nix
+        uses: cachix/install-nix-action@V27
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+      - name: Download NuGet artifact (lib)
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-package-lib
+          path: packed-lib
+      - name: Publish to NuGet (lib)
+        run: nix develop --command dotnet nuget push "packed-lib/WoofWare.NUnitTestRunner.Lib.*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      - name: Download NuGet artifact (tool)
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-package-tool
+          path: packed-tool
+      - name: Publish to NuGet (tool)
+        run: nix develop --command dotnet nuget push "packed-tool/WoofWare.NUnitTestRunner.*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+  github-release-tool:
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.repository.fork && github.ref == 'refs/heads/main' }}
+    needs: [all-required-checks-complete]
+    environment: main-deploy
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download NuGet artifact (tool)
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-package-tool
+      - name: Download NuGet artifact (lib)
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-package-lib
+      - name: Tag and release plugin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: sh .github/workflows/tag.sh

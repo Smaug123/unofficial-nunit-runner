@@ -13,6 +13,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>nunit;test;runner</PackageTags>
+    <PackageId>WoofWare.NUnitTestRunner</PackageId>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarnOn>FS3559</WarnOn>
     <WoofWareMyriadPluginVersion>2.1.40</WoofWareMyriadPluginVersion>
