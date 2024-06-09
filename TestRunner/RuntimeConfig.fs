@@ -14,7 +14,8 @@ type FrameworkDescription =
 type RuntimeOptions =
     {
         Tfm : string
-        Framework : FrameworkDescription
+        Framework : FrameworkDescription option
+        Frameworks : FrameworkDescription list option
         RollForward : string option
     }
 
