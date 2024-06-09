@@ -332,6 +332,7 @@ module TestFixture =
                                 yield
                                     Guid.NewGuid (),
                                     match arg with
+                                    | null -> [| (null : obj) |]
                                     | :? Tuple<obj, obj> as (a, b) -> [| a ; b |]
                                     | :? Tuple<obj, obj, obj> as (a, b, c) -> [| a ; b ; c |]
                                     | :? Tuple<obj, obj, obj, obj> as (a, b, c, d) -> [| a ; b ; c ; d |]
