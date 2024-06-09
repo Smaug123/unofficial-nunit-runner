@@ -291,9 +291,10 @@ module Filter =
             fun a b -> inner1 a b || inner2 a b
         | Filter.Name (Match.Exact m) -> fun _fixture method -> method.Method.Name = m
         | Filter.Name (Match.Contains m) -> fun _fixture method -> method.Method.Name.Contains m
-        | Filter.FullyQualifiedName (Match.Exact m) -> fun fixture method -> (fixture.Name + method.Method.Name) = m
+        | Filter.FullyQualifiedName (Match.Exact m) ->
+            fun _fixture method -> (method.Method.DeclaringType.FullName + "." + method.Method.Name) = m
         | Filter.FullyQualifiedName (Match.Contains m) ->
-            fun fixture method -> (fixture.Name + method.Method.Name).Contains m
+            fun _fixture method -> (method.Method.DeclaringType.FullName + "." + method.Method.Name).Contains m
         | Filter.TestCategory (Match.Contains m) ->
             fun _fixture method -> method.Categories |> List.exists (fun cat -> cat.Contains m)
         | Filter.TestCategory (Match.Exact m) -> fun _fixture method -> method.Categories |> List.contains m
