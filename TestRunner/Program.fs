@@ -133,7 +133,7 @@ module Program =
         | None ->
             // Keep on trucking: let's be optimistic and hope that we're self-contained.
             [ dll.Directory ]
-        | Some (Choice1Of2 runtime) -> [ dll.Directory ; DirectoryInfo runtime.Path ]
+        | Some (Choice1Of2 runtime) -> [ dll.Directory ; DirectoryInfo $"%s{runtime.Path}/%s{runtime.Version}" ]
         | Some (Choice2Of2 sdk) -> [ dll.Directory ; DirectoryInfo sdk.Path ]
 
     let main argv =
