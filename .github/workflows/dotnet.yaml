@@ -74,6 +74,7 @@ jobs:
       run: 'nix develop --command dotnet exec ./TestRunner/bin/Release/net8.0/TestRunner.dll ./Consumer/bin/Release/net8.0/Consumer.dll --trx TrxOut/out.trx'
     - name: Parse Trx files
       uses: NasAmin/trx-parser@v0.6.0
+      if: always()
       id: trx-parser
       with:
         TRX_PATH: ${{ github.workspace }}/TrxOut

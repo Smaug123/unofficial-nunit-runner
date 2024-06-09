@@ -25,10 +25,15 @@ module TestCaseData =
     let ``Consume test data from multiple sources`` (i : int, s : string, arr : float[]) =
         lock multipleSources (fun () -> multipleSources.Add (i, s, arr))
 
-    let optional = [ Some "hi" ; None ] |> List.map TestCaseData
+    let optionalData = [ Some "hi" ; None ] |> List.map TestCaseData
 
-    [<TestCaseSource(nameof optional)>]
-    let ``Consume options`` (s : string option) : unit = s |> shouldEqual s
+    [<TestCaseSource(nameof optionalData)>]
+    let ``Consume options, TestCaseData`` (s : string option) : unit = s |> shouldEqual s
+
+    let optionalRaw = [ Some "hi" ; None ]
+
+    [<TestCaseSource(nameof optionalRaw)>]
+    let ``Consume options, raw`` (s : string option) : unit = s |> shouldEqual s
 
     [<OneTimeTearDown>]
     let tearDown () =
