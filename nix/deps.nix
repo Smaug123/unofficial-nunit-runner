@@ -183,8 +183,8 @@
   })
   (fetchNuGet {
     pname = "WoofWare.DotnetRuntimeLocator";
-    version = "0.1.2";
-    sha256 = "0kwkq28ddzc0bpr22jmgcl8dhnhg776gf6l054rsxw8lrvpwhmv9";
+    version = "0.1.3";
+    sha256 = "0qw41mcvx4qy012pj1dlpdfwsz036qrx7xnzsirk5fz715f1a45m";
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins";

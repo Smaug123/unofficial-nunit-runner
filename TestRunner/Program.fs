@@ -54,23 +54,57 @@ module Program =
                 |> Option.defaultValue RollForward.Minor
             | s -> RollForward.Parse s
 
-        let desired = Version config.Framework.Version
+        let desiredVersions =
+            match config.Framework with
+            | Some f -> [ Version f.Version, f.Name ]
+            | None ->
+
+            match config.Frameworks with
+            | Some f -> f |> List.map (fun f -> Version f.Version, f.Name)
+            | None ->
+                failwith
+                    "Could not deduce a framework version due to lack of either Framework or Frameworks in runtimeconfig"
+
+        let compatiblyNamedRuntimes =
+            f.Frameworks
+            |> Seq.collect (fun availableFramework ->
+                desiredVersions
+                |> List.choose (fun (desiredVersion, desiredName) ->
+                    if desiredName = availableFramework.Name then
+                        Some
+                            {|
+                                Desired = desiredVersion
+                                Name = desiredName
+                                Installed = availableFramework
+                                InstalledVersion = Version availableFramework.Version
+                            |}
+                    else
+                        None
+                )
+            )
+            |> Seq.toList
 
         match rollForward with
         | RollForward.Minor ->
             let available =
-                f.Frameworks
-                |> Seq.choose (fun fi ->
-                    if fi.Name = config.Framework.Name then
-                        Some (fi, Version fi.Version)
-                    else
-                        None
+                compatiblyNamedRuntimes
+                |> Seq.filter (fun data ->
+                    data.InstalledVersion.Major = data.Desired.Major
+                    && data.InstalledVersion.Minor >= data.Desired.Minor
                 )
-                |> Seq.filter (fun (_, version) -> version.Major = desired.Major && version.Minor >= desired.Minor)
-                |> Seq.tryMinBy (fun (_, version) -> version.Minor, version.Build)
+                |> Seq.groupBy (fun data -> data.Name)
+                |> Seq.map (fun (name, data) ->
+                    let data =
+                        data
+                        |> Seq.minBy (fun data -> data.InstalledVersion.Minor, data.InstalledVersion.Build)
+
+                    name, data.Installed
+                )
+                // TODO: how do we select between many available frameworks?
+                |> Seq.tryHead
 
             match available with
-            | Some (f, _) -> Some (Choice1Of2 f)
+            | Some (_, f) -> Some (Choice1Of2 f)
             | None ->
                 // TODO: maybe we can ask the SDK. But we keep on trucking: maybe we're self-contained,
                 // and we'll actually find all the runtime next to the DLL.
