@@ -168,6 +168,8 @@ module TestFixture =
                 | "NUnit.Framework.IgnoreException" -> Ok (Some (TestMemberSuccess.Ignored (Option.ofObj exc.Message)))
                 | "NUnit.Framework.InconclusiveException" ->
                     Ok (Some (TestMemberSuccess.Inconclusive (Option.ofObj exc.Message)))
+                | s when s.StartsWith ("NUnit.Framework.", StringComparison.Ordinal) ->
+                    failwith $"Unrecognised special exception: %s{s}"
                 | _ -> Error orig
             | Error orig -> Error orig
 
