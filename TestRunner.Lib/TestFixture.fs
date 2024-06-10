@@ -230,6 +230,27 @@ module TestFixture =
         (test : SingleTestMethod)
         : (Result<TestMemberSuccess, TestMemberFailure> * IndividualTestRunMetadata) list
         =
+        if test.Method.ContainsGenericParameters then
+            let failureMetadata =
+                {
+                    Total = TimeSpan.Zero
+                    Start = DateTimeOffset.Now
+                    End = DateTimeOffset.Now
+                    ComputerName = Environment.MachineName
+                    ExecutionId = Guid.NewGuid ()
+                    TestId = Guid.NewGuid ()
+                    TestName = test.Name
+                    ClassName = test.Method.DeclaringType.FullName
+                    StdErr = None
+                    StdOut = None
+                }
+
+            let error =
+                TestMemberFailure.Malformed [ "Test contained generic parameters; generics are not supported." ]
+
+            (Error error, failureMetadata) |> List.singleton
+        else
+
         let resultPreRun =
             (None, test.Modifiers)
             ||> List.fold (fun _result modifier ->
