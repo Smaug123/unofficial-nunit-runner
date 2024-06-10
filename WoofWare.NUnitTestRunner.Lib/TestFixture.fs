@@ -540,6 +540,12 @@ module TestFixture =
     /// Interpret this type as a [<TestFixture>], extracting the test members from it and annotating them with all
     /// relevant information about how we should run them.
     let parse (parentType : Type) : TestFixture =
+        if
+            parentType.CustomAttributes
+            |> Seq.exists (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.SetUpFixtureAttribute")
+        then
+            failwith "This test runner does not support SetUpFixture. Please shout if you want this."
+
         let categories =
             parentType.CustomAttributes
             |> Seq.filter (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.CategoryAttribute")
