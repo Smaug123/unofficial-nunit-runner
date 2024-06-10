@@ -49,8 +49,9 @@
           inherit pname version dotnet-sdk dotnet-runtime;
           name = "unofficial-nunit-runner";
           src = ./.;
-          projectFile = "./TestRunner/TestRunner.fsproj";
-          testProjectFile = "./TestRunner/TestRunner.Test/TestRunner.Test.fsproj";
+          projectFile = "./WoofWare.NUnitTestRunner/WoofWare.NUnitTestRunner.fsproj";
+          testProjectFile = "./WoofWare.NUnitTestRunner/WoofWare.NUnitTestRunner.Test/WoofWare.NUnitTestRunner.Test.fsproj";
+          disabledTests = ["WoofWare.NUnitTestRunner.Test.TestSurface.EnsureVersionIsMonotonic"];
           nugetDeps = ./nix/deps.nix; # `nix build .#default.passthru.fetch-deps && ./result` and put the result here
           doCheck = true;
         };

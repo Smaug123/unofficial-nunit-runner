@@ -1,8 +1,8 @@
-namespace TestRunner.Test
+namespace WoofWare.NUnitTestRunner.Test
 
 open FsCheck
 open FsUnitTyped
-open TestRunner
+open WoofWare.NUnitTestRunner
 open NUnit.Framework
 
 [<TestFixture>]

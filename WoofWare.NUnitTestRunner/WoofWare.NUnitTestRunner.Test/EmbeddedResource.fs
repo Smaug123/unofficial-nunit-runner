@@ -1,4 +1,4 @@
-namespace TestRunner.Test
+namespace WoofWare.NUnitTestRunner.Test
 
 open System
 open System.IO

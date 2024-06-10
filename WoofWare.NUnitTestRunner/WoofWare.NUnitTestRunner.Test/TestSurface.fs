@@ -1,4 +1,4 @@
-namespace TestRunner.Test
+namespace WoofWare.NUnitTestRunner.Test
 
 open NUnit.Framework
 open ApiSurface
@@ -6,7 +6,7 @@ open ApiSurface
 [<TestFixture>]
 module TestSurface =
 
-    let assembly = typeof<TestRunner.Combinatorial>.Assembly
+    let assembly = typeof<WoofWare.NUnitTestRunner.Combinatorial>.Assembly
 
     [<Test>]
     let ``Ensure API surface has not been modified`` () = ApiSurface.assertIdentical assembly
@@ -20,6 +20,6 @@ module TestSurface =
         DocCoverage.assertFullyDocumented assembly
 
     [<Test>]
-    [<Explicit "Not yet published">]
-    let ``Ensure version is monotonic`` () =
-        MonotonicVersion.validate assembly "CHOOSE A NAME"
+    // https://github.com/nunit/nunit3-vs-adapter/issues/876
+    let EnsureVersionIsMonotonic () =
+        MonotonicVersion.validate assembly "WoofWare.NUnitTestRunner.Lib"
