@@ -71,7 +71,7 @@ jobs:
     - name: Build
       run: 'nix develop --command dotnet build --no-restore --configuration Release'
     - name: Test using self
-      run: 'nix develop --command dotnet exec ./TestRunner/bin/Release/net8.0/TestRunner.dll ./Consumer/bin/Release/net8.0/Consumer.dll --trx TrxOut/out.trx'
+      run: 'nix develop --command dotnet exec ./WoofWare.NUnitTestRunner/bin/Release/net8.0/WoofWare.NUnitTestRunner.dll ./Consumer/bin/Release/net8.0/Consumer.dll --trx TrxOut/out.trx'
     - name: Parse Trx files
       uses: NasAmin/trx-parser@v0.6.0
       if: always()
@@ -97,9 +97,9 @@ jobs:
       - name: Prepare analyzers
         run: nix develop --command dotnet restore analyzers/analyzers.fsproj
       - name: Build project
-        run: nix develop --command dotnet build ./TestRunner/TestRunner.fsproj
+        run: nix develop --command dotnet build ./WoofWare.NUnitTestRunner/WoofWare.NUnitTestRunner.fsproj
       - name: Run analyzers
-        run: nix run .#fsharp-analyzers -- --project ./TestRunner/TestRunner.fsproj --analyzers-path ./.analyzerpackages/g-research.fsharp.analyzers/*/ --verbosity detailed --report ./analysis.sarif --treat-as-error GRA-STRING-001 GRA-STRING-002 GRA-STRING-003 GRA-UNIONCASE-001 GRA-INTERPOLATED-001 GRA-TYPE-ANNOTATE-001 GRA-VIRTUALCALL-001 GRA-IMMUTABLECOLLECTIONEQUALITY-001 GRA-JSONOPTS-001 GRA-LOGARGFUNCFULLAPP-001 GRA-DISPBEFOREASYNC-001 --exclude-analyzers PartialAppAnalyzer
+        run: nix run .#fsharp-analyzers -- --project ./WoofWare.NUnitTestRunner/WoofWare.NUnitTestRunner.fsproj --analyzers-path ./.analyzerpackages/g-research.fsharp.analyzers/*/ --verbosity detailed --report ./analysis.sarif --treat-as-error GRA-STRING-001 GRA-STRING-002 GRA-STRING-003 GRA-UNIONCASE-001 GRA-INTERPOLATED-001 GRA-TYPE-ANNOTATE-001 GRA-VIRTUALCALL-001 GRA-IMMUTABLECOLLECTIONEQUALITY-001 GRA-JSONOPTS-001 GRA-LOGARGFUNCFULLAPP-001 GRA-DISPBEFOREASYNC-001 --exclude-analyzers PartialAppAnalyzer
 
   build-nix:
     runs-on: ubuntu-latest
@@ -187,12 +187,12 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: nuget-package-lib
-        path: TestRunner.Lib/bin/Release/WoofWare.NUnitTestRunner.Lib.*.nupkg
+        path: WoofWare.NUnitTestRunner.Lib/bin/Release/WoofWare.NUnitTestRunner.Lib.*.nupkg
     - name: Upload NuGet artifact (tool)
       uses: actions/upload-artifact@v4
       with:
         name: nuget-package-tool
-        path: TestRunner/bin/Release/WoofWare.NUnitTestRunner.*.nupkg
+        path: WoofWare.NUnitTestRunner/bin/Release/WoofWare.NUnitTestRunner.*.nupkg
 
   expected-pack:
     needs: [nuget-pack]
