@@ -1,4 +1,4 @@
-namespace TestRunner
+namespace WoofWare.NUnitTestRunner
 
 open System.Reflection
 

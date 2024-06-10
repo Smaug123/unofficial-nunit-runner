@@ -1,6 +1,6 @@
-namespace TestRunner.Test
+namespace WoofWare.NUnitTestRunner.Test
 
-open TestRunner
+open WoofWare.NUnitTestRunner
 open NUnit.Framework
 open FsUnitTyped
 

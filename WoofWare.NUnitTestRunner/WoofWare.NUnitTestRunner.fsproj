@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TestRunner.Lib\TestRunner.Lib.fsproj" />
+    <ProjectReference Include="..\WoofWare.NUnitTestRunner.Lib\WoofWare.NUnitTestRunner.Lib.fsproj" />
   </ItemGroup>
 
   <ItemGroup>
