@@ -238,7 +238,6 @@ module TestFixture =
                     End = DateTimeOffset.Now
                     ComputerName = Environment.MachineName
                     ExecutionId = Guid.NewGuid ()
-                    // No need to keep these test GUIDs stable: no point trying to run an explicit test multiple times.
                     TestId = Guid.NewGuid ()
                     TestName = test.Name
                     ClassName = test.Method.DeclaringType.FullName
