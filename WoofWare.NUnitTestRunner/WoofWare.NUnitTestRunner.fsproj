@@ -48,4 +48,8 @@
   <ItemGroup>
     <MyriadSdkGenerator Include="$(NuGetPackageRoot)/woofware.myriad.plugins/$(WoofWareMyriadPluginVersion)/lib/net6.0/WoofWare.Myriad.Plugins.dll" />
   </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="version.json" />
+  </ItemGroup>
 </Project>
