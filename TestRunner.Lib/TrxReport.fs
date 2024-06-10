@@ -3,6 +3,11 @@ namespace TestRunner
 open System
 open System.Xml
 
+[<RequireQualifiedAccess>]
+module private XmlUtil =
+    [<Literal>]
+    let NS = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010"
+
 /// Describes the times at which a complete test run went through state transitions.
 /// These all have semantics specific to the test runner, and I have not rigorously worked out what
 /// semantics NUnit has, so take these with considerable amounts of salt.
@@ -22,8 +27,7 @@ type TrxReportTimes =
     }
 
     member internal this.toXml (doc : XmlDocument) : XmlNode =
-        let node =
-            doc.CreateElement ("Times", "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")
+        let node = doc.CreateElement ("Times", XmlUtil.NS)
 
         do
             let attr = doc.CreateAttribute "creation"
@@ -113,7 +117,7 @@ type TrxDeployment =
     }
 
     member internal this.toXml (doc : XmlDocument) : XmlNode =
-        let node = doc.CreateElement "Deployment"
+        let node = doc.CreateElement ("Deployment", XmlUtil.NS)
 
         do
             let attr = doc.CreateAttribute "runDeploymentRoot"
@@ -149,7 +153,7 @@ type TrxTestSettings =
     }
 
     member internal this.toXml (doc : XmlDocument) : XmlNode =
-        let node = doc.CreateElement "TestSettings"
+        let node = doc.CreateElement ("TestSettings", XmlUtil.NS)
 
         do
             let attr = doc.CreateAttribute "name"
@@ -243,13 +247,13 @@ type TrxErrorInfo =
     }
 
     member internal this.toXml (doc : XmlDocument) : XmlNode =
-        let node = doc.CreateElement "ErrorInfo"
+        let node = doc.CreateElement ("ErrorInfo", XmlUtil.NS)
 
         match this.Message with
         | None -> ()
         | Some message ->
             let child = doc.CreateTextNode message
-            let messageNode = doc.CreateElement "Message"
+            let messageNode = doc.CreateElement ("Message", XmlUtil.NS)
             messageNode.AppendChild child |> ignore<XmlNode>
             node.AppendChild messageNode |> ignore<XmlNode>
 
@@ -257,7 +261,7 @@ type TrxErrorInfo =
         | None -> ()
         | Some stackTrace ->
             let child = doc.CreateTextNode stackTrace
-            let stackTraceNode = doc.CreateElement "StackTrace"
+            let stackTraceNode = doc.CreateElement ("StackTrace", XmlUtil.NS)
             stackTraceNode.AppendChild child |> ignore<XmlNode>
             node.AppendChild stackTraceNode |> ignore<XmlNode>
 
@@ -291,13 +295,13 @@ type TrxOutput =
     }
 
     member internal this.toXml (doc : XmlDocument) : XmlNode =
-        let node = doc.CreateElement "Output"
+        let node = doc.CreateElement ("Output", XmlUtil.NS)
 
         match this.StdOut with
         | None -> ()
         | Some stdout ->
             let text = doc.CreateTextNode stdout
-            let childNode = doc.CreateElement "StdOut"
+            let childNode = doc.CreateElement ("StdOut", XmlUtil.NS)
             childNode.AppendChild text |> ignore<XmlNode>
             node.AppendChild childNode |> ignore<XmlNode>
 
@@ -362,7 +366,7 @@ type TrxUnitTestResult =
     }
 
     member internal this.toXml (doc : XmlDocument) : XmlNode =
-        let node = doc.CreateElement "UnitTestResult"
+        let node = doc.CreateElement ("UnitTestResult", XmlUtil.NS)
 
         do
             let attr = doc.CreateAttribute "executionId"
@@ -582,7 +586,7 @@ type TrxTestMethod =
     }
 
     member internal this.toXml (doc : XmlDocument) : XmlNode =
-        let node = doc.CreateElement "TestMethod"
+        let node = doc.CreateElement ("TestMethod", XmlUtil.NS)
 
         do
             let attr = doc.CreateAttribute "codeBase"
@@ -668,7 +672,7 @@ type TrxExecution =
     }
 
     member internal this.toXml (doc : XmlDocument) : XmlNode =
-        let node = doc.CreateElement "Execution"
+        let node = doc.CreateElement ("Execution", XmlUtil.NS)
 
         do
             let attr = doc.CreateAttribute "id"
@@ -723,7 +727,7 @@ type TrxUnitTest =
     }
 
     member internal this.toXml (doc : XmlDocument) : XmlNode =
-        let node = doc.CreateElement "UnitTest"
+        let node = doc.CreateElement ("UnitTest", XmlUtil.NS)
 
         do
             let attr = doc.CreateAttribute "name"
@@ -821,7 +825,7 @@ type TrxTestEntry =
     }
 
     member internal this.toXml (doc : XmlDocument) : XmlNode =
-        let node = doc.CreateElement "TestEntry"
+        let node = doc.CreateElement ("TestEntry", XmlUtil.NS)
 
         do
             let attr = doc.CreateAttribute "testListId"
@@ -905,7 +909,7 @@ type TrxTestListEntry =
     }
 
     member internal this.toXml (doc : XmlDocument) : XmlNode =
-        let node = doc.CreateElement "TestList"
+        let node = doc.CreateElement ("TestList", XmlUtil.NS)
 
         do
             let attr = doc.CreateAttribute "name"
@@ -998,7 +1002,7 @@ type TrxRunInfo =
     }
 
     member internal this.toXml (doc : XmlDocument) : XmlNode =
-        let node = doc.CreateElement "RunInfo"
+        let node = doc.CreateElement ("RunInfo", XmlUtil.NS)
 
         do
             let attr = doc.CreateAttribute "computerName"
@@ -1015,7 +1019,7 @@ type TrxRunInfo =
             attr.Value <- this.Timestamp.ToString "o"
             node.Attributes.Append attr |> ignore<XmlAttribute>
 
-        let childNode = doc.CreateElement "Text"
+        let childNode = doc.CreateElement ("Text", XmlUtil.NS)
         let textNode = doc.CreateTextNode this.Text
         childNode.AppendChild textNode |> ignore<XmlNode>
         node.AppendChild childNode |> ignore<XmlNode>
@@ -1154,7 +1158,7 @@ type TrxCounters =
         }
 
     member internal this.toXml (doc : XmlDocument) : XmlNode =
-        let node = doc.CreateElement "Counters"
+        let node = doc.CreateElement ("Counters", XmlUtil.NS)
 
         do
             let attr = doc.CreateAttribute "total"
@@ -1475,7 +1479,7 @@ type TrxResultsSummary =
     }
 
     member internal this.toXml (doc : XmlDocument) : XmlNode =
-        let node = doc.CreateElement "ResultSummary"
+        let node = doc.CreateElement ("ResultSummary", XmlUtil.NS)
 
         do
             let attr = doc.CreateAttribute "outcome"
@@ -1486,7 +1490,7 @@ type TrxResultsSummary =
         node.AppendChild (this.Output.toXml doc) |> ignore<XmlNode>
 
         do
-            let runInfosNode = doc.CreateElement "RunInfos"
+            let runInfosNode = doc.CreateElement ("RunInfos", XmlUtil.NS)
 
             for runInfo in this.RunInfos do
                 runInfosNode.AppendChild (runInfo.toXml doc) |> ignore<XmlNode>
@@ -1575,8 +1579,7 @@ type TrxReport =
     }
 
     member internal this.toXml (doc : XmlDocument) : XmlNode =
-        let node =
-            doc.CreateElement ("TestRun", "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")
+        let node = doc.CreateElement ("TestRun", XmlUtil.NS)
 
         do
             let attr = doc.CreateAttribute "id"
@@ -1592,7 +1595,7 @@ type TrxReport =
         node.AppendChild (this.Settings.toXml doc) |> ignore<XmlNode>
 
         do
-            let resultNode = doc.CreateElement "Results"
+            let resultNode = doc.CreateElement ("Results", XmlUtil.NS)
 
             for result in this.Results do
                 resultNode.AppendChild (result.toXml doc) |> ignore<XmlNode>
@@ -1600,7 +1603,7 @@ type TrxReport =
             node.AppendChild resultNode |> ignore<XmlNode>
 
         do
-            let defsNode = doc.CreateElement "TestDefinitions"
+            let defsNode = doc.CreateElement ("TestDefinitions", XmlUtil.NS)
 
             for result in this.TestDefinitions do
                 defsNode.AppendChild (result.toXml doc) |> ignore<XmlNode>
@@ -1608,7 +1611,7 @@ type TrxReport =
             node.AppendChild defsNode |> ignore<XmlNode>
 
         do
-            let testsNode = doc.CreateElement "TestEntries"
+            let testsNode = doc.CreateElement ("TestEntries", XmlUtil.NS)
 
             for result in this.TestEntries do
                 testsNode.AppendChild (result.toXml doc) |> ignore<XmlNode>
@@ -1616,7 +1619,7 @@ type TrxReport =
             node.AppendChild testsNode |> ignore<XmlNode>
 
         do
-            let listsNode = doc.CreateElement "TestLists"
+            let listsNode = doc.CreateElement ("TestLists", XmlUtil.NS)
 
             for result in this.TestLists do
                 listsNode.AppendChild (result.toXml doc) |> ignore<XmlNode>
