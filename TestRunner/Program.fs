@@ -401,6 +401,7 @@ module Program =
             let contents = TrxReport.toXml report |> fun d -> d.OuterXml
             trxPath.Directory.Create ()
             File.WriteAllText (trxPath.FullName, contents)
+            Console.Error.WriteLine $"Written TRX file: %s{trxPath.FullName}"
         | None -> ()
 
         match outcome with
