@@ -35,6 +35,13 @@ module TestCaseData =
     [<TestCaseSource(nameof optionalRaw)>]
     let ``Consume options, raw`` (s : string option) : unit = s |> shouldEqual s
 
+    [<TestCase(30, 15, 44, false)>]
+    let bug66 (i : int, j : int, k : int, l : bool) =
+        i |> shouldEqual 30
+        j |> shouldEqual 15
+        k |> shouldEqual 44
+        l |> shouldEqual false
+
     [<OneTimeTearDown>]
     let tearDown () =
         testCasesSeen
