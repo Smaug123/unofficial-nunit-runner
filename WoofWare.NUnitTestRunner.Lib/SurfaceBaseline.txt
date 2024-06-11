@@ -208,7 +208,6 @@ WoofWare.NUnitTestRunner.TestFixture.Type [property]: [read-only] System.Type
 WoofWare.NUnitTestRunner.TestFixtureModule inherit obj
 WoofWare.NUnitTestRunner.TestFixtureModule.parse [static method]: System.Type -> WoofWare.NUnitTestRunner.TestFixture
 WoofWare.NUnitTestRunner.TestFixtureModule.run [static method]: WoofWare.NUnitTestRunner.ITestProgress -> (WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.SingleTestMethod -> bool) -> WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.FixtureRunResults list
-WoofWare.NUnitTestRunner.TestFixtureModule.runOneFixture [static method]: WoofWare.NUnitTestRunner.ITestProgress -> (WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.SingleTestMethod -> bool) -> string -> obj -> WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.FixtureRunResults
 WoofWare.NUnitTestRunner.TestKind inherit obj, implements WoofWare.NUnitTestRunner.TestKind System.IEquatable, System.Collections.IStructuralEquatable - union type with 3 cases
 WoofWare.NUnitTestRunner.TestKind+Data inherit WoofWare.NUnitTestRunner.TestKind
 WoofWare.NUnitTestRunner.TestKind+Data.get_Item [method]: unit -> obj list list

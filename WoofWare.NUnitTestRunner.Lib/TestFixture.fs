@@ -416,7 +416,7 @@ module TestFixture =
 
     /// Run every test (except those which fail the `filter`) in this test fixture, as well as the
     /// appropriate setup and tear-down logic.
-    let runOneFixture
+    let private runOneFixture
         (progress : ITestProgress)
         (filter : TestFixture -> SingleTestMethod -> bool)
         (name : string)
