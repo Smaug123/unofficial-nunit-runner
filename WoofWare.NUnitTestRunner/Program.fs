@@ -164,10 +164,30 @@ module Program =
         let ctx = Ctx (testDll, locateRuntimes testDll)
         let assy = ctx.LoadFromAssemblyPath testDll.FullName
 
+        let levelOfParallelism =
+            (None, assy.CustomAttributes)
+            ||> Seq.fold (fun acc attr ->
+                match attr.AttributeType.FullName with
+                | "NUnit.Framework.LevelOfParallelismAttribute" ->
+                    let arg =
+                        attr.ConstructorArguments
+                        |> Seq.exactlyOne
+                        |> _.Value
+                        |> unbox<int>
+                    match acc with
+                    | None -> Some arg
+                    | Some existing -> failwith $"Assembly %s{assy.Location} declares parallelism %i{arg} and also %i{existing}"
+                | "NUnit.Framework.NonParallelizableAttribute" ->
+                    match acc with
+                    | None -> Some 1
+                    | Some existing -> failwith $"Assembly %s{assy.Location} declares non-parallelizable and also parallelism %i{existing}"
+                | _ -> acc
+            )
+
         let testFixtures = assy.ExportedTypes |> Seq.map TestFixture.parse |> Seq.toList
 
         let creationTime = DateTimeOffset.Now
-        let results = testFixtures |> List.map (TestFixture.run progress filter)
+        let results = testFixtures |> List.map (TestFixture.run levelOfParallelism progress filter)
 
         let finishTime = DateTimeOffset.Now
         let finishTimeHumanReadable = finishTime.ToString @"yyyy-MM-dd HH:mm:ss"
