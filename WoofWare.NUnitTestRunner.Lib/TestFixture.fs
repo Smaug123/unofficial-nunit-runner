@@ -640,7 +640,7 @@ module TestFixture =
                 methods
                 |> Seq.tryPick (fun mi ->
                     if not mi.IsStatic then
-                        Some (Activator.CreateInstance (mi.DeclaringType, args, [||]))
+                        Some (Activator.CreateInstance (mi.DeclaringType, args))
                     else
                         None
                 )
