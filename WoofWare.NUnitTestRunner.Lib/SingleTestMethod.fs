@@ -30,6 +30,15 @@ module SingleTestMethod =
                 | "NUnit.Framework.TestCaseAttribute" ->
                     let args = attr.ConstructorArguments |> Seq.map _.Value |> Seq.toList
 
+                    let args =
+                        match args with
+                        | [ :? System.Collections.ICollection as x ] ->
+                            x
+                            |> Seq.cast<CustomAttributeTypedArgument>
+                            |> Seq.map (fun v -> v.Value)
+                            |> Seq.toList
+                        | _ -> args
+
                     match hasData with
                     | None -> (remaining, isTest, sources, Some [ List.ofSeq args ], mods, cats, repeat, comb)
                     | Some existing ->
