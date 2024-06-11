@@ -7,4 +7,12 @@ open FsUnitTyped
 [<TestFixture false>]
 type TestParameterisedFixture (v : bool) =
     [<Test>]
-    let thing () = v |> shouldEqual v
+    member _.Thing () = v |> shouldEqual v
+
+[<TestFixture(3, true)>]
+[<TestFixture(6, false)>]
+type TestParameterisedFixtureMultiple (i : int, v : bool) =
+    [<Test>]
+    member _.Thing () =
+        v |> shouldEqual v
+        i |> shouldEqual i

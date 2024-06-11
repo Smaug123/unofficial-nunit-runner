@@ -1,6 +1,7 @@
 namespace WoofWare.NUnitTestRunner
 
 open System
+open System.Collections
 open System.Diagnostics
 open System.IO
 open System.Reflection
@@ -415,36 +416,15 @@ module TestFixture =
 
     /// Run every test (except those which fail the `filter`) in this test fixture, as well as the
     /// appropriate setup and tear-down logic.
-    let run
+    let runOneFixture
         (progress : ITestProgress)
         (filter : TestFixture -> SingleTestMethod -> bool)
+        (name : string)
+        (containingObject : obj)
         (tests : TestFixture)
         : FixtureRunResults
         =
-        progress.OnTestFixtureStart tests.Name tests.Tests.Length
-
-        let containingObject =
-            let methods =
-                seq {
-                    match tests.OneTimeSetUp with
-                    | None -> ()
-                    | Some t -> yield t
-
-                    match tests.OneTimeTearDown with
-                    | None -> ()
-                    | Some t -> yield t
-
-                    yield! tests.Tests |> Seq.map (fun t -> t.Method)
-                }
-
-            methods
-            |> Seq.tryPick (fun mi ->
-                if not mi.IsStatic then
-                    Some (Activator.CreateInstance mi.DeclaringType)
-                else
-                    None
-            )
-            |> Option.toObj
+        progress.OnTestFixtureStart name tests.Tests.Length
 
         let oldWorkDir = Environment.CurrentDirectory
         Environment.CurrentDirectory <- FileInfo(tests.ContainingAssembly.Location).Directory.FullName
@@ -470,7 +450,7 @@ module TestFixture =
                 ExecutionId = Guid.NewGuid ()
                 TestId = Guid.NewGuid ()
                 // This one is a bit dubious, because we don't actually have a test name at all
-                TestName = tests.Name
+                TestName = name
                 ClassName = tests.Name
                 StdOut = if String.IsNullOrEmpty stdOut then None else Some stdOut
                 StdErr = if String.IsNullOrEmpty stdErr then None else Some stdErr
@@ -540,19 +520,27 @@ module TestFixture =
     /// Interpret this type as a [<TestFixture>], extracting the test members from it and annotating them with all
     /// relevant information about how we should run them.
     let parse (parentType : Type) : TestFixture =
-        if
-            parentType.CustomAttributes
-            |> Seq.exists (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.SetUpFixtureAttribute")
-        then
-            failwith "This test runner does not support SetUpFixture. Please shout if you want this."
+        let categories, args =
+            (([], []), parentType.CustomAttributes)
+            ||> Seq.fold (fun (categories, args) attr ->
+                match attr.AttributeType.FullName with
+                | "NUnit.Framework.SetUpFixtureAttribute" ->
+                    failwith "This test runner does not support SetUpFixture. Please shout if you want this."
+                | "NUnit.Framework.CategoryAttribute" ->
+                    let cat = attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>
+                    cat :: categories, args
+                | "NUnit.Framework.TestFixtureAttribute" ->
+                    let newArgs =
+                        match attr.ConstructorArguments |> Seq.map _.Value |> Seq.toList with
+                        | [ :? ICollection as x ] ->
+                            x |> Seq.cast<CustomAttributeTypedArgument> |> Seq.map _.Value |> Seq.toList
+                        | xs -> xs
 
-        let categories =
-            parentType.CustomAttributes
-            |> Seq.filter (fun attr -> attr.AttributeType.FullName = "NUnit.Framework.CategoryAttribute")
-            |> Seq.map (fun attr -> attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>)
-            |> Seq.toList
+                    categories, newArgs :: args
+                | _ -> categories, args
+            )
 
-        (TestFixture.Empty parentType.Assembly parentType.Name, parentType.GetRuntimeMethods ())
+        (TestFixture.Empty parentType args, parentType.GetRuntimeMethods ())
         ||> Seq.fold (fun state mi ->
             ((state, []), mi.CustomAttributes)
             ||> Seq.fold (fun (state, unrecognisedAttrs) attr ->
@@ -621,4 +609,49 @@ module TestFixture =
                         |> failwithf "Unrecognised attributes: %s"
 
                 state
+        )
+
+    /// Run every test (except those which fail the `filter`) in this test fixture, as well as the
+    /// appropriate setup and tear-down logic.
+    let run
+        (progress : ITestProgress)
+        (filter : TestFixture -> SingleTestMethod -> bool)
+        (tests : TestFixture)
+        : FixtureRunResults list
+        =
+        match tests.Parameters with
+        | [] -> [ null ]
+        | args -> args |> List.map List.toArray
+        |> List.map (fun args ->
+            let containingObject =
+                let methods =
+                    seq {
+                        match tests.OneTimeSetUp with
+                        | None -> ()
+                        | Some t -> yield t
+
+                        match tests.OneTimeTearDown with
+                        | None -> ()
+                        | Some t -> yield t
+
+                        yield! tests.Tests |> Seq.map (fun t -> t.Method)
+                    }
+
+                methods
+                |> Seq.tryPick (fun mi ->
+                    if not mi.IsStatic then
+                        Some (Activator.CreateInstance (mi.DeclaringType, args, [||]))
+                    else
+                        None
+                )
+                |> Option.toObj
+
+            let name =
+                if isNull args then
+                    tests.Name
+                else
+                    let args = args |> Seq.map (fun o -> o.ToString ()) |> String.concat ","
+                    $"%s{tests.Name}(%s{args})"
+
+            runOneFixture progress filter name containingObject tests
         )
