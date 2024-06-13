@@ -185,25 +185,29 @@ WoofWare.NUnitTestRunner.TestFailure.NewTearDownFailed [static method]: WoofWare
 WoofWare.NUnitTestRunner.TestFailure.NewTestFailed [static method]: WoofWare.NUnitTestRunner.UserMethodFailure -> WoofWare.NUnitTestRunner.TestFailure
 WoofWare.NUnitTestRunner.TestFailure.Tag [property]: [read-only] int
 WoofWare.NUnitTestRunner.TestFixture inherit obj, implements WoofWare.NUnitTestRunner.TestFixture System.IEquatable, System.Collections.IStructuralEquatable
-WoofWare.NUnitTestRunner.TestFixture..ctor [constructor]: (System.Reflection.Assembly, string, System.Reflection.MethodInfo option, System.Reflection.MethodInfo option, System.Reflection.MethodInfo list, System.Reflection.MethodInfo list, WoofWare.NUnitTestRunner.SingleTestMethod list)
+WoofWare.NUnitTestRunner.TestFixture..ctor [constructor]: (System.Reflection.Assembly, string, System.Type, System.Reflection.MethodInfo option, System.Reflection.MethodInfo option, System.Reflection.MethodInfo list, System.Reflection.MethodInfo list, obj list list, WoofWare.NUnitTestRunner.SingleTestMethod list)
 WoofWare.NUnitTestRunner.TestFixture.ContainingAssembly [property]: [read-only] System.Reflection.Assembly
-WoofWare.NUnitTestRunner.TestFixture.Empty [static method]: System.Reflection.Assembly -> string -> WoofWare.NUnitTestRunner.TestFixture
+WoofWare.NUnitTestRunner.TestFixture.Empty [static method]: System.Type -> obj list list -> WoofWare.NUnitTestRunner.TestFixture
 WoofWare.NUnitTestRunner.TestFixture.get_ContainingAssembly [method]: unit -> System.Reflection.Assembly
 WoofWare.NUnitTestRunner.TestFixture.get_Name [method]: unit -> string
 WoofWare.NUnitTestRunner.TestFixture.get_OneTimeSetUp [method]: unit -> System.Reflection.MethodInfo option
 WoofWare.NUnitTestRunner.TestFixture.get_OneTimeTearDown [method]: unit -> System.Reflection.MethodInfo option
+WoofWare.NUnitTestRunner.TestFixture.get_Parameters [method]: unit -> obj list list
 WoofWare.NUnitTestRunner.TestFixture.get_SetUp [method]: unit -> System.Reflection.MethodInfo list
 WoofWare.NUnitTestRunner.TestFixture.get_TearDown [method]: unit -> System.Reflection.MethodInfo list
 WoofWare.NUnitTestRunner.TestFixture.get_Tests [method]: unit -> WoofWare.NUnitTestRunner.SingleTestMethod list
+WoofWare.NUnitTestRunner.TestFixture.get_Type [method]: unit -> System.Type
 WoofWare.NUnitTestRunner.TestFixture.Name [property]: [read-only] string
 WoofWare.NUnitTestRunner.TestFixture.OneTimeSetUp [property]: [read-only] System.Reflection.MethodInfo option
 WoofWare.NUnitTestRunner.TestFixture.OneTimeTearDown [property]: [read-only] System.Reflection.MethodInfo option
+WoofWare.NUnitTestRunner.TestFixture.Parameters [property]: [read-only] obj list list
 WoofWare.NUnitTestRunner.TestFixture.SetUp [property]: [read-only] System.Reflection.MethodInfo list
 WoofWare.NUnitTestRunner.TestFixture.TearDown [property]: [read-only] System.Reflection.MethodInfo list
 WoofWare.NUnitTestRunner.TestFixture.Tests [property]: [read-only] WoofWare.NUnitTestRunner.SingleTestMethod list
+WoofWare.NUnitTestRunner.TestFixture.Type [property]: [read-only] System.Type
 WoofWare.NUnitTestRunner.TestFixtureModule inherit obj
 WoofWare.NUnitTestRunner.TestFixtureModule.parse [static method]: System.Type -> WoofWare.NUnitTestRunner.TestFixture
-WoofWare.NUnitTestRunner.TestFixtureModule.run [static method]: WoofWare.NUnitTestRunner.ITestProgress -> (WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.SingleTestMethod -> bool) -> WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.FixtureRunResults
+WoofWare.NUnitTestRunner.TestFixtureModule.run [static method]: WoofWare.NUnitTestRunner.ITestProgress -> (WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.SingleTestMethod -> bool) -> WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.FixtureRunResults list
 WoofWare.NUnitTestRunner.TestKind inherit obj, implements WoofWare.NUnitTestRunner.TestKind System.IEquatable, System.Collections.IStructuralEquatable - union type with 3 cases
 WoofWare.NUnitTestRunner.TestKind+Data inherit WoofWare.NUnitTestRunner.TestKind
 WoofWare.NUnitTestRunner.TestKind+Data.get_Item [method]: unit -> obj list list

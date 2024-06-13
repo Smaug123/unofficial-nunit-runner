@@ -1,5 +1,6 @@
 namespace WoofWare.NUnitTestRunner
 
+open System
 open System.Reflection
 
 /// A modifier on whether a given test should be run.
@@ -84,6 +85,8 @@ type TestFixture =
         /// Fully-qualified name of this fixture (e.g. MyThing.Test.Foo for `[<TestFixture>] module Foo` in the
         /// `MyThing.Test` assembly).
         Name : string
+        /// The type which is this fixture, containing the tests as members.
+        Type : Type
         /// A method which is run once when this test fixture starts, before any other setup logic and before
         /// any tests run. If this method fails, no tests will run and no per-test setup/teardown logic will run,
         /// but OneTimeTearDown will run.
@@ -99,6 +102,9 @@ type TestFixture =
         /// Methods which are run in some arbitrary order after each individual test, even if the test or its setup
         /// failed. If the first TearDown we run fails, we don't define whether the other TearDowns run.
         TearDown : MethodInfo list
+        /// You might have defined e.g. `[<TestFixture true>] type Foo (v : bool) = ...`. If so, this gives the
+        /// various possible parameters.
+        Parameters : obj list list
         /// The individual test methods present within this fixture.
         Tests : SingleTestMethod list
         /// If this fixture has declared a parallelisability, that goes here.
@@ -106,14 +112,16 @@ type TestFixture =
     }
 
     /// A test fixture about which we know nothing. No tests, no setup/teardown.
-    static member Empty (containingAssembly : Assembly) (name : string) =
+    static member Empty (ty : Type) (args : obj list list) =
         {
-            ContainingAssembly = containingAssembly
-            Name = name
+            ContainingAssembly = ty.Assembly
+            Type = ty
+            Name = ty.Name
             OneTimeSetUp = None
             OneTimeTearDown = None
             SetUp = []
             TearDown = []
+            Parameters = args
             Tests = []
             Parallelize = None
         }

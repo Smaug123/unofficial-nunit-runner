@@ -187,7 +187,7 @@ module Program =
         let testFixtures = assy.ExportedTypes |> Seq.map TestFixture.parse |> Seq.toList
 
         let creationTime = DateTimeOffset.Now
-        let results = testFixtures |> List.map (TestFixture.run levelOfParallelism progress filter)
+        let results = testFixtures |> List.collect (TestFixture.run levelOfParallelism progress filter)
 
         let finishTime = DateTimeOffset.Now
         let finishTimeHumanReadable = finishTime.ToString @"yyyy-MM-dd HH:mm:ss"
