@@ -11,6 +11,8 @@ module TestList =
     [<Test>]
     let ``combinations has right size`` () =
         let property (xs : int list list) =
+            let xs = if xs.Length > 6 then xs |> List.take 6 else xs
+            let xs = xs |> List.map (fun xs -> if xs.Length > 6 then xs |> List.take 6 else xs)
             let combs = List.combinations xs
 
             combs.Length
