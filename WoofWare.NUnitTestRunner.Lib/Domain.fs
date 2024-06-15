@@ -33,16 +33,16 @@ type Combinatorial =
 
 /// Describes the level of parallelism permitted in some context.
 [<RequireQualifiedAccess>]
-type ParallelScope =
-    /// On classes and methods, this means "I may be run in parallel with other tests".
+type ClassParallelScope =
+    /// "I may be run in parallel with other tests, although my children might not be able to run in parallel with each
+    /// other".
     | Self
-    /// On an assembly or class, this means "the set of things I contain may be run in parallel with itself".
+    /// "The set of things I contain may be run in parallel with itself".
     | Children
-    /// On an assembly or class, this means "Fixtures within me may be run in parallel with each other, but the
-    /// tests within a given fixture might not necessarily be runnable in parallel with each other".
+    /// "Fixtures within me may be run in parallel with each other, but the tests within a given fixture might not
+    /// be runnable in parallel with each other".
     | Fixtures
-    /// On a method, this means "run me in parallel with anything else that is happy to be run in parallel".
-    /// On a class, this means "all my descendents are happy to run in parallel with anything else, and also so am I".
+    /// "All my descendents are happy to run in parallel with anything else, and also so am I".
     | All
 
 /// Describes the level of parallelism permitted within an assembly.
@@ -80,7 +80,7 @@ type SingleTestMethod =
         /// to produce the complete collection of args.
         Combinatorial : Combinatorial option
         /// If this test has declared a parallelisability, that goes here.
-        Parallelize : Parallelizable<ParallelScope> option
+        Parallelize : Parallelizable<unit> option
     }
 
     /// Human-readable name of this test method.
@@ -118,11 +118,11 @@ type TestFixture =
         /// The individual test methods present within this fixture.
         Tests : SingleTestMethod list
         /// If this fixture has declared a parallelisability, that goes here.
-        Parallelize : Parallelizable<ParallelScope> option
+        Parallelize : Parallelizable<ClassParallelScope> option
     }
 
     /// A test fixture about which we know nothing. No tests, no setup/teardown.
-    static member Empty (ty : Type) (par : Parallelizable<ParallelScope> option) (args : obj list list) =
+    static member Empty (ty : Type) (par : Parallelizable<ClassParallelScope> option) (args : obj list list) =
         {
             ContainingAssembly = ty.Assembly
             Type = ty

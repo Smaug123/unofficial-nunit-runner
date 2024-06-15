@@ -751,22 +751,22 @@ module TestFixture =
                     categories, newArgs :: args, par
                 | "NUnit.Framework.NonParallelizableAttribute" ->
                     match par with
-                    | Some par -> failwith $"Got multiple parallelism attributes on %s{parentType.FullName}"
+                    | Some _ -> failwith $"Got multiple parallelism attributes on %s{parentType.FullName}"
                     | None -> categories, args, Some Parallelizable.No
                 | "NUnit.Framework.ParallelizableAttribute" ->
                     match par with
                     | Some _ -> failwith $"Got multiple parallelism attributes on %s{parentType.FullName}"
                     | None ->
                         match attr.ConstructorArguments |> Seq.toList with
-                        | [] -> categories, args, Some (Parallelizable.Yes ParallelScope.Self)
+                        | [] -> categories, args, Some (Parallelizable.Yes ClassParallelScope.Self)
                         | [ v ] ->
                             match v.Value with
                             | :? int as v ->
                                 match v with
-                                | 512 -> categories, args, Some (Parallelizable.Yes ParallelScope.Fixtures)
-                                | 256 -> categories, args, Some (Parallelizable.Yes ParallelScope.Children)
-                                | 257 -> categories, args, Some (Parallelizable.Yes ParallelScope.All)
-                                | 1 -> categories, args, Some (Parallelizable.Yes ParallelScope.Self)
+                                | 512 -> categories, args, Some (Parallelizable.Yes ClassParallelScope.Fixtures)
+                                | 256 -> categories, args, Some (Parallelizable.Yes ClassParallelScope.Children)
+                                | 257 -> categories, args, Some (Parallelizable.Yes ClassParallelScope.All)
+                                | 1 -> categories, args, Some (Parallelizable.Yes ClassParallelScope.Self)
                                 | v ->
                                     failwith
                                         $"Could not recognise value %i{v} of parallel scope in %s{parentType.FullName}"
