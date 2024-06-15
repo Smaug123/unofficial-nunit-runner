@@ -174,6 +174,7 @@ module Program =
                 Output =
                     {
                         StdOut = None
+                        StdErr = None
                         ErrorInfo = None
                     }
                 RunInfos =
@@ -277,11 +278,11 @@ module Program =
                     Output =
                         match i.StdOut, i.StdErr, exc with
                         | None, None, None -> None
-                        // TODO surely stderr can be emitted
-                        | stdout, _stderr, exc ->
+                        | stdout, stderr, exc ->
                             Some
                                 {
                                     TrxOutput.StdOut = stdout
+                                    StdErr = stderr
                                     ErrorInfo = exc
                                 }
                 }

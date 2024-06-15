@@ -290,6 +290,8 @@ type TrxOutput =
     {
         /// What the entity printed to standard output.
         StdOut : string option
+        /// What the entity printed to standard error.
+        StdErr : string option
         /// Description of any error the entity encountered.
         ErrorInfo : TrxErrorInfo option
     }
@@ -305,6 +307,14 @@ type TrxOutput =
             childNode.AppendChild text |> ignore<XmlNode>
             node.AppendChild childNode |> ignore<XmlNode>
 
+        match this.StdErr with
+        | None -> ()
+        | Some stderr ->
+            let text = doc.CreateTextNode stderr
+            let childNode = doc.CreateElement ("StdErr", XmlUtil.NS)
+            childNode.AppendChild text |> ignore<XmlNode>
+            node.AppendChild childNode |> ignore<XmlNode>
+
         match this.ErrorInfo with
         | None -> ()
         | Some errInfo -> node.AppendChild (errInfo.toXml doc) |> ignore<XmlNode>
@@ -315,6 +325,11 @@ type TrxOutput =
         let stdout =
             match node with
             | NodeWithNamedChild "StdOut" (OneChildNode "StdOut" (NoChildrenNode stdout)) -> Some stdout
+            | _ -> None
+
+        let stderr =
+            match node with
+            | NodeWithNamedChild "StdErr" (OneChildNode "StdErr" (NoChildrenNode stdout)) -> Some stdout
             | _ -> None
 
         let errorInfo =
@@ -330,6 +345,7 @@ type TrxOutput =
         | Ok errorInfo ->
             {
                 StdOut = stdout
+                StdErr = stderr
                 ErrorInfo = errorInfo
             }
             |> Ok
