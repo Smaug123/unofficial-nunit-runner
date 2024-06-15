@@ -1,9 +1,9 @@
 ﻿namespace WoofWare.NUnitTestRunner
 
 open System
+open System.IO
 open System.Threading.Tasks
 open Spectre.Console
-open System.IO
 
 // Fix for https://github.com/Smaug123/unofficial-nunit-runner/issues/8
 // Set AppContext.BaseDirectory to where the test DLL is.
@@ -38,6 +38,13 @@ module Program =
             match filter with
             | Some filter -> Filter.shouldRun filter
             | None -> fun _ _ -> true
+
+        let stderr =
+            let consoleSettings = AnsiConsoleSettings ()
+            consoleSettings.Out <- AnsiConsoleOutput Console.Error
+            AnsiConsole.Create consoleSettings
+
+        let progress = Progress.spectre stderr
 
         use _ = new SetBaseDir (testDll)
 
@@ -88,13 +95,6 @@ module Program =
         let testFixtures = assy.ExportedTypes |> Seq.map TestFixture.parse |> Seq.toList
 
         use par = new ParallelQueue (levelOfParallelism, par)
-
-        let stderr =
-            let consoleSettings = AnsiConsoleSettings ()
-            consoleSettings.Out <- AnsiConsoleOutput Console.Error
-            AnsiConsole.Create consoleSettings
-
-        let progress = Progress.spectre stderr
 
         let creationTime = DateTimeOffset.Now
 
