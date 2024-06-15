@@ -313,7 +313,6 @@ module Program =
                     Output =
                         match i.StdOut, i.StdErr, exc with
                         | None, None, None -> None
-                        // TODO surely stderr can be emitted
                         | stdout, stderr, exc ->
                             Some
                                 {
