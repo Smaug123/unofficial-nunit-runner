@@ -32,6 +32,7 @@
       <Compile Include="ParallelQueue.fs" />
       <Compile Include="SingleTestMethod.fs" />
       <Compile Include="TestProgress.fs" />
+      <Compile Include="Context.fs" />
       <Compile Include="TestFixture.fs" />
       <Compile Include="Xml.fs" />
       <Compile Include="TrxReport.fs" />
