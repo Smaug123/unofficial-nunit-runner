@@ -16,14 +16,9 @@
     <PackageId>WoofWare.NUnitTestRunner</PackageId>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarnOn>FS3559</WarnOn>
-    <WoofWareMyriadPluginVersion>2.1.42</WoofWareMyriadPluginVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="RuntimeConfig.fs" />
-    <Compile Include="GeneratedRuntimeConfig.fs">
-      <MyriadFile>RuntimeConfig.fs</MyriadFile>
-    </Compile>
     <Compile Include="Seq.fs" />
     <Compile Include="Progress.fs" />
     <Compile Include="Program.fs" />
@@ -39,14 +34,6 @@
 
   <ItemGroup>
     <PackageReference Include="Spectre.Console" Version="0.49.1" />
-    <PackageReference Include="WoofWare.DotnetRuntimeLocator" Version="0.1.4" />
-    <PackageReference Include="WoofWare.Myriad.Plugins.Attributes" Version="3.1.6" />
-    <PackageReference Include="Myriad.SDK" Version="0.8.3" />
-    <PackageReference Include="WoofWare.Myriad.Plugins" Version="$(WoofWareMyriadPluginVersion)" PrivateAssets="all" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <MyriadSdkGenerator Include="$(NuGetPackageRoot)/woofware.myriad.plugins/$(WoofWareMyriadPluginVersion)/lib/net6.0/WoofWare.Myriad.Plugins.dll" />
   </ItemGroup>
 
   <ItemGroup>

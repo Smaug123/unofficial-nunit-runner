@@ -4,14 +4,14 @@ open System
 open WoofWare.Myriad.Plugins
 
 [<JsonParse>]
-type FrameworkDescription =
+type internal FrameworkDescription =
     {
         Name : string
         Version : string
     }
 
 [<JsonParse>]
-type RuntimeOptions =
+type internal RuntimeOptions =
     {
         Tfm : string
         Framework : FrameworkDescription option
@@ -20,13 +20,13 @@ type RuntimeOptions =
     }
 
 [<JsonParse>]
-type RuntimeConfig =
+type internal RuntimeConfig =
     {
         RuntimeOptions : RuntimeOptions
     }
 
 [<RequireQualifiedAccess>]
-type RollForward =
+type internal RollForward =
     | Minor
     | Major
     | LatestPatch
