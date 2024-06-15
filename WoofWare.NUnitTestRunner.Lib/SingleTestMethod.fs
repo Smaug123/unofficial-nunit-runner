@@ -89,16 +89,12 @@ module SingleTestMethod =
                 | "NUnit.Framework.NonParallelizableAttribute" ->
                     match par with
                     | Some _ -> failwith $"Got a parallelization attribute multiple times on %s{method.Name}"
+                    | None -> (remaining, isTest, sources, hasData, mods, cats, repeat, comb, Some Parallelizable.No)
+                | "NUnit.Framework.ParallelizableAttribute" ->
+                    match par with
+                    | Some _ -> failwith $"Got multiple parallelization attributes on %s{method.Name}"
                     | None ->
-                        (remaining,
-                         isTest,
-                         sources,
-                         hasData,
-                         mods,
-                         cats,
-                         repeat,
-                         Some Combinatorial.Sequential,
-                         Some Parallelizable.No)
+                        (remaining, isTest, sources, hasData, mods, cats, repeat, comb, Some (Parallelizable.Yes ()))
                 | s when s.StartsWith ("NUnit.Framework", StringComparison.Ordinal) ->
                     failwith $"Unrecognised attribute on function %s{method.Name}: %s{attr.AttributeType.FullName}"
                 | _ -> (attr :: remaining, isTest, sources, hasData, mods, cats, repeat, comb, par)
