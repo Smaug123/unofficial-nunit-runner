@@ -69,44 +69,36 @@ type private ThreadAwareWriter (local : AsyncLocal<Guid>, underlying : Dictionar
     override this.Write (v : char) : unit =
         use prev = ExecutionContext.Capture ()
 
-        ExecutionContext.Run (
-            prev,
-            (fun _ ->
-                lock
-                    underlying
-                    (fun () ->
-                        match underlying.TryGetValue local.Value with
-                        | true, output -> output.Write v
-                        | false, _ ->
-                            let wanted =
-                                underlying |> Seq.map (fun (KeyValue (a, b)) -> $"%O{a}") |> String.concat "\n"
+        (fun _ ->
+            (fun () ->
+                match underlying.TryGetValue local.Value with
+                | true, output -> output.Write v
+                | false, _ ->
+                    let wanted =
+                        underlying |> Seq.map (fun (KeyValue (a, b)) -> $"%O{a}") |> String.concat "\n"
 
-                            failwith $"no such context: %O{local.Value}\nwanted:\n"
-                    )
-            ),
-            ()
+                    failwith $"no such context: %O{local.Value}\nwanted:\n"
+            )
+            |> lock underlying
         )
+        |> fun action -> ExecutionContext.Run (prev, action, ())
 
     override this.WriteLine (v : string) : unit =
         use prev = ExecutionContext.Capture ()
 
-        ExecutionContext.Run (
-            prev,
-            (fun _ ->
-                lock
-                    underlying
-                    (fun () ->
-                        match underlying.TryGetValue local.Value with
-                        | true, output -> output.WriteLine v
-                        | false, _ ->
-                            let wanted =
-                                underlying |> Seq.map (fun (KeyValue (a, b)) -> $"%O{a}") |> String.concat "\n"
+        (fun _ ->
+            (fun () ->
+                match underlying.TryGetValue local.Value with
+                | true, output -> output.WriteLine v
+                | false, _ ->
+                    let wanted =
+                        underlying |> Seq.map (fun (KeyValue (a, b)) -> $"%O{a}") |> String.concat "\n"
 
-                            failwith $"no such context: %O{local.Value}\nwanted:\n"
-                    )
-            ),
-            ()
+                    failwith $"no such context: %O{local.Value}\nwanted:\n"
+            )
+            |> lock underlying
         )
+        |> fun action -> ExecutionContext.Run (prev, action, ())
 
 /// Wraps up the necessary context to intercept global state.
 type TestContexts =
@@ -118,15 +110,11 @@ type TestContexts =
             StdErrWriters : Dictionary<Guid, TextWriter>
             StdOutWriter : TextWriter
             StdErrWriter : TextWriter
-            _OldStdout : TextWriter
-            _OldStderr : TextWriter
             AsyncLocal : AsyncLocal<Guid>
         }
 
     /// Call this exactly once.
     static member Empty () =
-        let oldStdout = Console.Out
-        let oldStderr = Console.Error
         let stdouts = Dictionary ()
         let stderrs = Dictionary ()
         let stdoutWriters = Dictionary ()
@@ -142,8 +130,6 @@ type TestContexts =
             StdErrWriter = stderrWriter
             StdOutWriters = stdoutWriters
             StdErrWriters = stderrWriters
-            _OldStderr = oldStderr
-            _OldStdout = oldStdout
             AsyncLocal = local
         }
 
