@@ -358,10 +358,12 @@ WoofWare.NUnitTestRunner.TrxOutcome.Parse [static method]: string -> WoofWare.NU
 WoofWare.NUnitTestRunner.TrxOutcome.Tag [property]: [read-only] int
 WoofWare.NUnitTestRunner.TrxOutcome.Warning [static property]: [read-only] WoofWare.NUnitTestRunner.TrxOutcome
 WoofWare.NUnitTestRunner.TrxOutput inherit obj, implements WoofWare.NUnitTestRunner.TrxOutput System.IEquatable, System.Collections.IStructuralEquatable
-WoofWare.NUnitTestRunner.TrxOutput..ctor [constructor]: (string option, WoofWare.NUnitTestRunner.TrxErrorInfo option)
+WoofWare.NUnitTestRunner.TrxOutput..ctor [constructor]: (string option, string option, WoofWare.NUnitTestRunner.TrxErrorInfo option)
 WoofWare.NUnitTestRunner.TrxOutput.ErrorInfo [property]: [read-only] WoofWare.NUnitTestRunner.TrxErrorInfo option
 WoofWare.NUnitTestRunner.TrxOutput.get_ErrorInfo [method]: unit -> WoofWare.NUnitTestRunner.TrxErrorInfo option
+WoofWare.NUnitTestRunner.TrxOutput.get_StdErr [method]: unit -> string option
 WoofWare.NUnitTestRunner.TrxOutput.get_StdOut [method]: unit -> string option
+WoofWare.NUnitTestRunner.TrxOutput.StdErr [property]: [read-only] string option
 WoofWare.NUnitTestRunner.TrxOutput.StdOut [property]: [read-only] string option
 WoofWare.NUnitTestRunner.TrxReport inherit obj, implements WoofWare.NUnitTestRunner.TrxReport System.IEquatable, System.Collections.IStructuralEquatable
 WoofWare.NUnitTestRunner.TrxReport..ctor [constructor]: (System.Guid, string, WoofWare.NUnitTestRunner.TrxReportTimes, WoofWare.NUnitTestRunner.TrxTestSettings, WoofWare.NUnitTestRunner.TrxUnitTestResult list, WoofWare.NUnitTestRunner.TrxUnitTest list, WoofWare.NUnitTestRunner.TrxTestEntry list, WoofWare.NUnitTestRunner.TrxTestListEntry list, WoofWare.NUnitTestRunner.TrxResultsSummary)
