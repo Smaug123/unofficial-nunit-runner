@@ -1,3 +1,41 @@
+WoofWare.NUnitTestRunner.AssemblyParallelScope inherit obj, implements WoofWare.NUnitTestRunner.AssemblyParallelScope System.IEquatable, System.Collections.IStructuralEquatable, WoofWare.NUnitTestRunner.AssemblyParallelScope System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 2 cases
+WoofWare.NUnitTestRunner.AssemblyParallelScope+Tags inherit obj
+WoofWare.NUnitTestRunner.AssemblyParallelScope+Tags.Children [static field]: int = 0
+WoofWare.NUnitTestRunner.AssemblyParallelScope+Tags.Fixtures [static field]: int = 1
+WoofWare.NUnitTestRunner.AssemblyParallelScope.Children [static property]: [read-only] WoofWare.NUnitTestRunner.AssemblyParallelScope
+WoofWare.NUnitTestRunner.AssemblyParallelScope.Fixtures [static property]: [read-only] WoofWare.NUnitTestRunner.AssemblyParallelScope
+WoofWare.NUnitTestRunner.AssemblyParallelScope.get_Children [static method]: unit -> WoofWare.NUnitTestRunner.AssemblyParallelScope
+WoofWare.NUnitTestRunner.AssemblyParallelScope.get_Fixtures [static method]: unit -> WoofWare.NUnitTestRunner.AssemblyParallelScope
+WoofWare.NUnitTestRunner.AssemblyParallelScope.get_IsChildren [method]: unit -> bool
+WoofWare.NUnitTestRunner.AssemblyParallelScope.get_IsFixtures [method]: unit -> bool
+WoofWare.NUnitTestRunner.AssemblyParallelScope.get_Tag [method]: unit -> int
+WoofWare.NUnitTestRunner.AssemblyParallelScope.IsChildren [property]: [read-only] bool
+WoofWare.NUnitTestRunner.AssemblyParallelScope.IsFixtures [property]: [read-only] bool
+WoofWare.NUnitTestRunner.AssemblyParallelScope.Tag [property]: [read-only] int
+WoofWare.NUnitTestRunner.ClassParallelScope inherit obj, implements WoofWare.NUnitTestRunner.ClassParallelScope System.IEquatable, System.Collections.IStructuralEquatable, WoofWare.NUnitTestRunner.ClassParallelScope System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 4 cases
+WoofWare.NUnitTestRunner.ClassParallelScope+Tags inherit obj
+WoofWare.NUnitTestRunner.ClassParallelScope+Tags.All [static field]: int = 3
+WoofWare.NUnitTestRunner.ClassParallelScope+Tags.Children [static field]: int = 1
+WoofWare.NUnitTestRunner.ClassParallelScope+Tags.Fixtures [static field]: int = 2
+WoofWare.NUnitTestRunner.ClassParallelScope+Tags.Self [static field]: int = 0
+WoofWare.NUnitTestRunner.ClassParallelScope.All [static property]: [read-only] WoofWare.NUnitTestRunner.ClassParallelScope
+WoofWare.NUnitTestRunner.ClassParallelScope.Children [static property]: [read-only] WoofWare.NUnitTestRunner.ClassParallelScope
+WoofWare.NUnitTestRunner.ClassParallelScope.Fixtures [static property]: [read-only] WoofWare.NUnitTestRunner.ClassParallelScope
+WoofWare.NUnitTestRunner.ClassParallelScope.get_All [static method]: unit -> WoofWare.NUnitTestRunner.ClassParallelScope
+WoofWare.NUnitTestRunner.ClassParallelScope.get_Children [static method]: unit -> WoofWare.NUnitTestRunner.ClassParallelScope
+WoofWare.NUnitTestRunner.ClassParallelScope.get_Fixtures [static method]: unit -> WoofWare.NUnitTestRunner.ClassParallelScope
+WoofWare.NUnitTestRunner.ClassParallelScope.get_IsAll [method]: unit -> bool
+WoofWare.NUnitTestRunner.ClassParallelScope.get_IsChildren [method]: unit -> bool
+WoofWare.NUnitTestRunner.ClassParallelScope.get_IsFixtures [method]: unit -> bool
+WoofWare.NUnitTestRunner.ClassParallelScope.get_IsSelf [method]: unit -> bool
+WoofWare.NUnitTestRunner.ClassParallelScope.get_Self [static method]: unit -> WoofWare.NUnitTestRunner.ClassParallelScope
+WoofWare.NUnitTestRunner.ClassParallelScope.get_Tag [method]: unit -> int
+WoofWare.NUnitTestRunner.ClassParallelScope.IsAll [property]: [read-only] bool
+WoofWare.NUnitTestRunner.ClassParallelScope.IsChildren [property]: [read-only] bool
+WoofWare.NUnitTestRunner.ClassParallelScope.IsFixtures [property]: [read-only] bool
+WoofWare.NUnitTestRunner.ClassParallelScope.IsSelf [property]: [read-only] bool
+WoofWare.NUnitTestRunner.ClassParallelScope.Self [static property]: [read-only] WoofWare.NUnitTestRunner.ClassParallelScope
+WoofWare.NUnitTestRunner.ClassParallelScope.Tag [property]: [read-only] int
 WoofWare.NUnitTestRunner.Combinatorial inherit obj, implements WoofWare.NUnitTestRunner.Combinatorial System.IEquatable, System.Collections.IStructuralEquatable, WoofWare.NUnitTestRunner.Combinatorial System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 2 cases
 WoofWare.NUnitTestRunner.Combinatorial+Tags inherit obj
 WoofWare.NUnitTestRunner.Combinatorial+Tags.Combinatorial [static field]: int = 0
@@ -141,8 +179,24 @@ WoofWare.NUnitTestRunner.Modifier.IsIgnored [property]: [read-only] bool
 WoofWare.NUnitTestRunner.Modifier.NewExplicit [static method]: string option -> WoofWare.NUnitTestRunner.Modifier
 WoofWare.NUnitTestRunner.Modifier.NewIgnored [static method]: string option -> WoofWare.NUnitTestRunner.Modifier
 WoofWare.NUnitTestRunner.Modifier.Tag [property]: [read-only] int
+WoofWare.NUnitTestRunner.Parallelizable`1 inherit obj, implements 'scope WoofWare.NUnitTestRunner.Parallelizable System.IEquatable, System.Collections.IStructuralEquatable, 'scope WoofWare.NUnitTestRunner.Parallelizable System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 2 cases
+WoofWare.NUnitTestRunner.Parallelizable`1+Tags inherit obj
+WoofWare.NUnitTestRunner.Parallelizable`1+Tags.No [static field]: int = 1
+WoofWare.NUnitTestRunner.Parallelizable`1+Tags.Yes [static field]: int = 0
+WoofWare.NUnitTestRunner.Parallelizable`1+Yes inherit 'scope WoofWare.NUnitTestRunner.Parallelizable
+WoofWare.NUnitTestRunner.Parallelizable`1+Yes.get_Item [method]: unit -> 'scope
+WoofWare.NUnitTestRunner.Parallelizable`1+Yes.Item [property]: [read-only] 'scope
+WoofWare.NUnitTestRunner.Parallelizable`1.get_IsNo [method]: unit -> bool
+WoofWare.NUnitTestRunner.Parallelizable`1.get_IsYes [method]: unit -> bool
+WoofWare.NUnitTestRunner.Parallelizable`1.get_No [static method]: unit -> 'scope WoofWare.NUnitTestRunner.Parallelizable
+WoofWare.NUnitTestRunner.Parallelizable`1.get_Tag [method]: unit -> int
+WoofWare.NUnitTestRunner.Parallelizable`1.IsNo [property]: [read-only] bool
+WoofWare.NUnitTestRunner.Parallelizable`1.IsYes [property]: [read-only] bool
+WoofWare.NUnitTestRunner.Parallelizable`1.NewYes [static method]: 'scope -> 'scope WoofWare.NUnitTestRunner.Parallelizable
+WoofWare.NUnitTestRunner.Parallelizable`1.No [static property]: [read-only] 'scope WoofWare.NUnitTestRunner.Parallelizable
+WoofWare.NUnitTestRunner.Parallelizable`1.Tag [property]: [read-only] int
 WoofWare.NUnitTestRunner.SingleTestMethod inherit obj, implements WoofWare.NUnitTestRunner.SingleTestMethod System.IEquatable, System.Collections.IStructuralEquatable
-WoofWare.NUnitTestRunner.SingleTestMethod..ctor [constructor]: (System.Reflection.MethodInfo, WoofWare.NUnitTestRunner.TestKind, WoofWare.NUnitTestRunner.Modifier list, string list, int option, WoofWare.NUnitTestRunner.Combinatorial option)
+WoofWare.NUnitTestRunner.SingleTestMethod..ctor [constructor]: (System.Reflection.MethodInfo, WoofWare.NUnitTestRunner.TestKind, WoofWare.NUnitTestRunner.Modifier list, string list, int option, WoofWare.NUnitTestRunner.Combinatorial option, unit WoofWare.NUnitTestRunner.Parallelizable option)
 WoofWare.NUnitTestRunner.SingleTestMethod.Categories [property]: [read-only] string list
 WoofWare.NUnitTestRunner.SingleTestMethod.Combinatorial [property]: [read-only] WoofWare.NUnitTestRunner.Combinatorial option
 WoofWare.NUnitTestRunner.SingleTestMethod.get_Categories [method]: unit -> string list
@@ -151,11 +205,13 @@ WoofWare.NUnitTestRunner.SingleTestMethod.get_Kind [method]: unit -> WoofWare.NU
 WoofWare.NUnitTestRunner.SingleTestMethod.get_Method [method]: unit -> System.Reflection.MethodInfo
 WoofWare.NUnitTestRunner.SingleTestMethod.get_Modifiers [method]: unit -> WoofWare.NUnitTestRunner.Modifier list
 WoofWare.NUnitTestRunner.SingleTestMethod.get_Name [method]: unit -> string
+WoofWare.NUnitTestRunner.SingleTestMethod.get_Parallelize [method]: unit -> unit WoofWare.NUnitTestRunner.Parallelizable option
 WoofWare.NUnitTestRunner.SingleTestMethod.get_Repeat [method]: unit -> int option
 WoofWare.NUnitTestRunner.SingleTestMethod.Kind [property]: [read-only] WoofWare.NUnitTestRunner.TestKind
 WoofWare.NUnitTestRunner.SingleTestMethod.Method [property]: [read-only] System.Reflection.MethodInfo
 WoofWare.NUnitTestRunner.SingleTestMethod.Modifiers [property]: [read-only] WoofWare.NUnitTestRunner.Modifier list
 WoofWare.NUnitTestRunner.SingleTestMethod.Name [property]: [read-only] string
+WoofWare.NUnitTestRunner.SingleTestMethod.Parallelize [property]: [read-only] unit WoofWare.NUnitTestRunner.Parallelizable option
 WoofWare.NUnitTestRunner.SingleTestMethod.Repeat [property]: [read-only] int option
 WoofWare.NUnitTestRunner.SingleTestMethodModule inherit obj
 WoofWare.NUnitTestRunner.SingleTestMethodModule.parse [static method]: string list -> System.Reflection.MethodInfo -> System.Reflection.CustomAttributeData list -> (WoofWare.NUnitTestRunner.SingleTestMethod option * System.Reflection.CustomAttributeData list)
@@ -187,13 +243,14 @@ WoofWare.NUnitTestRunner.TestFailure.NewTearDownFailed [static method]: WoofWare
 WoofWare.NUnitTestRunner.TestFailure.NewTestFailed [static method]: WoofWare.NUnitTestRunner.UserMethodFailure -> WoofWare.NUnitTestRunner.TestFailure
 WoofWare.NUnitTestRunner.TestFailure.Tag [property]: [read-only] int
 WoofWare.NUnitTestRunner.TestFixture inherit obj, implements WoofWare.NUnitTestRunner.TestFixture System.IEquatable, System.Collections.IStructuralEquatable
-WoofWare.NUnitTestRunner.TestFixture..ctor [constructor]: (System.Reflection.Assembly, string, System.Type, System.Reflection.MethodInfo option, System.Reflection.MethodInfo option, System.Reflection.MethodInfo list, System.Reflection.MethodInfo list, obj list list, WoofWare.NUnitTestRunner.SingleTestMethod list)
+WoofWare.NUnitTestRunner.TestFixture..ctor [constructor]: (System.Reflection.Assembly, string, System.Type, System.Reflection.MethodInfo option, System.Reflection.MethodInfo option, System.Reflection.MethodInfo list, System.Reflection.MethodInfo list, obj list list, WoofWare.NUnitTestRunner.SingleTestMethod list, WoofWare.NUnitTestRunner.ClassParallelScope WoofWare.NUnitTestRunner.Parallelizable option)
 WoofWare.NUnitTestRunner.TestFixture.ContainingAssembly [property]: [read-only] System.Reflection.Assembly
-WoofWare.NUnitTestRunner.TestFixture.Empty [static method]: System.Type -> obj list list -> WoofWare.NUnitTestRunner.TestFixture
+WoofWare.NUnitTestRunner.TestFixture.Empty [static method]: System.Type -> WoofWare.NUnitTestRunner.ClassParallelScope WoofWare.NUnitTestRunner.Parallelizable option -> obj list list -> WoofWare.NUnitTestRunner.TestFixture
 WoofWare.NUnitTestRunner.TestFixture.get_ContainingAssembly [method]: unit -> System.Reflection.Assembly
 WoofWare.NUnitTestRunner.TestFixture.get_Name [method]: unit -> string
 WoofWare.NUnitTestRunner.TestFixture.get_OneTimeSetUp [method]: unit -> System.Reflection.MethodInfo option
 WoofWare.NUnitTestRunner.TestFixture.get_OneTimeTearDown [method]: unit -> System.Reflection.MethodInfo option
+WoofWare.NUnitTestRunner.TestFixture.get_Parallelize [method]: unit -> WoofWare.NUnitTestRunner.ClassParallelScope WoofWare.NUnitTestRunner.Parallelizable option
 WoofWare.NUnitTestRunner.TestFixture.get_Parameters [method]: unit -> obj list list
 WoofWare.NUnitTestRunner.TestFixture.get_SetUp [method]: unit -> System.Reflection.MethodInfo list
 WoofWare.NUnitTestRunner.TestFixture.get_TearDown [method]: unit -> System.Reflection.MethodInfo list
@@ -202,6 +259,7 @@ WoofWare.NUnitTestRunner.TestFixture.get_Type [method]: unit -> System.Type
 WoofWare.NUnitTestRunner.TestFixture.Name [property]: [read-only] string
 WoofWare.NUnitTestRunner.TestFixture.OneTimeSetUp [property]: [read-only] System.Reflection.MethodInfo option
 WoofWare.NUnitTestRunner.TestFixture.OneTimeTearDown [property]: [read-only] System.Reflection.MethodInfo option
+WoofWare.NUnitTestRunner.TestFixture.Parallelize [property]: [read-only] WoofWare.NUnitTestRunner.ClassParallelScope WoofWare.NUnitTestRunner.Parallelizable option
 WoofWare.NUnitTestRunner.TestFixture.Parameters [property]: [read-only] obj list list
 WoofWare.NUnitTestRunner.TestFixture.SetUp [property]: [read-only] System.Reflection.MethodInfo list
 WoofWare.NUnitTestRunner.TestFixture.TearDown [property]: [read-only] System.Reflection.MethodInfo list
