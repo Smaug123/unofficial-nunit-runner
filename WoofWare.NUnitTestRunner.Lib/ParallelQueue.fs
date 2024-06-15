@@ -75,7 +75,8 @@ type ParallelQueue
                 // the StartTestFixture method returning.
                 { new ThunkEvaluator<_> with
                     member _.Eval t rc =
-                        t () |> rc.Reply
+                        use ec = ExecutionContext.Capture ()
+                        ExecutionContext.Run (ec, (fun _ -> rc.Reply (t ())), ())
                         FakeUnit
                 }
                 |> message.Apply

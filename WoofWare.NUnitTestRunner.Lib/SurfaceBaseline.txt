@@ -26,6 +26,8 @@ WoofWare.NUnitTestRunner.Combinatorial.IsCombinatorial [property]: [read-only] b
 WoofWare.NUnitTestRunner.Combinatorial.IsSequential [property]: [read-only] bool
 WoofWare.NUnitTestRunner.Combinatorial.Sequential [static property]: [read-only] WoofWare.NUnitTestRunner.Combinatorial
 WoofWare.NUnitTestRunner.Combinatorial.Tag [property]: [read-only] int
+WoofWare.NUnitTestRunner.DotnetRuntime inherit obj
+WoofWare.NUnitTestRunner.DotnetRuntime.locate [static method]: System.IO.FileInfo -> System.IO.DirectoryInfo list
 WoofWare.NUnitTestRunner.Filter inherit obj, implements WoofWare.NUnitTestRunner.Filter System.IEquatable, System.Collections.IStructuralEquatable, WoofWare.NUnitTestRunner.Filter System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 6 cases
 WoofWare.NUnitTestRunner.Filter+And inherit WoofWare.NUnitTestRunner.Filter
 WoofWare.NUnitTestRunner.Filter+And.get_Item1 [method]: unit -> WoofWare.NUnitTestRunner.Filter
@@ -117,6 +119,8 @@ WoofWare.NUnitTestRunner.ITestProgress.OnTestFixtureStart [method]: string -> in
 WoofWare.NUnitTestRunner.ITestProgress.OnTestMemberFinished [method]: string -> unit
 WoofWare.NUnitTestRunner.ITestProgress.OnTestMemberSkipped [method]: string -> unit
 WoofWare.NUnitTestRunner.ITestProgress.OnTestMemberStart [method]: string -> unit
+WoofWare.NUnitTestRunner.LoadContext inherit System.Runtime.Loader.AssemblyLoadContext
+WoofWare.NUnitTestRunner.LoadContext..ctor [constructor]: (System.IO.FileInfo, System.IO.DirectoryInfo list, WoofWare.NUnitTestRunner.TestContexts)
 WoofWare.NUnitTestRunner.Match inherit obj, implements WoofWare.NUnitTestRunner.Match System.IEquatable, System.Collections.IStructuralEquatable, WoofWare.NUnitTestRunner.Match System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 2 cases
 WoofWare.NUnitTestRunner.Match+Contains inherit WoofWare.NUnitTestRunner.Match
 WoofWare.NUnitTestRunner.Match+Contains.get_Item [method]: unit -> string
@@ -220,6 +224,8 @@ WoofWare.NUnitTestRunner.SingleTestMethod.Parallelize [property]: [read-only] Wo
 WoofWare.NUnitTestRunner.SingleTestMethod.Repeat [property]: [read-only] int option
 WoofWare.NUnitTestRunner.SingleTestMethodModule inherit obj
 WoofWare.NUnitTestRunner.SingleTestMethodModule.parse [static method]: string list -> System.Reflection.MethodInfo -> System.Reflection.CustomAttributeData list -> (WoofWare.NUnitTestRunner.SingleTestMethod option * System.Reflection.CustomAttributeData list)
+WoofWare.NUnitTestRunner.TestContexts inherit obj, implements WoofWare.NUnitTestRunner.TestContexts System.IEquatable, System.Collections.IStructuralEquatable, IDisposable
+WoofWare.NUnitTestRunner.TestContexts.Empty [static method]: unit -> WoofWare.NUnitTestRunner.TestContexts
 WoofWare.NUnitTestRunner.TestFailure inherit obj, implements WoofWare.NUnitTestRunner.TestFailure System.IEquatable, System.Collections.IStructuralEquatable - union type with 3 cases
 WoofWare.NUnitTestRunner.TestFailure+SetUpFailed inherit WoofWare.NUnitTestRunner.TestFailure
 WoofWare.NUnitTestRunner.TestFailure+SetUpFailed.get_Item [method]: unit -> WoofWare.NUnitTestRunner.UserMethodFailure
@@ -272,8 +278,8 @@ WoofWare.NUnitTestRunner.TestFixture.Tests [property]: [read-only] WoofWare.NUni
 WoofWare.NUnitTestRunner.TestFixture.Type [property]: [read-only] System.Type
 WoofWare.NUnitTestRunner.TestFixtureModule inherit obj
 WoofWare.NUnitTestRunner.TestFixtureModule.parse [static method]: System.Type -> WoofWare.NUnitTestRunner.TestFixture
-WoofWare.NUnitTestRunner.TestFixtureModule.run [static method]: WoofWare.NUnitTestRunner.ParallelQueue -> WoofWare.NUnitTestRunner.ITestProgress -> (WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.SingleTestMethod -> bool) -> WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.FixtureRunResults list System.Threading.Tasks.Task
-WoofWare.NUnitTestRunner.TestFixtureModule.runOneFixture [static method]: WoofWare.NUnitTestRunner.ParallelQueue -> WoofWare.NUnitTestRunner.ITestProgress -> (WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.SingleTestMethod -> bool) -> string -> obj -> WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.FixtureRunResults System.Threading.Tasks.Task
+WoofWare.NUnitTestRunner.TestFixtureModule.run [static method]: WoofWare.NUnitTestRunner.TestContexts -> WoofWare.NUnitTestRunner.ParallelQueue -> WoofWare.NUnitTestRunner.ITestProgress -> (WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.SingleTestMethod -> bool) -> WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.FixtureRunResults list System.Threading.Tasks.Task
+WoofWare.NUnitTestRunner.TestFixtureModule.runOneFixture [static method]: WoofWare.NUnitTestRunner.TestContexts -> WoofWare.NUnitTestRunner.ParallelQueue -> WoofWare.NUnitTestRunner.ITestProgress -> (WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.SingleTestMethod -> bool) -> string -> obj -> WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.FixtureRunResults System.Threading.Tasks.Task
 WoofWare.NUnitTestRunner.TestFixtureRunningToken inherit obj, implements WoofWare.NUnitTestRunner.TestFixtureRunningToken System.IEquatable, System.Collections.IStructuralEquatable
 WoofWare.NUnitTestRunner.TestKind inherit obj, implements WoofWare.NUnitTestRunner.TestKind System.IEquatable, System.Collections.IStructuralEquatable - union type with 3 cases
 WoofWare.NUnitTestRunner.TestKind+Data inherit WoofWare.NUnitTestRunner.TestKind
@@ -423,10 +429,12 @@ WoofWare.NUnitTestRunner.TrxOutcome.Parse [static method]: string -> WoofWare.NU
 WoofWare.NUnitTestRunner.TrxOutcome.Tag [property]: [read-only] int
 WoofWare.NUnitTestRunner.TrxOutcome.Warning [static property]: [read-only] WoofWare.NUnitTestRunner.TrxOutcome
 WoofWare.NUnitTestRunner.TrxOutput inherit obj, implements WoofWare.NUnitTestRunner.TrxOutput System.IEquatable, System.Collections.IStructuralEquatable
-WoofWare.NUnitTestRunner.TrxOutput..ctor [constructor]: (string option, WoofWare.NUnitTestRunner.TrxErrorInfo option)
+WoofWare.NUnitTestRunner.TrxOutput..ctor [constructor]: (string option, string option, WoofWare.NUnitTestRunner.TrxErrorInfo option)
 WoofWare.NUnitTestRunner.TrxOutput.ErrorInfo [property]: [read-only] WoofWare.NUnitTestRunner.TrxErrorInfo option
 WoofWare.NUnitTestRunner.TrxOutput.get_ErrorInfo [method]: unit -> WoofWare.NUnitTestRunner.TrxErrorInfo option
+WoofWare.NUnitTestRunner.TrxOutput.get_StdErr [method]: unit -> string option
 WoofWare.NUnitTestRunner.TrxOutput.get_StdOut [method]: unit -> string option
+WoofWare.NUnitTestRunner.TrxOutput.StdErr [property]: [read-only] string option
 WoofWare.NUnitTestRunner.TrxOutput.StdOut [property]: [read-only] string option
 WoofWare.NUnitTestRunner.TrxReport inherit obj, implements WoofWare.NUnitTestRunner.TrxReport System.IEquatable, System.Collections.IStructuralEquatable
 WoofWare.NUnitTestRunner.TrxReport..ctor [constructor]: (System.Guid, string, WoofWare.NUnitTestRunner.TrxReportTimes, WoofWare.NUnitTestRunner.TrxTestSettings, WoofWare.NUnitTestRunner.TrxUnitTestResult list, WoofWare.NUnitTestRunner.TrxUnitTest list, WoofWare.NUnitTestRunner.TrxTestEntry list, WoofWare.NUnitTestRunner.TrxTestListEntry list, WoofWare.NUnitTestRunner.TrxResultsSummary)

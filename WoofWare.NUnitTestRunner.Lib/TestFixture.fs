@@ -2,25 +2,15 @@ namespace WoofWare.NUnitTestRunner
 
 open System
 open System.Collections
+open System.Collections.Generic
 open System.Diagnostics
 open System.IO
 open System.Reflection
+open System.Runtime.Loader
+open System.Text
 open System.Threading
 open System.Threading.Tasks
 open Microsoft.FSharp.Core
-
-type private StdoutSetter (newStdout : StreamWriter, newStderr : StreamWriter) =
-    let oldStdout = Console.Out
-    let oldStderr = Console.Error
-
-    do
-        Console.SetOut newStdout
-        Console.SetError newStderr
-
-    interface IDisposable with
-        member _.Dispose () =
-            Console.SetOut oldStdout
-            Console.SetError oldStderr
 
 /// Information about the circumstances of a run of a single test.
 type IndividualTestRunMetadata =
@@ -72,6 +62,183 @@ type FixtureRunResults =
                 yield d, Choice3Of3 a
         ]
 
+type private ThreadAwareWriter (local : AsyncLocal<Guid>, underlying : Dictionary<Guid, TextWriter>) =
+    inherit TextWriter ()
+    override _.get_Encoding () = Encoding.Default
+
+    override this.Write (v : char) : unit =
+        use prev = ExecutionContext.Capture ()
+
+        ExecutionContext.Run (
+            prev,
+            (fun _ ->
+                lock
+                    underlying
+                    (fun () ->
+                        match underlying.TryGetValue local.Value with
+                        | true, output -> output.Write v
+                        | false, _ ->
+                            let wanted =
+                                underlying |> Seq.map (fun (KeyValue (a, b)) -> $"%O{a}") |> String.concat "\n"
+
+                            failwith $"no such context: %O{local.Value}\nwanted:\n"
+                    )
+            ),
+            ()
+        )
+
+    override this.WriteLine (v : string) : unit =
+        use prev = ExecutionContext.Capture ()
+
+        ExecutionContext.Run (
+            prev,
+            (fun _ ->
+                lock
+                    underlying
+                    (fun () ->
+                        match underlying.TryGetValue local.Value with
+                        | true, output -> output.WriteLine v
+                        | false, _ ->
+                            let wanted =
+                                underlying |> Seq.map (fun (KeyValue (a, b)) -> $"%O{a}") |> String.concat "\n"
+
+                            failwith $"no such context: %O{local.Value}\nwanted:\n"
+                    )
+            ),
+            ()
+        )
+
+/// Wraps up the necessary context to intercept global state.
+type TestContexts =
+    private
+        {
+            StdOuts : Dictionary<Guid, MemoryStream>
+            StdErrs : Dictionary<Guid, MemoryStream>
+            StdOutWriters : Dictionary<Guid, TextWriter>
+            StdErrWriters : Dictionary<Guid, TextWriter>
+            StdOutWriter : TextWriter
+            StdErrWriter : TextWriter
+            _OldStdout : TextWriter
+            _OldStderr : TextWriter
+            AsyncLocal : AsyncLocal<Guid>
+        }
+
+    /// Call this exactly once.
+    static member Empty () =
+        let oldStdout = Console.Out
+        let oldStderr = Console.Error
+        let stdouts = Dictionary ()
+        let stderrs = Dictionary ()
+        let stdoutWriters = Dictionary ()
+        let stderrWriters = Dictionary ()
+        let local = AsyncLocal ()
+        let stdoutWriter = new ThreadAwareWriter (local, stdoutWriters)
+        let stderrWriter = new ThreadAwareWriter (local, stderrWriters)
+
+        {
+            StdOuts = stdouts
+            StdErrs = stderrs
+            StdOutWriter = stdoutWriter
+            StdErrWriter = stderrWriter
+            StdOutWriters = stdoutWriters
+            StdErrWriters = stderrWriters
+            _OldStderr = oldStderr
+            _OldStdout = oldStdout
+            AsyncLocal = local
+        }
+
+    member internal this.Stdout : TextWriter = this.StdOutWriter
+    member internal this.Stderr : TextWriter = this.StdErrWriter
+
+    member internal this.GetStdout () =
+        let id = this.AsyncLocal.Value
+
+        lock
+            this.StdOuts
+            (fun () ->
+                this.StdOutWriters.[id].Flush ()
+                this.StdOuts.[id].ToArray ()
+            )
+
+    member internal this.GetStderr () =
+        let id = this.AsyncLocal.Value
+
+        lock
+            this.StdErrs
+            (fun () ->
+                this.StdErrWriters.[id].Flush ()
+                this.StdErrs.[id].ToArray ()
+            )
+
+    member internal this.NewOutputs () =
+        let id = Guid.NewGuid ()
+        let msOut = new MemoryStream ()
+        let wrOut = new StreamWriter (msOut)
+        let msErr = new MemoryStream ()
+        let wrErr = new StreamWriter (msErr)
+
+        lock
+            this.StdOuts
+            (fun () ->
+                this.StdOutWriters.Add (id, wrOut)
+                this.StdOuts.Add (id, msOut)
+            )
+
+        lock
+            this.StdErrs
+            (fun () ->
+                this.StdErrWriters.Add (id, wrErr)
+                this.StdErrs.Add (id, msErr)
+            )
+
+        id
+
+    interface IDisposable with
+        member this.Dispose () =
+            // TODO: dispose the streams
+            ()
+
+/// A separate AssemblyLoadContext within which you can run the tests in the given DLL.
+/// Supply places to find the .NET runtimes.
+type LoadContext (dll : FileInfo, runtimes : DirectoryInfo list, contexts : TestContexts) =
+    inherit AssemblyLoadContext ()
+
+    /// Load the assembly with the given name into this assembly context.
+    /// This additionally monkey-patches System.Console: it performs SetOut and SetError on them
+    /// so that they redirect their outputs into the given `TestContexts`.
+    override this.Load (target : AssemblyName) : Assembly =
+        let path = Path.Combine (dll.Directory.FullName, $"%s{target.Name}.dll")
+
+        let assy =
+            if File.Exists path then
+                this.LoadFromAssemblyPath path
+            else
+
+            runtimes
+            |> List.tryPick (fun di ->
+                let path = Path.Combine (di.FullName, $"%s{target.Name}.dll")
+
+                if File.Exists path then
+                    this.LoadFromAssemblyPath path |> Some
+                else
+                    None
+            )
+            |> Option.defaultValue null
+
+        if target.Name = "System.Console" then
+            if isNull assy then
+                failwith "could not monkey-patch System.Console"
+            else
+                let consoleType = assy.GetType "System.Console"
+                let setOut = consoleType.GetMethod "SetOut"
+                setOut.Invoke ((null : obj), [| contexts.Stdout |]) |> unbox<unit>
+                let setErr = consoleType.GetMethod "SetError"
+                setErr.Invoke ((null : obj), [| contexts.Stderr |]) |> unbox<unit>
+
+            assy
+        else
+            assy
+
 /// A test fixture (usually represented by the [<TestFixture>]` attribute), which may contain many tests,
 /// each of which may run many times.
 [<RequireQualifiedAccess>]
@@ -81,6 +248,7 @@ module TestFixture =
     ///
     /// This function does not throw.
     let private runOne
+        (contexts : TestContexts)
         (setUp : MethodInfo list)
         (tearDown : MethodInfo list)
         (testId : Guid)
@@ -113,13 +281,6 @@ module TestFixture =
 
         let start = DateTimeOffset.Now
 
-        use stdOutStream = new MemoryStream ()
-        use stdErrStream = new MemoryStream ()
-        use stdOut = new StreamWriter (stdOutStream)
-        use stdErr = new StreamWriter (stdErrStream)
-
-        use _ = new StdoutSetter (stdOut, stdErr)
-
         let sw = Stopwatch.StartNew ()
 
         let metadata () =
@@ -140,11 +301,11 @@ module TestFixture =
                 TestName = name
                 ClassName = test.DeclaringType.FullName
                 StdOut =
-                    match stdOutStream.ToArray () with
+                    match contexts.GetStdout () with
                     | [||] -> None
                     | arr -> Console.OutputEncoding.GetString arr |> Some
                 StdErr =
-                    match stdErrStream.ToArray () with
+                    match contexts.GetStderr () with
                     | [||] -> None
                     | arr -> Console.OutputEncoding.GetString arr |> Some
             }
@@ -224,6 +385,7 @@ module TestFixture =
     /// This method should never throw: it only throws if there's a critical logic error in the runner.
     /// Exceptions from the units under test are wrapped up and passed out.
     let private runTestsFromMember
+        (contexts : TestContexts)
         (par : ParallelQueue)
         (running : TestFixtureRunningToken)
         (progress : ITestProgress)
@@ -403,31 +565,24 @@ module TestFixture =
         |> Seq.concat
         |> Seq.map (fun (testGuid, args) ->
             task {
+                let runMe () =
+                    progress.OnTestMemberStart test.Name
+                    let oldValue = contexts.AsyncLocal.Value
+                    contexts.AsyncLocal.Value <- contexts.NewOutputs ()
+
+                    let result, meta =
+                        runOne contexts setUp tearDown testGuid test.Method containingObject args
+
+                    contexts.AsyncLocal.Value <- oldValue
+                    progress.OnTestMemberFinished test.Name
+
+                    result, meta
+
                 let! results, summary =
                     match test.Parallelize with
-                    | Some Parallelizable.No ->
-                        par.NonParallel (fun () ->
-                            progress.OnTestMemberStart test.Name
-                            let result = runOne setUp tearDown testGuid test.Method containingObject args
-                            progress.OnTestMemberFinished test.Name
-                            result
-                        )
-                    | Some (Parallelizable.Yes _) ->
-                        par.Parallel (fun () ->
-                            progress.OnTestMemberStart test.Name
-                            let result = runOne setUp tearDown testGuid test.Method containingObject args
-                            progress.OnTestMemberFinished test.Name
-                            result
-                        )
-                    | None ->
-                        par.ObeyParent
-                            running
-                            (fun () ->
-                                progress.OnTestMemberStart test.Name
-                                let result = runOne setUp tearDown testGuid test.Method containingObject args
-                                progress.OnTestMemberFinished test.Name
-                                result
-                            )
+                    | Some Parallelizable.No -> par.NonParallel runMe
+                    | Some (Parallelizable.Yes _) -> par.Parallel runMe
+                    | None -> par.ObeyParent running runMe
 
                 match results with
                 | Ok results -> return Ok results, summary
@@ -439,6 +594,7 @@ module TestFixture =
     /// Run every test (except those which fail the `filter`) in this test fixture, as well as the
     /// appropriate setup and tear-down logic.
     let runOneFixture
+        (contexts : TestContexts)
         (par : ParallelQueue)
         (progress : ITestProgress)
         (filter : TestFixture -> SingleTestMethod -> bool)
@@ -457,15 +613,9 @@ module TestFixture =
             let sw = Stopwatch.StartNew ()
             let startTime = DateTimeOffset.UtcNow
 
-            use stdOutStream = new MemoryStream ()
-            use stdOut = new StreamWriter (stdOutStream)
-            use stdErrStream = new MemoryStream ()
-            use stdErr = new StreamWriter (stdErrStream)
-            use _ = new StdoutSetter (stdOut, stdErr)
-
             let endMetadata () =
-                let stdOut = stdOutStream.ToArray () |> Console.OutputEncoding.GetString
-                let stdErr = stdErrStream.ToArray () |> Console.OutputEncoding.GetString
+                let stdOut = "" // contexts.GetStdout outGuid |> Console.OutputEncoding.GetString
+                let stdErr = "" // contexts.GetStderr errGuid |> Console.OutputEncoding.GetString
 
                 {
                     Total = sw.Elapsed
@@ -517,6 +667,7 @@ module TestFixture =
 
                             let results =
                                 runTestsFromMember
+                                    contexts
                                     par
                                     running
                                     progress
@@ -700,6 +851,7 @@ module TestFixture =
     /// Run every test (except those which fail the `filter`) in this test fixture, as well as the
     /// appropriate setup and tear-down logic.
     let run
+        (contexts : TestContexts)
         (par : ParallelQueue)
         (progress : ITestProgress)
         (filter : TestFixture -> SingleTestMethod -> bool)
@@ -740,7 +892,7 @@ module TestFixture =
                     let args = args |> Seq.map (fun o -> o.ToString ()) |> String.concat ","
                     $"%s{tests.Name}(%s{args})"
 
-            runOneFixture par progress filter name containingObject tests
+            runOneFixture contexts par progress filter name containingObject tests
         )
         |> Task.WhenAll
         |> fun t ->

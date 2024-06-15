@@ -2,10 +2,8 @@
 
 open System
 open System.Threading.Tasks
-open WoofWare.DotnetRuntimeLocator
+open Spectre.Console
 open System.IO
-open System.Reflection
-open System.Runtime.Loader
 
 // Fix for https://github.com/Smaug123/unofficial-nunit-runner/issues/8
 // Set AppContext.BaseDirectory to where the test DLL is.
@@ -19,124 +17,7 @@ type SetBaseDir (testDll : FileInfo) =
             AppContext.SetData ("APP_CONTEXT_BASE_DIRECTORY", oldBaseDir)
 
 
-type Ctx (dll : FileInfo, runtimes : DirectoryInfo list) =
-    inherit AssemblyLoadContext ()
-
-    override this.Load (target : AssemblyName) : Assembly =
-        let path = Path.Combine (dll.Directory.FullName, $"%s{target.Name}.dll")
-
-        if File.Exists path then
-            this.LoadFromAssemblyPath path
-        else
-
-        runtimes
-        |> List.tryPick (fun di ->
-            let path = Path.Combine (di.FullName, $"%s{target.Name}.dll")
-
-            if File.Exists path then
-                this.LoadFromAssemblyPath path |> Some
-            else
-                None
-        )
-        |> Option.defaultValue null
-
-
 module Program =
-    let selectRuntime
-        (config : RuntimeOptions)
-        (f : DotnetEnvironmentInfo)
-        : Choice<DotnetEnvironmentFrameworkInfo, DotnetEnvironmentSdkInfo> option
-        =
-        let rollForward =
-            match Environment.GetEnvironmentVariable "DOTNET_ROLL_FORWARD" with
-            | null ->
-                config.RollForward
-                |> Option.map RollForward.Parse
-                |> Option.defaultValue RollForward.Minor
-            | s -> RollForward.Parse s
-
-        let desiredVersions =
-            match config.Framework with
-            | Some f -> [ Version f.Version, f.Name ]
-            | None ->
-
-            match config.Frameworks with
-            | Some f -> f |> List.map (fun f -> Version f.Version, f.Name)
-            | None ->
-                failwith
-                    "Could not deduce a framework version due to lack of either Framework or Frameworks in runtimeconfig"
-
-        let compatiblyNamedRuntimes =
-            f.Frameworks
-            |> Seq.collect (fun availableFramework ->
-                desiredVersions
-                |> List.choose (fun (desiredVersion, desiredName) ->
-                    if desiredName = availableFramework.Name then
-                        Some
-                            {|
-                                Desired = desiredVersion
-                                Name = desiredName
-                                Installed = availableFramework
-                                InstalledVersion = Version availableFramework.Version
-                            |}
-                    else
-                        None
-                )
-            )
-            |> Seq.toList
-
-        match rollForward with
-        | RollForward.Minor ->
-            let available =
-                compatiblyNamedRuntimes
-                |> Seq.filter (fun data ->
-                    data.InstalledVersion.Major = data.Desired.Major
-                    && data.InstalledVersion.Minor >= data.Desired.Minor
-                )
-                |> Seq.groupBy (fun data -> data.Name)
-                |> Seq.map (fun (name, data) ->
-                    let data =
-                        data
-                        |> Seq.minBy (fun data -> data.InstalledVersion.Minor, data.InstalledVersion.Build)
-
-                    name, data.Installed
-                )
-                // TODO: how do we select between many available frameworks?
-                |> Seq.tryHead
-
-            match available with
-            | Some (_, f) -> Some (Choice1Of2 f)
-            | None ->
-                // TODO: maybe we can ask the SDK. But we keep on trucking: maybe we're self-contained,
-                // and we'll actually find all the runtime next to the DLL.
-                None
-        | _ -> failwith "non-minor RollForward not supported yet; please shout if you want it"
-
-    let locateRuntimes (dll : FileInfo) : DirectoryInfo list =
-        let runtimeConfig =
-            let name =
-                if not (dll.Name.EndsWith (".dll", StringComparison.OrdinalIgnoreCase)) then
-                    failwith $"Expected DLL %s{dll.FullName} to end in .dll"
-
-                dll.Name.Substring (0, dll.Name.Length - 4)
-
-            Path.Combine (dll.Directory.FullName, $"%s{name}.runtimeconfig.json")
-            |> File.ReadAllText
-            |> System.Text.Json.Nodes.JsonNode.Parse
-            |> RuntimeConfig.jsonParse
-            |> fun f -> f.RuntimeOptions
-
-        let availableRuntimes = DotnetEnvironmentInfo.Get ()
-
-        let runtime = selectRuntime runtimeConfig availableRuntimes
-
-        match runtime with
-        | None ->
-            // Keep on trucking: let's be optimistic and hope that we're self-contained.
-            [ dll.Directory ]
-        | Some (Choice1Of2 runtime) -> [ dll.Directory ; DirectoryInfo $"%s{runtime.Path}/%s{runtime.Version}" ]
-        | Some (Choice2Of2 sdk) -> [ dll.Directory ; DirectoryInfo sdk.Path ]
-
     let main argv =
         let startTime = DateTimeOffset.Now
 
@@ -158,11 +39,11 @@ module Program =
             | Some filter -> Filter.shouldRun filter
             | None -> fun _ _ -> true
 
-        let progress = Progress.spectre ()
-
         use _ = new SetBaseDir (testDll)
 
-        let ctx = Ctx (testDll, locateRuntimes testDll)
+        use contexts = TestContexts.Empty ()
+
+        let ctx = LoadContext (testDll, DotnetRuntime.locate testDll, contexts)
         let assy = ctx.LoadFromAssemblyPath testDll.FullName
 
         let levelOfParallelism, par =
@@ -208,10 +89,19 @@ module Program =
 
         use par = new ParallelQueue (levelOfParallelism, par)
 
+        let stderr =
+            let consoleSettings = AnsiConsoleSettings ()
+            consoleSettings.Out <- AnsiConsoleOutput Console.Error
+            AnsiConsole.Create consoleSettings
+
+        let progress = Progress.spectre stderr
+
         let creationTime = DateTimeOffset.Now
 
         let results =
-            testFixtures |> List.map (TestFixture.run par progress filter) |> Task.WhenAll
+            testFixtures
+            |> List.map (TestFixture.run contexts par progress filter)
+            |> Task.WhenAll
 
         if not (results.Wait (TimeSpan.FromHours 2.0)) then
             failwith "Tests failed to terminate within two hours"
@@ -319,6 +209,7 @@ module Program =
                 Output =
                     {
                         StdOut = None
+                        StdErr = None
                         ErrorInfo = None
                     }
                 RunInfos =
@@ -423,10 +314,11 @@ module Program =
                         match i.StdOut, i.StdErr, exc with
                         | None, None, None -> None
                         // TODO surely stderr can be emitted
-                        | stdout, _stderr, exc ->
+                        | stdout, stderr, exc ->
                             Some
                                 {
                                     TrxOutput.StdOut = stdout
+                                    StdErr = stderr
                                     ErrorInfo = exc
                                 }
                 }

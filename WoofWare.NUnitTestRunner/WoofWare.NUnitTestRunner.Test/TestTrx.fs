@@ -197,6 +197,7 @@ Running all tests in /Users/patrick/Documents/GitHub/TestRunner/TestRunner/TestR
 Ensure version is monotonic: Not yet published
 NUnit Adapter 4.5.0.0: Test execution complete
 """
+                        StdErr = None
                         ErrorInfo = None
                     }
                 Outcome = TrxOutcome.Failed
