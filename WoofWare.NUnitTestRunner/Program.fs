@@ -4,6 +4,7 @@ open System
 open System.IO
 open System.Reflection
 open System.Runtime.Loader
+open Spectre.Console
 
 // Fix for https://github.com/Smaug123/unofficial-nunit-runner/issues/8
 // Set AppContext.BaseDirectory to where the test DLL is.
@@ -61,7 +62,12 @@ module Program =
             | Some filter -> Filter.shouldRun filter
             | None -> fun _ _ -> true
 
-        let progress = Progress.spectre ()
+        let stderr =
+            let consoleSettings = AnsiConsoleSettings ()
+            consoleSettings.Out <- AnsiConsoleOutput Console.Error
+            AnsiConsole.Create consoleSettings
+
+        let progress = Progress.spectre stderr
 
         use _ = new SetBaseDir (testDll)
 
