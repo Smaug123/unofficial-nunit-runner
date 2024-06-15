@@ -520,15 +520,15 @@ module TestFixture =
     /// Interpret this type as a [<TestFixture>], extracting the test members from it and annotating them with all
     /// relevant information about how we should run them.
     let parse (parentType : Type) : TestFixture =
-        let categories, args =
-            (([], []), parentType.CustomAttributes)
-            ||> Seq.fold (fun (categories, args) attr ->
+        let categories, args, par =
+            (([], [], None), parentType.CustomAttributes)
+            ||> Seq.fold (fun (categories, args, par) attr ->
                 match attr.AttributeType.FullName with
                 | "NUnit.Framework.SetUpFixtureAttribute" ->
                     failwith "This test runner does not support SetUpFixture. Please shout if you want this."
                 | "NUnit.Framework.CategoryAttribute" ->
                     let cat = attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>
-                    cat :: categories, args
+                    cat :: categories, args, par
                 | "NUnit.Framework.TestFixtureAttribute" ->
                     let newArgs =
                         match attr.ConstructorArguments |> Seq.map _.Value |> Seq.toList with
@@ -536,11 +536,36 @@ module TestFixture =
                             x |> Seq.cast<CustomAttributeTypedArgument> |> Seq.map _.Value |> Seq.toList
                         | xs -> xs
 
-                    categories, newArgs :: args
-                | _ -> categories, args
+                    categories, newArgs :: args, par
+                | "NUnit.Framework.NonParallelizableAttribute" ->
+                    match par with
+                    | Some _ -> failwith $"Got multiple parallelism attributes on %s{parentType.FullName}"
+                    | None -> categories, args, Some Parallelizable.No
+                | "NUnit.Framework.ParallelizableAttribute" ->
+                    match par with
+                    | Some _ -> failwith $"Got multiple parallelism attributes on %s{parentType.FullName}"
+                    | None ->
+                        match attr.ConstructorArguments |> Seq.toList with
+                        | [] -> categories, args, Some (Parallelizable.Yes ParallelScope.Self)
+                        | [ v ] ->
+                            match v.Value with
+                            | :? int as v ->
+                                match v with
+                                | 512 -> categories, args, Some (Parallelizable.Yes ParallelScope.Fixtures)
+                                | 256 -> categories, args, Some (Parallelizable.Yes ParallelScope.Children)
+                                | 257 -> categories, args, Some (Parallelizable.Yes ParallelScope.All)
+                                | 1 -> categories, args, Some (Parallelizable.Yes ParallelScope.Self)
+                                | v ->
+                                    failwith
+                                        $"Could not recognise value %i{v} of parallel scope in %s{parentType.FullName}"
+                            | v ->
+                                failwith
+                                    $"Unexpectedly non-int value %O{v} of parallel scope in %s{parentType.FullName}"
+                        | _ -> failwith $"unexpectedly got multiple args to Parallelizable on %s{parentType.FullName}"
+                | _ -> categories, args, par
             )
 
-        (TestFixture.Empty parentType args, parentType.GetRuntimeMethods ())
+        (TestFixture.Empty parentType par args, parentType.GetRuntimeMethods ())
         ||> Seq.fold (fun state mi ->
             ((state, []), mi.CustomAttributes)
             ||> Seq.fold (fun (state, unrecognisedAttrs) attr ->

@@ -18,15 +18,15 @@ module SingleTestMethod =
         (attrs : CustomAttributeData list)
         : SingleTestMethod option * CustomAttributeData list
         =
-        let remaining, isTest, sources, hasData, modifiers, categories, repeat, comb =
-            (([], false, [], None, [], [], None, None), attrs)
-            ||> List.fold (fun (remaining, isTest, sources, hasData, mods, cats, repeat, comb) attr ->
+        let remaining, isTest, sources, hasData, modifiers, categories, repeat, comb, par =
+            (([], false, [], None, [], [], None, None, None), attrs)
+            ||> List.fold (fun (remaining, isTest, sources, hasData, mods, cats, repeat, comb, par) attr ->
                 match attr.AttributeType.FullName with
                 | "NUnit.Framework.TestAttribute" ->
                     if attr.ConstructorArguments.Count > 0 then
                         failwith "Unexpectedly got arguments to the Test attribute"
 
-                    (remaining, true, sources, hasData, mods, cats, repeat, comb)
+                    (remaining, true, sources, hasData, mods, cats, repeat, comb, par)
                 | "NUnit.Framework.TestCaseAttribute" ->
                     let args = attr.ConstructorArguments |> Seq.map _.Value |> Seq.toList
 
@@ -40,62 +40,77 @@ module SingleTestMethod =
                         | _ -> args
 
                     match hasData with
-                    | None -> (remaining, isTest, sources, Some [ List.ofSeq args ], mods, cats, repeat, comb)
+                    | None -> (remaining, isTest, sources, Some [ List.ofSeq args ], mods, cats, repeat, comb, par)
                     | Some existing ->
-                        (remaining, isTest, sources, Some ((List.ofSeq args) :: existing), mods, cats, repeat, comb)
+                        let args = (List.ofSeq args) :: existing |> Some
+                        (remaining, isTest, sources, args, mods, cats, repeat, comb, par)
                 | "NUnit.Framework.TestCaseSourceAttribute" ->
                     let arg = attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>
 
-                    (remaining, isTest, arg :: sources, hasData, mods, cats, repeat, comb)
+                    (remaining, isTest, arg :: sources, hasData, mods, cats, repeat, comb, par)
                 | "NUnit.Framework.ExplicitAttribute" ->
                     let reason =
                         attr.ConstructorArguments
                         |> Seq.tryHead
                         |> Option.map (_.Value >> unbox<string>)
 
-                    (remaining, isTest, sources, hasData, (Modifier.Explicit reason) :: mods, cats, repeat, comb)
+                    (remaining, isTest, sources, hasData, (Modifier.Explicit reason) :: mods, cats, repeat, comb, par)
                 | "NUnit.Framework.IgnoreAttribute" ->
                     let reason =
                         attr.ConstructorArguments
                         |> Seq.tryHead
                         |> Option.map (_.Value >> unbox<string>)
 
-                    (remaining, isTest, sources, hasData, (Modifier.Ignored reason) :: mods, cats, repeat, comb)
+                    (remaining, isTest, sources, hasData, (Modifier.Ignored reason) :: mods, cats, repeat, comb, par)
                 | "NUnit.Framework.CategoryAttribute" ->
                     let category =
                         attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>
 
-                    (remaining, isTest, sources, hasData, mods, category :: cats, repeat, comb)
+                    (remaining, isTest, sources, hasData, mods, category :: cats, repeat, comb, par)
                 | "NUnit.Framework.RepeatAttribute" ->
                     match repeat with
                     | Some _ -> failwith $"Got RepeatAttribute multiple times on %s{method.Name}"
                     | None ->
 
                     let repeat = attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<int>
-                    (remaining, isTest, sources, hasData, mods, cats, Some repeat, comb)
+                    (remaining, isTest, sources, hasData, mods, cats, Some repeat, comb, par)
                 | "NUnit.Framework.CombinatorialAttribute" ->
                     match comb with
                     | Some _ ->
                         failwith $"Got CombinatorialAttribute or SequentialAttribute multiple times on %s{method.Name}"
                     | None ->
-                        (remaining, isTest, sources, hasData, mods, cats, repeat, Some Combinatorial.Combinatorial)
+                        (remaining, isTest, sources, hasData, mods, cats, repeat, Some Combinatorial.Combinatorial, par)
                 | "NUnit.Framework.SequentialAttribute" ->
                     match comb with
                     | Some _ ->
                         failwith $"Got CombinatorialAttribute or SequentialAttribute multiple times on %s{method.Name}"
-                    | None -> (remaining, isTest, sources, hasData, mods, cats, repeat, Some Combinatorial.Sequential)
+                    | None ->
+                        (remaining, isTest, sources, hasData, mods, cats, repeat, Some Combinatorial.Sequential, par)
+                | "NUnit.Framework.NonParallelizableAttribute" ->
+                    match par with
+                    | Some _ -> failwith $"Got a parallelization attribute multiple times on %s{method.Name}"
+                    | None ->
+                        (remaining,
+                         isTest,
+                         sources,
+                         hasData,
+                         mods,
+                         cats,
+                         repeat,
+                         Some Combinatorial.Sequential,
+                         Some Parallelizable.No)
                 | s when s.StartsWith ("NUnit.Framework", StringComparison.Ordinal) ->
                     failwith $"Unrecognised attribute on function %s{method.Name}: %s{attr.AttributeType.FullName}"
-                | _ -> (attr :: remaining, isTest, sources, hasData, mods, cats, repeat, comb)
+                | _ -> (attr :: remaining, isTest, sources, hasData, mods, cats, repeat, comb, par)
             )
 
         let test =
-            match isTest, sources, hasData, modifiers, categories, repeat, comb with
-            | _, _ :: _, Some _, _, _, _, _ ->
+            match isTest, sources, hasData, modifiers, categories, repeat, comb, par with
+            | _, _ :: _, Some _, _, _, _, _, _ ->
                 failwith
                     $"Test '%s{method.Name}' unexpectedly has both TestData and TestCaseSource; not currently supported"
-            | false, [], None, [], _, _, _ -> None
-            | _, _ :: _, None, mods, categories, repeat, comb ->
+            | false, [], None, [], _, _, _, _ -> None
+            | _, _ :: _, None, mods, categories, repeat, comb, par ->
                 {
                     Kind = TestKind.Source sources
                     Method = method
@@ -103,9 +118,10 @@ module SingleTestMethod =
                     Categories = categories @ parentCategories
                     Repeat = repeat
                     Combinatorial = comb
+                    Parallelize = par
                 }
                 |> Some
-            | _, [], Some data, mods, categories, repeat, comb ->
+            | _, [], Some data, mods, categories, repeat, comb, par ->
                 {
                     Kind = TestKind.Data data
                     Method = method
@@ -113,9 +129,10 @@ module SingleTestMethod =
                     Categories = categories @ parentCategories
                     Repeat = repeat
                     Combinatorial = comb
+                    Parallelize = par
                 }
                 |> Some
-            | true, [], None, mods, categories, repeat, comb ->
+            | true, [], None, mods, categories, repeat, comb, par ->
                 {
                     Kind = TestKind.Single
                     Method = method
@@ -123,9 +140,10 @@ module SingleTestMethod =
                     Categories = categories @ parentCategories
                     Repeat = repeat
                     Combinatorial = comb
+                    Parallelize = par
                 }
                 |> Some
-            | false, [], None, _ :: _, _, _, _ ->
+            | false, [], None, _ :: _, _, _, _, _ ->
                 failwith
                     $"Unexpectedly got test modifiers but no test settings on '%s{method.Name}', which you probably didn't intend."
 
