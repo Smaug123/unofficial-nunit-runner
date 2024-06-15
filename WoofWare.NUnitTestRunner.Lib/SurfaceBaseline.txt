@@ -12,6 +12,8 @@ WoofWare.NUnitTestRunner.Combinatorial.IsCombinatorial [property]: [read-only] b
 WoofWare.NUnitTestRunner.Combinatorial.IsSequential [property]: [read-only] bool
 WoofWare.NUnitTestRunner.Combinatorial.Sequential [static property]: [read-only] WoofWare.NUnitTestRunner.Combinatorial
 WoofWare.NUnitTestRunner.Combinatorial.Tag [property]: [read-only] int
+WoofWare.NUnitTestRunner.DotnetRuntime inherit obj
+WoofWare.NUnitTestRunner.DotnetRuntime.locate [static method]: System.IO.FileInfo -> System.IO.DirectoryInfo list
 WoofWare.NUnitTestRunner.Filter inherit obj, implements WoofWare.NUnitTestRunner.Filter System.IEquatable, System.Collections.IStructuralEquatable, WoofWare.NUnitTestRunner.Filter System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 6 cases
 WoofWare.NUnitTestRunner.Filter+And inherit WoofWare.NUnitTestRunner.Filter
 WoofWare.NUnitTestRunner.Filter+And.get_Item1 [method]: unit -> WoofWare.NUnitTestRunner.Filter
