@@ -6,6 +6,7 @@ open System.Diagnostics
 open System.IO
 open System.Reflection
 open System.Threading
+open System.Threading.Tasks
 open Microsoft.FSharp.Core
 
 type private StdoutSetter (newStdout : StreamWriter, newStderr : StreamWriter) =
@@ -223,11 +224,14 @@ module TestFixture =
     /// This method should never throw: it only throws if there's a critical logic error in the runner.
     /// Exceptions from the units under test are wrapped up and passed out.
     let private runTestsFromMember
+        (par : ParallelQueue)
+        (running : TestFixtureRunningToken)
+        (progress : ITestProgress)
         (setUp : MethodInfo list)
         (tearDown : MethodInfo list)
         (containingObject : obj)
         (test : SingleTestMethod)
-        : (Result<TestMemberSuccess, TestMemberFailure> * IndividualTestRunMetadata) list
+        : (Result<TestMemberSuccess, TestMemberFailure> * IndividualTestRunMetadata) Task list
         =
         if test.Method.ContainsGenericParameters then
             let failureMetadata =
@@ -247,7 +251,7 @@ module TestFixture =
             let error =
                 TestMemberFailure.Malformed [ "Test contained generic parameters; generics are not supported." ]
 
-            (Error error, failureMetadata) |> List.singleton
+            (Error error, failureMetadata) |> Task.FromResult |> List.singleton
         else
 
         let resultPreRun =
@@ -263,17 +267,12 @@ module TestFixture =
                 | Modifier.Ignored reason -> Some (TestMemberSuccess.Ignored reason)
             )
 
-        let sw = Stopwatch.StartNew ()
-        let startTime = DateTimeOffset.Now
-
         match resultPreRun with
         | Some result ->
-            sw.Stop ()
-
             let failureMetadata =
                 {
-                    Total = sw.Elapsed
-                    Start = startTime
+                    Total = TimeSpan.Zero
+                    Start = DateTimeOffset.Now
                     End = DateTimeOffset.Now
                     ComputerName = Environment.MachineName
                     ExecutionId = Guid.NewGuid ()
@@ -285,7 +284,7 @@ module TestFixture =
                     StdOut = None
                 }
 
-            [ Ok result, failureMetadata ]
+            (Ok result, failureMetadata) |> Task.FromResult |> List.singleton
         | None ->
 
         let individualTests =
@@ -348,7 +347,7 @@ module TestFixture =
 
                             // Might not be an IEnumerable of a reference type.
                             // Concretely, `FSharpList<HttpStatusCode> :> IEnumerable<obj>` fails.
-                            for arg in args.GetValue (null : obj) :?> System.Collections.IEnumerable do
+                            for arg in args.GetValue (null : obj) :?> IEnumerable do
                                 yield
                                     Guid.NewGuid (),
                                     match arg with
@@ -377,14 +376,12 @@ module TestFixture =
                     ]
                     |> Ok
 
-        sw.Stop ()
-
         match individualTests with
         | Error e ->
             let failureMetadata =
                 {
-                    Total = sw.Elapsed
-                    Start = startTime
+                    Total = TimeSpan.Zero
+                    Start = DateTimeOffset.Now
                     End = DateTimeOffset.Now
                     ComputerName = Environment.MachineName
                     ExecutionId = Guid.NewGuid ()
@@ -397,7 +394,7 @@ module TestFixture =
                     StdOut = None
                 }
 
-            [ Error e, failureMetadata ]
+            (Error e, failureMetadata) |> Task.FromResult |> List.singleton
         | Ok individualTests ->
 
         let count = test.Repeat |> Option.defaultValue 1
@@ -405,131 +402,194 @@ module TestFixture =
         Seq.init count (fun _ -> individualTests)
         |> Seq.concat
         |> Seq.map (fun (testGuid, args) ->
-            let results, summary =
-                runOne setUp tearDown testGuid test.Method containingObject args
+            task {
+                let! results, summary =
+                    match test.Parallelize with
+                    | Some Parallelizable.No ->
+                        par.NonParallel (fun () ->
+                            progress.OnTestMemberStart test.Name
+                            let result = runOne setUp tearDown testGuid test.Method containingObject args
+                            progress.OnTestMemberFinished test.Name
+                            result
+                        )
+                    | Some (Parallelizable.Yes _) ->
+                        par.Parallel (fun () ->
+                            progress.OnTestMemberStart test.Name
+                            let result = runOne setUp tearDown testGuid test.Method containingObject args
+                            progress.OnTestMemberFinished test.Name
+                            result
+                        )
+                    | None ->
+                        par.ObeyParent
+                            running
+                            (fun () ->
+                                progress.OnTestMemberStart test.Name
+                                let result = runOne setUp tearDown testGuid test.Method containingObject args
+                                progress.OnTestMemberFinished test.Name
+                                result
+                            )
 
-            match results with
-            | Ok results -> Ok results, summary
-            | Error e -> Error (TestMemberFailure.Failed e), summary
+                match results with
+                | Ok results -> return Ok results, summary
+                | Error e -> return Error (TestMemberFailure.Failed e), summary
+            }
         )
         |> Seq.toList
 
     /// Run every test (except those which fail the `filter`) in this test fixture, as well as the
     /// appropriate setup and tear-down logic.
     let runOneFixture
-        (parallelism : int option)
+        (par : ParallelQueue)
         (progress : ITestProgress)
         (filter : TestFixture -> SingleTestMethod -> bool)
         (name : string)
         (containingObject : obj)
         (tests : TestFixture)
-        : FixtureRunResults
+        : FixtureRunResults Task
         =
-        progress.OnTestFixtureStart name tests.Tests.Length
+        task {
+            let! running = par.StartTestFixture tests
+            progress.OnTestFixtureStart name tests.Tests.Length
 
-        let oldWorkDir = Environment.CurrentDirectory
-        Environment.CurrentDirectory <- FileInfo(tests.ContainingAssembly.Location).Directory.FullName
+            let oldWorkDir = Environment.CurrentDirectory
+            Environment.CurrentDirectory <- FileInfo(tests.ContainingAssembly.Location).Directory.FullName
 
-        let sw = Stopwatch.StartNew ()
-        let startTime = DateTimeOffset.UtcNow
+            let sw = Stopwatch.StartNew ()
+            let startTime = DateTimeOffset.UtcNow
 
-        use stdOutStream = new MemoryStream ()
-        use stdOut = new StreamWriter (stdOutStream)
-        use stdErrStream = new MemoryStream ()
-        use stdErr = new StreamWriter (stdErrStream)
-        use _ = new StdoutSetter (stdOut, stdErr)
+            use stdOutStream = new MemoryStream ()
+            use stdOut = new StreamWriter (stdOutStream)
+            use stdErrStream = new MemoryStream ()
+            use stdErr = new StreamWriter (stdErrStream)
+            use _ = new StdoutSetter (stdOut, stdErr)
 
-        let endMetadata () =
-            let stdOut = stdOutStream.ToArray () |> Console.OutputEncoding.GetString
-            let stdErr = stdErrStream.ToArray () |> Console.OutputEncoding.GetString
+            let endMetadata () =
+                let stdOut = stdOutStream.ToArray () |> Console.OutputEncoding.GetString
+                let stdErr = stdErrStream.ToArray () |> Console.OutputEncoding.GetString
 
-            {
-                Total = sw.Elapsed
-                Start = startTime
-                End = DateTimeOffset.UtcNow
-                ComputerName = Environment.MachineName
-                ExecutionId = Guid.NewGuid ()
-                TestId = Guid.NewGuid ()
-                // This one is a bit dubious, because we don't actually have a test name at all
-                TestName = name
-                ClassName = tests.Name
-                StdOut = if String.IsNullOrEmpty stdOut then None else Some stdOut
-                StdErr = if String.IsNullOrEmpty stdErr then None else Some stdErr
-            }
+                {
+                    Total = sw.Elapsed
+                    Start = startTime
+                    End = DateTimeOffset.UtcNow
+                    ComputerName = Environment.MachineName
+                    ExecutionId = Guid.NewGuid ()
+                    TestId = Guid.NewGuid ()
+                    // This one is a bit dubious, because we don't actually have a test name at all
+                    TestName = name
+                    ClassName = tests.Name
+                    StdOut = if String.IsNullOrEmpty stdOut then None else Some stdOut
+                    StdErr = if String.IsNullOrEmpty stdErr then None else Some stdErr
+                }
 
-        let setupResult =
-            match tests.OneTimeSetUp with
-            | Some su ->
-                try
-                    match su.Invoke (containingObject, [||]) with
-                    | :? unit -> None
-                    | ret -> Some (UserMethodFailure.ReturnedNonUnit (su.Name, ret), endMetadata ())
-                with :? TargetInvocationException as e ->
-                    Some (UserMethodFailure.Threw (su.Name, e.InnerException), endMetadata ())
-            | _ -> None
+            let setupResult =
+                match tests.OneTimeSetUp with
+                | Some su ->
+                    try
+                        match su.Invoke (containingObject, [||]) with
+                        | :? unit -> None
+                        | ret -> Some (UserMethodFailure.ReturnedNonUnit (su.Name, ret), endMetadata ())
+                    with :? TargetInvocationException as e ->
+                        Some (UserMethodFailure.Threw (su.Name, e.InnerException), endMetadata ())
+                | _ -> None
 
-        let testFailures = ResizeArray<TestMemberFailure * IndividualTestRunMetadata> ()
+            let testFailures = ResizeArray<TestMemberFailure * IndividualTestRunMetadata> ()
 
-        let successes =
-            ResizeArray<SingleTestMethod * TestMemberSuccess * IndividualTestRunMetadata> ()
+            let successes =
+                ResizeArray<SingleTestMethod * TestMemberSuccess * IndividualTestRunMetadata> ()
 
-        match setupResult with
-        | Some _ ->
-            // Don't run any tests if setup failed.
-            ()
-        | None ->
-            for test in tests.Tests do
-                if filter tests test then
-                    progress.OnTestMemberStart test.Name
-                    let testSuccess = ref 0
+            let testsRun =
+                match setupResult with
+                | Some _ ->
+                    // Don't run any tests if setup failed.
+                    Task.FromResult ()
+                | None ->
+                    tests.Tests
+                    |> Seq.filter (fun test ->
+                        if filter tests test then
+                            true
+                        else
+                            progress.OnTestMemberSkipped test.Name
+                            false
+                    )
+                    |> Seq.map (fun test ->
+                        task {
+                            let testSuccess = ref 0
 
-                    let results = runTestsFromMember tests.SetUp tests.TearDown containingObject test
+                            let results =
+                                runTestsFromMember
+                                    par
+                                    running
+                                    progress
+                                    tests.SetUp
+                                    tests.TearDown
+                                    containingObject
+                                    test
 
-                    for result, report in results do
-                        match result with
-                        | Error failure ->
-                            testFailures.Add (failure, report)
-                            progress.OnTestFailed test.Name failure
-                        | Ok result ->
-                            Interlocked.Increment testSuccess |> ignore<int>
-                            lock successes (fun () -> successes.Add (test, result, report))
+                            let! result =
+                                results
+                                |> List.map (fun t ->
+                                    task {
+                                        let! result, report = t
 
-                    progress.OnTestMemberFinished test.Name
-                else
-                    progress.OnTestMemberSkipped test.Name
+                                        match result with
+                                        | Error failure ->
+                                            testFailures.Add (failure, report)
+                                            progress.OnTestFailed test.Name failure
+                                        | Ok result ->
+                                            Interlocked.Increment testSuccess |> ignore<int>
+                                            lock successes (fun () -> successes.Add (test, result, report))
+                                    }
+                                )
+                                |> Task.WhenAll
 
-        // Unconditionally run OneTimeTearDown if it exists.
-        let tearDownError =
-            match tests.OneTimeTearDown with
-            | Some td ->
-                try
-                    match td.Invoke (containingObject, [||]) with
-                    | null -> None
-                    | ret -> Some (UserMethodFailure.ReturnedNonUnit (td.Name, ret), endMetadata ())
-                with :? TargetInvocationException as e ->
-                    Some (UserMethodFailure.Threw (td.Name, e), endMetadata ())
-            | _ -> None
+                            result |> Array.iter id
+                        }
+                    )
+                    |> Task.WhenAll
+                    |> fun t ->
+                        task {
+                            let! t = t
+                            return t |> Array.iter id
+                        }
 
-        Environment.CurrentDirectory <- oldWorkDir
+            do! testsRun
 
-        {
-            Failed = testFailures |> Seq.toList
-            Success = successes |> Seq.toList
-            OtherFailures = [ tearDownError ; setupResult ] |> List.choose id
+            // Unconditionally run OneTimeTearDown if it exists.
+            let tearDownError =
+                match tests.OneTimeTearDown with
+                | Some td ->
+                    try
+                        match td.Invoke (containingObject, [||]) with
+                        | null -> None
+                        | ret -> Some (UserMethodFailure.ReturnedNonUnit (td.Name, ret), endMetadata ())
+                    with :? TargetInvocationException as e ->
+                        Some (UserMethodFailure.Threw (td.Name, e), endMetadata ())
+                | _ -> None
+
+            Environment.CurrentDirectory <- oldWorkDir
+
+            do! par.EndTestFixture running
+
+            return
+                {
+                    Failed = testFailures |> Seq.toList
+                    Success = successes |> Seq.toList
+                    OtherFailures = [ tearDownError ; setupResult ] |> List.choose id
+                }
         }
 
     /// Interpret this type as a [<TestFixture>], extracting the test members from it and annotating them with all
     /// relevant information about how we should run them.
     let parse (parentType : Type) : TestFixture =
-        let categories, args =
-            (([], []), parentType.CustomAttributes)
-            ||> Seq.fold (fun (categories, args) attr ->
+        let categories, args, par =
+            (([], [], None), parentType.CustomAttributes)
+            ||> Seq.fold (fun (categories, args, par) attr ->
                 match attr.AttributeType.FullName with
                 | "NUnit.Framework.SetUpFixtureAttribute" ->
                     failwith "This test runner does not support SetUpFixture. Please shout if you want this."
                 | "NUnit.Framework.CategoryAttribute" ->
                     let cat = attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>
-                    cat :: categories, args
+                    cat :: categories, args, par
                 | "NUnit.Framework.TestFixtureAttribute" ->
                     let newArgs =
                         match attr.ConstructorArguments |> Seq.map _.Value |> Seq.toList with
@@ -537,11 +597,36 @@ module TestFixture =
                             x |> Seq.cast<CustomAttributeTypedArgument> |> Seq.map _.Value |> Seq.toList
                         | xs -> xs
 
-                    categories, newArgs :: args
-                | _ -> categories, args
+                    categories, newArgs :: args, par
+                | "NUnit.Framework.NonParallelizableAttribute" ->
+                    match par with
+                    | Some par -> failwith $"Got multiple parallelism attributes on %s{parentType.FullName}"
+                    | None -> categories, args, Some Parallelizable.No
+                | "NUnit.Framework.ParallelizableAttribute" ->
+                    match par with
+                    | Some _ -> failwith $"Got multiple parallelism attributes on %s{parentType.FullName}"
+                    | None ->
+                        match attr.ConstructorArguments |> Seq.toList with
+                        | [] -> categories, args, Some (Parallelizable.Yes ParallelScope.Self)
+                        | [ v ] ->
+                            match v.Value with
+                            | :? int as v ->
+                                match v with
+                                | 512 -> categories, args, Some (Parallelizable.Yes ParallelScope.Fixtures)
+                                | 256 -> categories, args, Some (Parallelizable.Yes ParallelScope.Children)
+                                | 257 -> categories, args, Some (Parallelizable.Yes ParallelScope.All)
+                                | 1 -> categories, args, Some (Parallelizable.Yes ParallelScope.Self)
+                                | v ->
+                                    failwith
+                                        $"Could not recognise value %i{v} of parallel scope in %s{parentType.FullName}"
+                            | v ->
+                                failwith
+                                    $"Unexpectedly non-int value %O{v} of parallel scope in %s{parentType.FullName}"
+                        | _ -> failwith $"unexpectedly got multiple args to Parallelizable on %s{parentType.FullName}"
+                | _ -> categories, args, par
             )
 
-        (TestFixture.Empty parentType args, parentType.GetRuntimeMethods ())
+        (TestFixture.Empty parentType par args, parentType.GetRuntimeMethods ())
         ||> Seq.fold (fun state mi ->
             ((state, []), mi.CustomAttributes)
             ||> Seq.fold (fun (state, unrecognisedAttrs) attr ->
@@ -572,10 +657,6 @@ module TestFixture =
                         SetUp = mi :: state.SetUp
                     },
                     unrecognisedAttrs
-                | "NUnit.Framework.NonParallelizableAttribute" ->
-                    { state with
-                        Parallelize = Some Parallelizable.No
-                    }, unrecognisedAttrs
                 | "NUnit.Framework.TestFixtureSetUpAttribute" ->
                     failwith "TestFixtureSetUp is not supported (upstream has deprecated it; use OneTimeSetUp)"
                 | "NUnit.Framework.TestFixtureTearDownAttribute" ->
@@ -619,11 +700,11 @@ module TestFixture =
     /// Run every test (except those which fail the `filter`) in this test fixture, as well as the
     /// appropriate setup and tear-down logic.
     let run
-        (parallelism : int option)
+        (par : ParallelQueue)
         (progress : ITestProgress)
         (filter : TestFixture -> SingleTestMethod -> bool)
         (tests : TestFixture)
-        : FixtureRunResults list
+        : FixtureRunResults list Task
         =
         match tests.Parameters with
         | [] -> [ null ]
@@ -659,5 +740,11 @@ module TestFixture =
                     let args = args |> Seq.map (fun o -> o.ToString ()) |> String.concat ","
                     $"%s{tests.Name}(%s{args})"
 
-            runOneFixture parallelism progress filter name containingObject tests
+            runOneFixture par progress filter name containingObject tests
         )
+        |> Task.WhenAll
+        |> fun t ->
+            task {
+                let! t = t
+                return Array.toList t
+            }

@@ -1,6 +1,7 @@
 ﻿namespace WoofWare.NUnitTestRunner
 
 open System
+open System.Threading.Tasks
 open WoofWare.DotnetRuntimeLocator
 open System.IO
 open System.Reflection
@@ -164,30 +165,58 @@ module Program =
         let ctx = Ctx (testDll, locateRuntimes testDll)
         let assy = ctx.LoadFromAssemblyPath testDll.FullName
 
-        let levelOfParallelism =
-            (None, assy.CustomAttributes)
-            ||> Seq.fold (fun acc attr ->
+        let levelOfParallelism, par =
+            ((None, None), assy.CustomAttributes)
+            ||> Seq.fold (fun (levelPar, par) attr ->
                 match attr.AttributeType.FullName with
                 | "NUnit.Framework.LevelOfParallelismAttribute" ->
-                    let arg =
-                        attr.ConstructorArguments
-                        |> Seq.exactlyOne
-                        |> _.Value
-                        |> unbox<int>
-                    match acc with
-                    | None -> Some arg
-                    | Some existing -> failwith $"Assembly %s{assy.Location} declares parallelism %i{arg} and also %i{existing}"
+                    let arg = attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<int>
+
+                    match levelPar with
+                    | None -> (Some arg, par)
+                    | Some existing ->
+                        failwith $"Assembly %s{assy.Location} declares parallelism %i{arg} and also %i{existing}"
                 | "NUnit.Framework.NonParallelizableAttribute" ->
-                    match acc with
-                    | None -> Some 1
-                    | Some existing -> failwith $"Assembly %s{assy.Location} declares non-parallelizable and also parallelism %i{existing}"
-                | _ -> acc
+                    match levelPar with
+                    | None -> (Some 1, par)
+                    | Some existing ->
+                        failwith
+                            $"Assembly %s{assy.Location} declares non-parallelizable and also parallelism %i{existing}"
+                | "NUnit.Framework.ParallelizableAttribute" ->
+                    match par with
+                    | Some _ -> failwith "Got multiple Parallelize attributes in assembly"
+                    | None ->
+                        match attr.ConstructorArguments |> Seq.toList with
+                        | [] -> levelPar, Some (Parallelizable.Yes AssemblyParallelScope.Fixtures)
+                        | [ v ] ->
+                            match v.Value with
+                            | :? int as v ->
+                                match v with
+                                | 512 -> levelPar, Some (Parallelizable.Yes AssemblyParallelScope.Fixtures)
+                                | 256 -> levelPar, Some (Parallelizable.Yes AssemblyParallelScope.Children)
+                                | 257 ->
+                                    failwith "ParallelScope.All is invalid on assemblies; only Fixtures or Children"
+                                | 1 ->
+                                    failwith "ParallelScope.Self is invalid on assemblies; only Fixtures or Children"
+                                | v -> failwith $"Could not recognise value %i{v} of parallel scope on assembly"
+                            | v -> failwith $"Unexpectedly non-int value %O{v} of parallel scope on assembly"
+                        | _ -> failwith "unexpectedly got multiple args to Parallelizable on assembly"
+                | _ -> levelPar, par
             )
 
         let testFixtures = assy.ExportedTypes |> Seq.map TestFixture.parse |> Seq.toList
 
+        use par = new ParallelQueue (levelOfParallelism, par)
+
         let creationTime = DateTimeOffset.Now
-        let results = testFixtures |> List.collect (TestFixture.run levelOfParallelism progress filter)
+
+        let results =
+            testFixtures |> List.map (TestFixture.run par progress filter) |> Task.WhenAll
+
+        if not (results.Wait (TimeSpan.FromHours 2.0)) then
+            failwith "Tests failed to terminate within two hours"
+
+        let results = results.Result |> Seq.concat |> List.ofSeq
 
         let finishTime = DateTimeOffset.Now
         let finishTimeHumanReadable = finishTime.ToString @"yyyy-MM-dd HH:mm:ss"

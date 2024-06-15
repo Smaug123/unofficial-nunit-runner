@@ -42,9 +42,7 @@ module SingleTestMethod =
                     match hasData with
                     | None -> (remaining, isTest, sources, Some [ List.ofSeq args ], mods, cats, repeat, comb, par)
                     | Some existing ->
-                        let args =
-                            (List.ofSeq args) :: existing
-                            |> Some
+                        let args = (List.ofSeq args) :: existing |> Some
                         (remaining, isTest, sources, args, mods, cats, repeat, comb, par)
                 | "NUnit.Framework.TestCaseSourceAttribute" ->
                     let arg = attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>
@@ -86,12 +84,21 @@ module SingleTestMethod =
                     match comb with
                     | Some _ ->
                         failwith $"Got CombinatorialAttribute or SequentialAttribute multiple times on %s{method.Name}"
-                    | None -> (remaining, isTest, sources, hasData, mods, cats, repeat, Some Combinatorial.Sequential, par)
+                    | None ->
+                        (remaining, isTest, sources, hasData, mods, cats, repeat, Some Combinatorial.Sequential, par)
                 | "NUnit.Framework.NonParallelizableAttribute" ->
                     match par with
-                    | Some _ ->
-                        failwith $"Got a parallelization attribute multiple times on %s{method.Name}"
-                    | None -> (remaining, isTest, sources, hasData, mods, cats, repeat, Some Combinatorial.Sequential, Some Parallelizable.No)
+                    | Some _ -> failwith $"Got a parallelization attribute multiple times on %s{method.Name}"
+                    | None ->
+                        (remaining,
+                         isTest,
+                         sources,
+                         hasData,
+                         mods,
+                         cats,
+                         repeat,
+                         Some Combinatorial.Sequential,
+                         Some Parallelizable.No)
                 | s when s.StartsWith ("NUnit.Framework", StringComparison.Ordinal) ->
                     failwith $"Unrecognised attribute on function %s{method.Name}: %s{attr.AttributeType.FullName}"
                 | _ -> (attr :: remaining, isTest, sources, hasData, mods, cats, repeat, comb, par)
