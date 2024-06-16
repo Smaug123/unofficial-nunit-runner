@@ -199,10 +199,12 @@ WoofWare.NUnitTestRunner.Parallelizable`1.No [static property]: [read-only] 'sco
 WoofWare.NUnitTestRunner.Parallelizable`1.Tag [property]: [read-only] int
 WoofWare.NUnitTestRunner.ParallelQueue inherit obj, implements IDisposable
 WoofWare.NUnitTestRunner.ParallelQueue..ctor [constructor]: (int option, WoofWare.NUnitTestRunner.AssemblyParallelScope WoofWare.NUnitTestRunner.Parallelizable option, System.Threading.CancellationToken option)
-WoofWare.NUnitTestRunner.ParallelQueue.EndTestFixture [method]: WoofWare.NUnitTestRunner.TestFixtureRunningToken -> unit System.Threading.Tasks.Task
-WoofWare.NUnitTestRunner.ParallelQueue.NonParallel [method]: (unit -> 'a) -> 'a System.Threading.Tasks.Task
-WoofWare.NUnitTestRunner.ParallelQueue.ObeyParent [method]: WoofWare.NUnitTestRunner.TestFixtureRunningToken -> (unit -> 'a) -> 'a System.Threading.Tasks.Task
-WoofWare.NUnitTestRunner.ParallelQueue.Parallel [method]: (unit -> 'a) -> 'a System.Threading.Tasks.Task
+WoofWare.NUnitTestRunner.ParallelQueue.EndTestFixture [method]: WoofWare.NUnitTestRunner.TestFixtureTearDownToken -> unit System.Threading.Tasks.Task
+WoofWare.NUnitTestRunner.ParallelQueue.NonParallel [method]: WoofWare.NUnitTestRunner.TestFixtureSetupToken -> (unit -> 'a) -> 'a System.Threading.Tasks.Task
+WoofWare.NUnitTestRunner.ParallelQueue.ObeyParent [method]: WoofWare.NUnitTestRunner.TestFixtureSetupToken -> (unit -> 'a) -> 'a System.Threading.Tasks.Task
+WoofWare.NUnitTestRunner.ParallelQueue.Parallel [method]: WoofWare.NUnitTestRunner.TestFixtureSetupToken -> (unit -> 'a) -> 'a System.Threading.Tasks.Task
+WoofWare.NUnitTestRunner.ParallelQueue.RunTestSetup [method]: WoofWare.NUnitTestRunner.TestFixtureRunningToken -> (unit -> 'a) -> ('a * WoofWare.NUnitTestRunner.TestFixtureSetupToken) System.Threading.Tasks.Task
+WoofWare.NUnitTestRunner.ParallelQueue.RunTestTearDown [method]: WoofWare.NUnitTestRunner.TestFixtureSetupToken -> (unit -> 'a) -> ('a * WoofWare.NUnitTestRunner.TestFixtureTearDownToken) System.Threading.Tasks.Task
 WoofWare.NUnitTestRunner.ParallelQueue.StartTestFixture [method]: WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.TestFixtureRunningToken System.Threading.Tasks.Task
 WoofWare.NUnitTestRunner.SingleTestMethod inherit obj, implements WoofWare.NUnitTestRunner.SingleTestMethod System.IEquatable, System.Collections.IStructuralEquatable
 WoofWare.NUnitTestRunner.SingleTestMethod..ctor [constructor]: (System.Reflection.MethodInfo, WoofWare.NUnitTestRunner.TestKind, WoofWare.NUnitTestRunner.Modifier list, string list, int option, WoofWare.NUnitTestRunner.Combinatorial option, unit WoofWare.NUnitTestRunner.Parallelizable option)
@@ -281,6 +283,8 @@ WoofWare.NUnitTestRunner.TestFixtureModule.parse [static method]: System.Type ->
 WoofWare.NUnitTestRunner.TestFixtureModule.run [static method]: WoofWare.NUnitTestRunner.TestContexts -> WoofWare.NUnitTestRunner.ParallelQueue -> WoofWare.NUnitTestRunner.ITestProgress -> (WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.SingleTestMethod -> bool) -> WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.FixtureRunResults list System.Threading.Tasks.Task
 WoofWare.NUnitTestRunner.TestFixtureModule.runOneFixture [static method]: WoofWare.NUnitTestRunner.TestContexts -> WoofWare.NUnitTestRunner.ParallelQueue -> WoofWare.NUnitTestRunner.ITestProgress -> (WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.SingleTestMethod -> bool) -> string -> obj -> WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.FixtureRunResults System.Threading.Tasks.Task
 WoofWare.NUnitTestRunner.TestFixtureRunningToken inherit obj, implements WoofWare.NUnitTestRunner.TestFixtureRunningToken System.IEquatable, System.Collections.IStructuralEquatable
+WoofWare.NUnitTestRunner.TestFixtureSetupToken inherit obj, implements WoofWare.NUnitTestRunner.TestFixtureSetupToken System.IEquatable, System.Collections.IStructuralEquatable
+WoofWare.NUnitTestRunner.TestFixtureTearDownToken inherit obj, implements WoofWare.NUnitTestRunner.TestFixtureTearDownToken System.IEquatable, System.Collections.IStructuralEquatable
 WoofWare.NUnitTestRunner.TestKind inherit obj, implements WoofWare.NUnitTestRunner.TestKind System.IEquatable, System.Collections.IStructuralEquatable - union type with 3 cases
 WoofWare.NUnitTestRunner.TestKind+Data inherit WoofWare.NUnitTestRunner.TestKind
 WoofWare.NUnitTestRunner.TestKind+Data.get_Item [method]: unit -> obj list list
