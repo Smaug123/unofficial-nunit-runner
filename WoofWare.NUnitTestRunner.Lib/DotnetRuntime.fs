@@ -7,11 +7,7 @@ open WoofWare.DotnetRuntimeLocator
 /// Functions for locating .NET runtimes.
 [<RequireQualifiedAccess>]
 module DotnetRuntime =
-    let private selectRuntime
-        (config : RuntimeOptions)
-        (f : DotnetEnvironmentInfo)
-        : DirectoryInfo list
-        =
+    let private selectRuntime (config : RuntimeOptions) (f : DotnetEnvironmentInfo) : DirectoryInfo list =
         let rollForward =
             match Environment.GetEnvironmentVariable "DOTNET_ROLL_FORWARD" with
             | null ->
@@ -72,9 +68,7 @@ module DotnetRuntime =
             // But we keep on trucking: maybe we're self-contained, and we'll actually find all the runtime next to the
             // DLL.
             available
-            |> List.map (fun (_name, runtime) ->
-                DirectoryInfo $"%s{runtime.Path}/%s{runtime.Version}"
-            )
+            |> List.map (fun (_name, runtime) -> DirectoryInfo $"%s{runtime.Path}/%s{runtime.Version}")
         | _ -> failwith "non-minor RollForward not supported yet; please shout if you want it"
 
     /// Given an executable DLL, locate the .NET runtime that can best run it.
