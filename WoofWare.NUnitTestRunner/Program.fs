@@ -41,8 +41,8 @@ type Args =
 
     static member Parse (args : string list) : Args =
         match args with
-        | [] -> failwith "Supply a positional arg, the DLL to test."
-        | dll :: rest ->
+        | [] -> failwith "The first arg must be a positional arg, the DLL to test."
+        | dll :: args ->
 
         let rec go
             (trx : FileInfo option)
@@ -65,12 +65,12 @@ type Args =
             | Key "--filter" filterStr :: rest
             | "--filter" :: filterStr :: rest ->
                 match filter with
-                | Some f -> failwith "Two conflicting filters; you can only specify --filter once"
+                | Some _ -> failwith "Two conflicting filters; you can only specify --filter once"
                 | None -> go trx (Some (Filter.parse filterStr)) logging par timeout rest
             | Key "--trx" trxStr :: rest
             | "--trx" :: trxStr :: rest ->
                 match trx with
-                | Some f -> failwith "Two conflicting TRX outputs; you can only specify --trx once"
+                | Some _ -> failwith "Two conflicting TRX outputs; you can only specify --trx once"
                 | None -> go (Some (FileInfo trxStr)) filter logging par timeout rest
             | Key "--verbose" verboseStr :: rest
             | "--verbose" :: verboseStr :: rest ->
