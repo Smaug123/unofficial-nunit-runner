@@ -86,14 +86,42 @@ module TestValues =
 
     [<OneTimeTearDown>]
     let ``Values are all OK`` () =
-        seen1 |> Seq.toList |> shouldEqual [ true ; false ]
-        seen2 |> Seq.toList |> shouldEqual [ (true, false) ; (false, true) ]
-        seen3 |> Seq.toList |> shouldEqual [ (88, box 29) ; (31, box 0) ]
-        seen4 |> Seq.toList |> shouldEqual [ ("hi", box "ohh") ; ("bye", null) ]
-        seen5 |> Seq.toList |> shouldEqual [ (88, box 29) ; (31, box 29) ]
-        seen6 |> Seq.toList |> shouldEqual [ ("hi", box "ohh") ; ("bye", box "ohh") ]
-        seen7 |> Seq.toList |> shouldEqual [ (88, box 29) ; (31, box 29) ]
-        seen8 |> Seq.toList |> shouldEqual [ ("hi", box "ohh") ; ("bye", box "ohh") ]
+        seen1 |> Seq.toList |> List.sort |> shouldEqual [ false ; true ]
+
+        seen2
+        |> Seq.toList
+        |> List.sort
+        |> shouldEqual [ (false, true) ; (true, false) ]
+
+        seen3
+        |> Seq.toList
+        |> List.sortBy fst
+        |> shouldEqual [ (31, box 0) ; (88, box 29) ]
+
+        seen4
+        |> Seq.toList
+        |> List.sortBy fst
+        |> shouldEqual [ ("bye", null) ; ("hi", box "ohh") ]
+
+        seen5
+        |> Seq.toList
+        |> List.sortBy fst
+        |> shouldEqual [ (31, box 29) ; (88, box 29) ]
+
+        seen6
+        |> Seq.toList
+        |> List.sortBy fst
+        |> shouldEqual [ ("bye", box "ohh") ; ("hi", box "ohh") ]
+
+        seen7
+        |> Seq.toList
+        |> List.sortBy fst
+        |> shouldEqual [ (31, box 29) ; (88, box 29) ]
+
+        seen8
+        |> Seq.toList
+        |> List.sortBy fst
+        |> shouldEqual [ ("bye", box "ohh") ; ("hi", box "ohh") ]
 
         seen9
         |> Seq.toList
