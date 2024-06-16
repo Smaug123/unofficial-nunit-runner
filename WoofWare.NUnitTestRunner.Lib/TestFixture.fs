@@ -207,7 +207,7 @@ module TestFixture =
     let private runTestsFromMember
         (contexts : TestContexts)
         (par : ParallelQueue)
-        (running : TestFixtureRunningToken)
+        (running : TestFixtureSetupToken)
         (progress : ITestProgress)
         (setUp : MethodInfo list)
         (tearDown : MethodInfo list)
@@ -400,8 +400,8 @@ module TestFixture =
 
                 let! results, summary =
                     match test.Parallelize with
-                    | Some Parallelizable.No -> par.NonParallel runMe
-                    | Some (Parallelizable.Yes _) -> par.Parallel runMe
+                    | Some Parallelizable.No -> par.NonParallel running runMe
+                    | Some (Parallelizable.Yes _) -> par.Parallel running runMe
                     | None -> par.ObeyParent running runMe
 
                 match results with
@@ -434,8 +434,8 @@ module TestFixture =
             let startTime = DateTimeOffset.UtcNow
 
             let endMetadata () =
-                let stdOut = "" // contexts.GetStdout outGuid |> Console.OutputEncoding.GetString
-                let stdErr = "" // contexts.GetStderr errGuid |> Console.OutputEncoding.GetString
+                let stdOut = contexts.GetStdout () |> Console.OutputEncoding.GetString
+                let stdErr = contexts.GetStderr () |> Console.OutputEncoding.GetString
 
                 {
                     Total = sw.Elapsed
@@ -451,16 +451,20 @@ module TestFixture =
                     StdErr = if String.IsNullOrEmpty stdErr then None else Some stdErr
                 }
 
-            let setupResult =
+            let! setupResult, running =
                 match tests.OneTimeSetUp with
                 | Some su ->
-                    try
-                        match su.Invoke (containingObject, [||]) with
-                        | :? unit -> None
-                        | ret -> Some (UserMethodFailure.ReturnedNonUnit (su.Name, ret), endMetadata ())
-                    with :? TargetInvocationException as e ->
-                        Some (UserMethodFailure.Threw (su.Name, e.InnerException), endMetadata ())
-                | _ -> None
+                    par.RunTestSetup
+                        running
+                        (fun () ->
+                            try
+                                match su.Invoke (containingObject, [||]) with
+                                | :? unit -> None
+                                | ret -> Some (UserMethodFailure.ReturnedNonUnit (su.Name, ret), endMetadata ())
+                            with :? TargetInvocationException as e ->
+                                Some (UserMethodFailure.Threw (su.Name, e.InnerException), endMetadata ())
+                        )
+                | _ -> Task.FromResult (None, TestFixtureSetupToken.vouchNoSetupRequired running)
 
             let testFailures = ResizeArray<TestMemberFailure * IndividualTestRunMetadata> ()
 
@@ -526,20 +530,24 @@ module TestFixture =
             do! testsRun
 
             // Unconditionally run OneTimeTearDown if it exists.
-            let tearDownError =
+            let! tearDownError, tornDown =
                 match tests.OneTimeTearDown with
                 | Some td ->
-                    try
-                        match td.Invoke (containingObject, [||]) with
-                        | null -> None
-                        | ret -> Some (UserMethodFailure.ReturnedNonUnit (td.Name, ret), endMetadata ())
-                    with :? TargetInvocationException as e ->
-                        Some (UserMethodFailure.Threw (td.Name, e), endMetadata ())
-                | _ -> None
+                    par.RunTestTearDown
+                        running
+                        (fun () ->
+                            try
+                                match td.Invoke (containingObject, [||]) with
+                                | :? unit -> None
+                                | ret -> Some (UserMethodFailure.ReturnedNonUnit (td.Name, ret), endMetadata ())
+                            with :? TargetInvocationException as e ->
+                                Some (UserMethodFailure.Threw (td.Name, e.InnerException), endMetadata ())
+                        )
+                | _ -> Task.FromResult (None, TestFixtureTearDownToken.vouchNoTearDownRequired running)
 
             Environment.CurrentDirectory <- oldWorkDir
 
-            do! par.EndTestFixture running
+            do! par.EndTestFixture tornDown
 
             return
                 {

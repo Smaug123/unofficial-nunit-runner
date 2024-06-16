@@ -22,11 +22,25 @@ type private FakeUnit = FakeUnit
 /// A handle to a running test fixture.
 type TestFixtureRunningToken = private | TestFixtureRunningToken of TestFixture
 
+/// A handle to a test fixture whose setup method has been called.
+type TestFixtureSetupToken = private | TestFixtureSetupToken of TestFixture
+
+[<RequireQualifiedAccess>]
+module private TestFixtureSetupToken =
+    let vouchNoSetupRequired (TestFixtureRunningToken tf) = TestFixtureSetupToken tf
+
+/// A handle to a test fixture whose setup method has been called.
+type TestFixtureTearDownToken = private | TestFixtureTearDownToken of TestFixture
+
+[<RequireQualifiedAccess>]
+module private TestFixtureTearDownToken =
+    let vouchNoTearDownRequired (TestFixtureSetupToken tf) = TestFixtureTearDownToken tf
+
 type private MailboxMessage =
     | Quit of AsyncReplyChannel<unit>
     | RunTest of ThunkCrate
     | BeginTestFixture of TestFixture * AsyncReplyChannel<TestFixtureRunningToken>
-    | EndTestFixture of TestFixtureRunningToken * AsyncReplyChannel<unit>
+    | EndTestFixture of TestFixtureTearDownToken * AsyncReplyChannel<unit>
 
 type private MailboxState =
     | Idle
@@ -53,7 +67,7 @@ type ParallelQueue
                     let state = Running (tf, [])
                     rc.Reply (TestFixtureRunningToken tf)
                     return! processTask state m
-            | EndTestFixture (TestFixtureRunningToken tf, rc) ->
+            | EndTestFixture (TestFixtureTearDownToken tf, rc) ->
                 match state with
                 | Idle ->
                     return failwith "Caller has somehow called EndTestFixture while we're not running a test fixture"
@@ -91,17 +105,17 @@ type ParallelQueue
 
     /// Request to run the given action on its own, not in parallel with anything else.
     /// The resulting Task will return when the action has completed.
-    member _.NonParallel<'a> (action : unit -> 'a) : 'a Task =
+    member _.NonParallel<'a> (parent : TestFixtureSetupToken) (action : unit -> 'a) : 'a Task =
         ThunkCrate.make action >> RunTest |> mb.PostAndAsyncReply |> Async.StartAsTask
 
     /// Request to run the given action, freely in parallel with other running tests.
     /// The resulting Task will return when the action has completed.
-    member _.Parallel<'a> (action : unit -> 'a) : 'a Task =
+    member _.Parallel<'a> (parent : TestFixtureSetupToken) (action : unit -> 'a) : 'a Task =
         ThunkCrate.make action >> RunTest |> mb.PostAndAsyncReply |> Async.StartAsTask
 
     /// Request to run the given action, obeying the parallelism constraints of the parent test fixture.
     /// The resulting Task will return when the action has completed.
-    member _.ObeyParent<'a> (tf : TestFixtureRunningToken) (action : unit -> 'a) : 'a Task =
+    member _.ObeyParent<'a> (tf : TestFixtureSetupToken) (action : unit -> 'a) : 'a Task =
         ThunkCrate.make action >> RunTest |> mb.PostAndAsyncReply |> Async.StartAsTask
 
     /// Declare that we wish to start the given test fixture. The resulting Task will return
@@ -112,9 +126,23 @@ type ParallelQueue
         |> mb.PostAndAsyncReply
         |> Async.StartAsTask
 
+    /// Run the given one-time setup for the test fixture.
+    member _.RunTestSetup (TestFixtureRunningToken tf) (action : unit -> 'a) : ('a * TestFixtureSetupToken) Task =
+        task {
+            let! response = ThunkCrate.make action >> RunTest |> mb.PostAndAsyncReply
+            return response, TestFixtureSetupToken tf
+        }
+
+    /// Run the given one-time tear-down for the test fixture.
+    member _.RunTestTearDown (TestFixtureSetupToken tf) (action : unit -> 'a) : ('a * TestFixtureTearDownToken) Task =
+        task {
+            let! response = ThunkCrate.make action >> RunTest |> mb.PostAndAsyncReply
+            return response, TestFixtureTearDownToken tf
+        }
+
     /// Declare that we have finished submitting requests to run in the given test fixture.
     /// You don't need to worry about when the resulting Task returns, but we provide it just in case.
-    member _.EndTestFixture (tf : TestFixtureRunningToken) : Task<unit> =
+    member _.EndTestFixture (tf : TestFixtureTearDownToken) : Task<unit> =
         (fun rc -> EndTestFixture (tf, rc)) |> mb.PostAndAsyncReply |> Async.StartAsTask
 
     interface IDisposable with
