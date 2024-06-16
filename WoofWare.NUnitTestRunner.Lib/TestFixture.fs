@@ -401,11 +401,7 @@ module TestFixture =
 
                     result, meta
 
-                let! results, summary =
-                    match test.Parallelize with
-                    | Some Parallelizable.No -> par.NonParallel running runMe
-                    | Some (Parallelizable.Yes _) -> par.Parallel running runMe
-                    | None -> par.ObeyParent running runMe
+                let! results, summary = par.Run running test.Parallelize runMe
 
                 match results with
                 | Ok results -> return Ok results, summary
