@@ -10,7 +10,7 @@ module DotnetRuntime =
     let private selectRuntime
         (config : RuntimeOptions)
         (f : DotnetEnvironmentInfo)
-        : Choice<DotnetEnvironmentFrameworkInfo, DotnetEnvironmentSdkInfo> option
+        : DirectoryInfo list
         =
         let rollForward =
             match Environment.GetEnvironmentVariable "DOTNET_ROLL_FORWARD" with
@@ -66,15 +66,15 @@ module DotnetRuntime =
 
                     name, data.Installed
                 )
-                // TODO: how do we select between many available frameworks?
-                |> Seq.tryHead
+                |> Seq.toList
 
-            match available with
-            | Some (_, f) -> Some (Choice1Of2 f)
-            | None ->
-                // TODO: maybe we can ask the SDK. But we keep on trucking: maybe we're self-contained,
-                // and we'll actually find all the runtime next to the DLL.
-                None
+            // TODO: maybe we can ask the SDK if we don't have any runtimes.
+            // But we keep on trucking: maybe we're self-contained, and we'll actually find all the runtime next to the
+            // DLL.
+            available
+            |> List.map (fun (_name, runtime) ->
+                DirectoryInfo $"%s{runtime.Path}/%s{runtime.Version}"
+            )
         | _ -> failwith "non-minor RollForward not supported yet; please shout if you want it"
 
     /// Given an executable DLL, locate the .NET runtime that can best run it.
@@ -96,9 +96,4 @@ module DotnetRuntime =
 
         let runtime = selectRuntime runtimeConfig availableRuntimes
 
-        match runtime with
-        | None ->
-            // Keep on trucking: let's be optimistic and hope that we're self-contained.
-            [ dll.Directory ]
-        | Some (Choice1Of2 runtime) -> [ dll.Directory ; DirectoryInfo $"%s{runtime.Path}/%s{runtime.Version}" ]
-        | Some (Choice2Of2 sdk) -> [ dll.Directory ; DirectoryInfo sdk.Path ]
+        dll.Directory :: runtime
