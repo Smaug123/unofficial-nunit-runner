@@ -47,10 +47,11 @@ module TestSetUp =
 
         setUpTimesSeen
         |> Seq.toList
+        |> List.sort
         // Six tests: one for Test, two for the TestCase, three for the Repeat.
         |> shouldEqual [ 1..6 ]
 
-        tearDownTimesSeen |> Seq.toList |> shouldEqual [ 1..6 ]
+        tearDownTimesSeen |> Seq.toList |> List.sort |> shouldEqual [ 1..6 ]
 
     [<Test>]
     let ``Test 1`` () =

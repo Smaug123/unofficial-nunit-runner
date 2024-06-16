@@ -251,12 +251,12 @@ type ParallelQueue
                             return! processTask (Running state) m
                         | None ->
                             match currentlyRunning.Fixture.Parallelize with
-                            | None
                             | Some Parallelizable.No
                             | Some (Parallelizable.Yes ClassParallelScope.Self)
                             | Some (Parallelizable.Yes ClassParallelScope.Fixtures) ->
                                 // Can't add this test to the parallel queue right now
                                 return! processTask (Running r) m
+                            | None
                             | Some (Parallelizable.Yes ClassParallelScope.All)
                             | Some (Parallelizable.Yes ClassParallelScope.Children) ->
                                 let state =
