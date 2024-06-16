@@ -16,6 +16,14 @@ module DotnetRuntime =
                 |> Option.defaultValue RollForward.Minor
             | s -> RollForward.Parse s
 
+        if
+            Option.isSome config.IncludedFramework
+            || Option.isSome config.IncludedFrameworks
+        then
+            // No need for a framework that's anywhere other than the given DLL.
+            []
+        else
+
         let desiredVersions =
             match config.Framework with
             | Some f -> [ Version f.Version, f.Name ]

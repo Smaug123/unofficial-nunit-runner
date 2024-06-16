@@ -16,6 +16,8 @@ type internal RuntimeOptions =
         Tfm : string
         Framework : FrameworkDescription option
         Frameworks : FrameworkDescription list option
+        IncludedFramework : FrameworkDescription option
+        IncludedFrameworks : FrameworkDescription list option
         RollForward : string option
     }
 
