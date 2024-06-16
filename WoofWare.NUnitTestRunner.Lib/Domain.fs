@@ -88,6 +88,7 @@ type SingleTestMethod =
 
 /// A test fixture (usually represented by the [<TestFixture>]` attribute), which may contain many tests,
 /// each of which may run many times.
+[<NoComparison>]
 type TestFixture =
     {
         /// The assembly which contains this TestFixture, loaded into a separate context.

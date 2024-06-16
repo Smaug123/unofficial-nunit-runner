@@ -42,9 +42,33 @@ type private MailboxMessage =
     | BeginTestFixture of TestFixture * AsyncReplyChannel<TestFixtureRunningToken>
     | EndTestFixture of TestFixtureTearDownToken * AsyncReplyChannel<unit>
 
+type private RunningState =
+    {
+        // TODO: make these efficiently look-up-able
+        CurrentlyRunning : TestFixture list
+        Waiting : (TestFixture * AsyncReplyChannel<TestFixtureRunningToken>) list
+    }
+
+    member this.CompleteFixture (tf : TestFixture) : RunningState =
+        let rec go (acc : TestFixture list) (running : TestFixture list) =
+            match running with
+            | [] -> failwith "Caller has somehow called EndTestFixture while we're not running that test fixture"
+            | head :: tail ->
+                if Object.ReferenceEquals (head, tf) then
+                    acc @ tail
+                else
+                    go (head :: acc) tail
+
+        let currentlyRunning = go [] this.CurrentlyRunning
+
+        {
+            CurrentlyRunning = currentlyRunning
+            Waiting = this.Waiting
+        }
+
 type private MailboxState =
     | Idle
-    | Running of TestFixture * (TestFixture * AsyncReplyChannel<TestFixtureRunningToken>) list
+    | Running of RunningState
 
 /// Run some things in parallel.
 /// TODO: actually implement the parallelism! Right now this just runs everything serially.
@@ -60,30 +84,46 @@ type ParallelQueue
             | Quit rc -> rc.Reply ()
             | BeginTestFixture (tf, rc) ->
                 match state with
-                | Running (current, rest) ->
-                    let state = Running (current, (tf, rc) :: rest)
+                | Running state ->
+                    let state =
+                        {
+                            CurrentlyRunning = state.CurrentlyRunning
+                            Waiting = (tf, rc) :: state.Waiting
+                        }
+                        |> Running
+
                     return! processTask state m
                 | Idle ->
-                    let state = Running (tf, [])
+                    let state =
+                        {
+                            CurrentlyRunning = [ tf ]
+                            Waiting = []
+                        }
+                        |> Running
+
                     rc.Reply (TestFixtureRunningToken tf)
                     return! processTask state m
             | EndTestFixture (TestFixtureTearDownToken tf, rc) ->
                 match state with
                 | Idle ->
                     return failwith "Caller has somehow called EndTestFixture while we're not running a test fixture"
-                | Running (current, rest) ->
-                    if not (Object.ReferenceEquals (current, tf)) then
-                        return
-                            failwith
-                                "Caller has somehow called EndTestFixture while we're not running that test fixture"
+                | Running state ->
+                    let state = state.CompleteFixture tf
 
                     rc.Reply ()
 
-                    match rest with
+                    match state.Waiting with
                     | [] -> return! processTask Idle m
                     | (head, rc) :: tail ->
                         rc.Reply (TestFixtureRunningToken head)
-                        return! processTask (Running (head, tail)) m
+
+                        let state =
+                            {
+                                CurrentlyRunning = head :: state.CurrentlyRunning
+                                Waiting = tail
+                            }
+
+                        return! processTask (Running state) m
             | RunTest message ->
                 // Currently we rely on the caller to only send this message when we've given them permission through
                 // the StartTestFixture method returning.
