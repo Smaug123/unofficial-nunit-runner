@@ -44,6 +44,7 @@ type private MailboxMessage =
 
 type private RunningState =
     {
+        MaxParallelism : int
         // TODO: make these efficiently look-up-able
         CurrentlyRunning : (TestFixture * ThunkCrate list) list
         Waiting : (TestFixture * AsyncReplyChannel<TestFixtureRunningToken>) list
@@ -68,6 +69,7 @@ type private RunningState =
         {
             CurrentlyRunning = currentlyRunning
             Waiting = this.Waiting
+            MaxParallelism = this.MaxParallelism
         }
 
 type private MailboxState =
@@ -96,6 +98,7 @@ type ParallelQueue
                 | Running state ->
                     let state =
                         {
+                            MaxParallelism = state.MaxParallelism
                             CurrentlyRunning = state.CurrentlyRunning
                             Waiting = (tf, rc) :: state.Waiting
                         }
@@ -105,6 +108,7 @@ type ParallelQueue
                 | Idle ->
                     let state =
                         {
+                            MaxParallelism = parallelism
                             CurrentlyRunning = [ tf, [] ]
                             Waiting = []
                         }
@@ -128,6 +132,7 @@ type ParallelQueue
 
                         let state =
                             {
+                                MaxParallelism = state.MaxParallelism
                                 CurrentlyRunning = (head, []) :: state.CurrentlyRunning
                                 Waiting = tail
                             }
