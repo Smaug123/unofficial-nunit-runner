@@ -7,37 +7,18 @@ open System.Reflection
 open System.Runtime.Loader
 open System.Text
 open System.Threading
-open System.Threading.Tasks
+
+type internal OutputStreamId = | OutputStreamId of Guid
 
 type private ThreadAwareWriter
-    (local : AsyncLocal<Guid>, underlying : Dictionary<Guid, TextWriter>, mem : Dictionary<Guid, MemoryStream>)
+    (
+        local : AsyncLocal<OutputStreamId>,
+        underlying : Dictionary<OutputStreamId, TextWriter>,
+        mem : Dictionary<OutputStreamId, MemoryStream>
+    )
     =
     inherit TextWriter ()
     override _.get_Encoding () = Encoding.Default
-
-    member internal _.DumpOutput () : string Task =
-        use prev = ExecutionContext.Capture ()
-
-        let tcs = TaskCompletionSource<_> ()
-
-        (fun _ ->
-            (fun () ->
-                match mem.TryGetValue local.Value with
-                | true, output -> tcs.SetResult (output.ToArray ())
-                | false, _ ->
-                    let wanted =
-                        mem |> Seq.map (fun (KeyValue (a, b)) -> $"%O{a}") |> String.concat "\n"
-
-                    failwith $"no such context: %O{local.Value}\nwanted:\n"
-            )
-            |> lock underlying
-        )
-        |> fun action -> ExecutionContext.Run (prev, action, ())
-
-        task {
-            let! bytes = tcs.Task
-            return Encoding.Default.GetString bytes
-        }
 
     override this.Write (v : char) : unit =
         use prev = ExecutionContext.Capture ()
@@ -78,14 +59,14 @@ type TestContexts =
     private
         {
             /// Accesses to this must be locked on StdOutWriters.
-            StdOuts : Dictionary<Guid, MemoryStream>
+            StdOuts : Dictionary<OutputStreamId, MemoryStream>
             /// Accesses to this must be locked on StdErrWriters.
-            StdErrs : Dictionary<Guid, MemoryStream>
-            StdOutWriters : Dictionary<Guid, TextWriter>
-            StdErrWriters : Dictionary<Guid, TextWriter>
+            StdErrs : Dictionary<OutputStreamId, MemoryStream>
+            StdOutWriters : Dictionary<OutputStreamId, TextWriter>
+            StdErrWriters : Dictionary<OutputStreamId, TextWriter>
             StdOutWriter : TextWriter
             StdErrWriter : TextWriter
-            AsyncLocal : AsyncLocal<Guid>
+            AsyncLocal : AsyncLocal<OutputStreamId>
         }
 
     /// Call this exactly once.
@@ -111,7 +92,7 @@ type TestContexts =
     member internal this.Stdout : TextWriter = this.StdOutWriter
     member internal this.Stderr : TextWriter = this.StdErrWriter
 
-    member internal this.DumpStdout (id : Guid) : string =
+    member internal this.DumpStdout (id : OutputStreamId) : string =
         lock
             this.StdOutWriters
             (fun () ->
@@ -120,7 +101,7 @@ type TestContexts =
             )
         |> Encoding.Default.GetString
 
-    member internal this.DumpStderr (id : Guid) : string =
+    member internal this.DumpStderr (id : OutputStreamId) : string =
         lock
             this.StdErrWriters
             (fun () ->
@@ -130,7 +111,7 @@ type TestContexts =
         |> Encoding.Default.GetString
 
     member internal this.NewOutputs () =
-        let id = Guid.NewGuid ()
+        let id = Guid.NewGuid () |> OutputStreamId
         let msOut = new MemoryStream ()
         let wrOut = new StreamWriter (msOut)
         let msErr = new MemoryStream ()

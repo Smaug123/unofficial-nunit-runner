@@ -68,7 +68,7 @@ module TestFixture =
     ///
     /// This function does not throw.
     let private runOne
-        (outputId : Guid)
+        (outputId : OutputStreamId)
         (contexts : TestContexts)
         (setUp : MethodInfo list)
         (tearDown : MethodInfo list)
@@ -436,7 +436,7 @@ module TestFixture =
             let sw = Stopwatch.StartNew ()
             let startTime = DateTimeOffset.UtcNow
 
-            let endMetadata (outputId : Guid) =
+            let endMetadata (outputId : OutputStreamId) =
                 let stdOut = contexts.DumpStdout outputId
                 let stdErr = contexts.DumpStderr outputId
 
