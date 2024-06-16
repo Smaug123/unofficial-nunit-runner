@@ -38,26 +38,30 @@ module private TestFixtureTearDownToken =
 
 type private MailboxMessage =
     | Quit of AsyncReplyChannel<unit>
-    | RunTest of ThunkCrate
+    | RunTest of within : TestFixture * test : ThunkCrate
     | BeginTestFixture of TestFixture * AsyncReplyChannel<TestFixtureRunningToken>
     | EndTestFixture of TestFixtureTearDownToken * AsyncReplyChannel<unit>
 
 type private RunningState =
     {
         // TODO: make these efficiently look-up-able
-        CurrentlyRunning : TestFixture list
+        CurrentlyRunning : (TestFixture * ThunkCrate list) list
         Waiting : (TestFixture * AsyncReplyChannel<TestFixtureRunningToken>) list
     }
 
     member this.CompleteFixture (tf : TestFixture) : RunningState =
-        let rec go (acc : TestFixture list) (running : TestFixture list) =
+        let rec go (acc : (TestFixture * ThunkCrate list) list) (running : (TestFixture * ThunkCrate list) list) =
             match running with
             | [] -> failwith "Caller has somehow called EndTestFixture while we're not running that test fixture"
-            | head :: tail ->
+            | (head, running) :: tail ->
                 if Object.ReferenceEquals (head, tf) then
-                    acc @ tail
+                    match running with
+                    | [] -> acc @ tail
+                    | _ ->
+                        failwith
+                            $"Caller has called EndTestFixture while its tests are still running (%i{running.Length})"
                 else
-                    go (head :: acc) tail
+                    go ((head, running) :: acc) tail
 
         let currentlyRunning = go [] this.CurrentlyRunning
 
@@ -74,8 +78,13 @@ type private MailboxState =
 /// TODO: actually implement the parallelism! Right now this just runs everything serially.
 /// TODO: consume the cancellation token
 type ParallelQueue
-    (_parallelism : int option, _scope : Parallelizable<AssemblyParallelScope> option, ?ct : CancellationToken)
+    (parallelism : int option, _scope : Parallelizable<AssemblyParallelScope> option, ?ct : CancellationToken)
     =
+    let parallelism =
+        match parallelism with
+        | None -> max (Environment.ProcessorCount / 2) 2
+        | Some p -> p
+
     let rec processTask (state : MailboxState) (m : MailboxProcessor<MailboxMessage>) =
         async {
             let! message = m.Receive ()
@@ -96,7 +105,7 @@ type ParallelQueue
                 | Idle ->
                     let state =
                         {
-                            CurrentlyRunning = [ tf ]
+                            CurrentlyRunning = [ tf, [] ]
                             Waiting = []
                         }
                         |> Running
@@ -119,12 +128,12 @@ type ParallelQueue
 
                         let state =
                             {
-                                CurrentlyRunning = head :: state.CurrentlyRunning
+                                CurrentlyRunning = (head, []) :: state.CurrentlyRunning
                                 Waiting = tail
                             }
 
                         return! processTask (Running state) m
-            | RunTest message ->
+            | RunTest (withinFixture, message) ->
                 // Currently we rely on the caller to only send this message when we've given them permission through
                 // the StartTestFixture method returning.
                 { new ThunkEvaluator<_> with
@@ -145,18 +154,24 @@ type ParallelQueue
 
     /// Request to run the given action on its own, not in parallel with anything else.
     /// The resulting Task will return when the action has completed.
-    member _.NonParallel<'a> (parent : TestFixtureSetupToken) (action : unit -> 'a) : 'a Task =
-        ThunkCrate.make action >> RunTest |> mb.PostAndAsyncReply |> Async.StartAsTask
+    member _.NonParallel<'a> (TestFixtureSetupToken parent) (action : unit -> 'a) : 'a Task =
+        (fun rc -> RunTest (parent, ThunkCrate.make action rc))
+        |> mb.PostAndAsyncReply
+        |> Async.StartAsTask
 
     /// Request to run the given action, freely in parallel with other running tests.
     /// The resulting Task will return when the action has completed.
-    member _.Parallel<'a> (parent : TestFixtureSetupToken) (action : unit -> 'a) : 'a Task =
-        ThunkCrate.make action >> RunTest |> mb.PostAndAsyncReply |> Async.StartAsTask
+    member _.Parallel<'a> (TestFixtureSetupToken parent) (action : unit -> 'a) : 'a Task =
+        (fun rc -> RunTest (parent, ThunkCrate.make action rc))
+        |> mb.PostAndAsyncReply
+        |> Async.StartAsTask
 
     /// Request to run the given action, obeying the parallelism constraints of the parent test fixture.
     /// The resulting Task will return when the action has completed.
-    member _.ObeyParent<'a> (tf : TestFixtureSetupToken) (action : unit -> 'a) : 'a Task =
-        ThunkCrate.make action >> RunTest |> mb.PostAndAsyncReply |> Async.StartAsTask
+    member _.ObeyParent<'a> (TestFixtureSetupToken parent) (action : unit -> 'a) : 'a Task =
+        (fun rc -> RunTest (parent, ThunkCrate.make action rc))
+        |> mb.PostAndAsyncReply
+        |> Async.StartAsTask
 
     /// Declare that we wish to start the given test fixture. The resulting Task will return
     /// when you are allowed to start running tests from that fixture.
@@ -167,17 +182,21 @@ type ParallelQueue
         |> Async.StartAsTask
 
     /// Run the given one-time setup for the test fixture.
-    member _.RunTestSetup (TestFixtureRunningToken tf) (action : unit -> 'a) : ('a * TestFixtureSetupToken) Task =
+    member _.RunTestSetup (TestFixtureRunningToken parent) (action : unit -> 'a) : ('a * TestFixtureSetupToken) Task =
         task {
-            let! response = ThunkCrate.make action >> RunTest |> mb.PostAndAsyncReply
-            return response, TestFixtureSetupToken tf
+            let! response = (fun rc -> RunTest (parent, ThunkCrate.make action rc)) |> mb.PostAndAsyncReply
+            return response, TestFixtureSetupToken parent
         }
 
     /// Run the given one-time tear-down for the test fixture.
-    member _.RunTestTearDown (TestFixtureSetupToken tf) (action : unit -> 'a) : ('a * TestFixtureTearDownToken) Task =
+    member _.RunTestTearDown
+        (TestFixtureSetupToken parent)
+        (action : unit -> 'a)
+        : ('a * TestFixtureTearDownToken) Task
+        =
         task {
-            let! response = ThunkCrate.make action >> RunTest |> mb.PostAndAsyncReply
-            return response, TestFixtureTearDownToken tf
+            let! response = (fun rc -> RunTest (parent, ThunkCrate.make action rc)) |> mb.PostAndAsyncReply
+            return response, TestFixtureTearDownToken parent
         }
 
     /// Declare that we have finished submitting requests to run in the given test fixture.
