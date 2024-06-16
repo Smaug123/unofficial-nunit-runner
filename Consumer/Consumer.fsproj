@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
@@ -10,6 +10,7 @@
     <ItemGroup>
         <Compile Include="NoAttribute.fs" />
         <Compile Include="Inconclusive.fs" />
+        <Compile Include="RunSubProcess.fs" />
         <Compile Include="TestNonParallel.fs" />
         <Compile Include="TestParallel.fs" />
         <Compile Include="TestStdout.fs" />
@@ -26,9 +27,10 @@
 
     <ItemGroup>
       <PackageReference Include="FsUnit" Version="6.0.0" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0"/>
-        <PackageReference Include="NUnit" Version="4.1.0"/>
-        <PackageReference Include="NUnit3TestAdapter" Version="4.5.0"/>
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0"/>
+      <PackageReference Include="NUnit" Version="4.1.0"/>
+      <PackageReference Include="NUnit3TestAdapter" Version="4.5.0"/>
+      <PackageReference Include="Grpc.AspNetCore.Server" Version="2.62.0"/>
     </ItemGroup>
 
 </Project>
