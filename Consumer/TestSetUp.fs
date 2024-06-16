@@ -11,6 +11,8 @@ module TestSetUp =
 
     [<OneTimeSetUp>]
     let oneTimeSetUp () =
+        System.Console.WriteLine "I'm being set up for the first time!"
+
         if Interlocked.Increment haveOneTimeSetUp <> 1 then
             failwith "one time setup happened more than once"
 
@@ -22,12 +24,14 @@ module TestSetUp =
 
     [<SetUp>]
     let setUp () =
+        System.Console.WriteLine "It's a set-up!"
         haveOneTimeSetUp.Value |> shouldEqual 1
         let newId = Interlocked.Increment setUpTimes
         lock setUpTimesSeen (fun () -> setUpTimesSeen.Add newId)
 
     [<TearDown>]
     let tearDown () =
+        System.Console.WriteLine "I'm a tear-down!"
         let newId = Interlocked.Increment tearDownTimes
         lock tearDownTimesSeen (fun () -> tearDownTimesSeen.Add newId)
 
@@ -35,6 +39,8 @@ module TestSetUp =
 
     [<OneTimeTearDown>]
     let oneTimeTearDown () =
+        System.Console.WriteLine "I'm being torn down, finally!"
+
         if Interlocked.Increment haveOneTimeTearDown <> 1 then
             failwith "one time tear down happened more than once"
 

@@ -68,6 +68,7 @@ module TestFixture =
     ///
     /// This function does not throw.
     let private runOne
+        (outputId : Guid)
         (contexts : TestContexts)
         (setUp : MethodInfo list)
         (tearDown : MethodInfo list)
@@ -121,13 +122,13 @@ module TestFixture =
                 TestName = name
                 ClassName = test.DeclaringType.FullName
                 StdOut =
-                    match contexts.GetStdout () with
-                    | [||] -> None
-                    | arr -> Console.OutputEncoding.GetString arr |> Some
+                    match contexts.DumpStdout outputId with
+                    | "" -> None
+                    | v -> Some v
                 StdErr =
-                    match contexts.GetStderr () with
-                    | [||] -> None
-                    | arr -> Console.OutputEncoding.GetString arr |> Some
+                    match contexts.DumpStderr outputId with
+                    | "" -> None
+                    | v -> Some v
             }
 
         let setUpResult = runMethods TestFailure.SetUpFailed setUp [||]
@@ -352,6 +353,7 @@ module TestFixture =
                                             if isNull argsMem then
                                                 failwith "Unexpectedly could not call `.Arguments` on TestCaseData"
 
+                                            // TODO: need to capture this stdout/stderr
                                             (argsMem.Invoke (arg, [||]) |> unbox<obj[]>)
                                         else
                                             [| arg |]
@@ -388,10 +390,11 @@ module TestFixture =
                 let runMe () =
                     progress.OnTestMemberStart test.Name
                     let oldValue = contexts.AsyncLocal.Value
-                    contexts.AsyncLocal.Value <- contexts.NewOutputs ()
+                    let outputId = contexts.NewOutputs ()
+                    contexts.AsyncLocal.Value <- outputId
 
                     let result, meta =
-                        runOne contexts setUp tearDown testGuid test.Method containingObject args
+                        runOne outputId contexts setUp tearDown testGuid test.Method containingObject args
 
                     contexts.AsyncLocal.Value <- oldValue
                     progress.OnTestMemberFinished test.Name
@@ -433,9 +436,9 @@ module TestFixture =
             let sw = Stopwatch.StartNew ()
             let startTime = DateTimeOffset.UtcNow
 
-            let endMetadata () =
-                let stdOut = contexts.GetStdout () |> Console.OutputEncoding.GetString
-                let stdErr = contexts.GetStderr () |> Console.OutputEncoding.GetString
+            let endMetadata (outputId : Guid) =
+                let stdOut = contexts.DumpStdout outputId
+                let stdErr = contexts.DumpStderr outputId
 
                 {
                     Total = sw.Elapsed
@@ -457,14 +460,26 @@ module TestFixture =
                     par.RunTestSetup
                         running
                         (fun () ->
-                            try
-                                match su.Invoke (containingObject, [||]) with
-                                | :? unit -> None
-                                | ret -> Some (UserMethodFailure.ReturnedNonUnit (su.Name, ret), endMetadata ())
-                            with :? TargetInvocationException as e ->
-                                Some (UserMethodFailure.Threw (su.Name, e.InnerException), endMetadata ())
+                            let oldValue = contexts.AsyncLocal.Value
+                            let newOutputs = contexts.NewOutputs ()
+                            contexts.AsyncLocal.Value <- newOutputs
+
+                            let result =
+                                try
+                                    match su.Invoke (containingObject, [||]) with
+                                    | :? unit -> None
+                                    | ret ->
+                                        Some (UserMethodFailure.ReturnedNonUnit (su.Name, ret), endMetadata newOutputs)
+                                with :? TargetInvocationException as e ->
+                                    Some (UserMethodFailure.Threw (su.Name, e.InnerException), endMetadata newOutputs)
+
+                            contexts.AsyncLocal.Value <- oldValue
+
+                            match result with
+                            | None -> Ok (Some newOutputs)
+                            | Some err -> Error (err, newOutputs)
                         )
-                | _ -> Task.FromResult (None, TestFixtureSetupToken.vouchNoSetupRequired running)
+                | _ -> Task.FromResult (Ok None, TestFixtureSetupToken.vouchNoSetupRequired running)
 
             let testFailures = ResizeArray<TestMemberFailure * IndividualTestRunMetadata> ()
 
@@ -473,10 +488,10 @@ module TestFixture =
 
             let testsRun =
                 match setupResult with
-                | Some _ ->
+                | Error _ ->
                     // Don't run any tests if setup failed.
                     Task.FromResult ()
-                | None ->
+                | Ok _ ->
                     tests.Tests
                     |> Seq.filter (fun test ->
                         if filter tests test then
@@ -536,24 +551,43 @@ module TestFixture =
                     par.RunTestTearDown
                         running
                         (fun () ->
-                            try
-                                match td.Invoke (containingObject, [||]) with
-                                | :? unit -> None
-                                | ret -> Some (UserMethodFailure.ReturnedNonUnit (td.Name, ret), endMetadata ())
-                            with :? TargetInvocationException as e ->
-                                Some (UserMethodFailure.Threw (td.Name, e.InnerException), endMetadata ())
+                            let oldValue = contexts.AsyncLocal.Value
+                            let outputs = contexts.NewOutputs ()
+                            contexts.AsyncLocal.Value <- outputs
+
+                            let result =
+                                try
+                                    match td.Invoke (containingObject, [||]) with
+                                    | :? unit -> None
+                                    | ret ->
+                                        Some (UserMethodFailure.ReturnedNonUnit (td.Name, ret), endMetadata outputs)
+                                with :? TargetInvocationException as e ->
+                                    Some (UserMethodFailure.Threw (td.Name, e.InnerException), endMetadata outputs)
+
+                            contexts.AsyncLocal.Value <- oldValue
+
+                            match result with
+                            | None -> Ok (Some outputs)
+                            | Some err -> Error (err, outputs)
                         )
-                | _ -> Task.FromResult (None, TestFixtureTearDownToken.vouchNoTearDownRequired running)
+                | _ -> Task.FromResult (Ok None, TestFixtureTearDownToken.vouchNoTearDownRequired running)
 
             Environment.CurrentDirectory <- oldWorkDir
 
             do! par.EndTestFixture tornDown
 
+            // TODO: we have access to stdout/err of OneTimeSetUp and OneTimeTearDown here, but we throw them away.
             return
                 {
                     Failed = testFailures |> Seq.toList
                     Success = successes |> Seq.toList
-                    OtherFailures = [ tearDownError ; setupResult ] |> List.choose id
+                    OtherFailures =
+                        [ tearDownError ; setupResult ]
+                        |> List.choose (
+                            function
+                            | Error (e, _) -> Some e
+                            | Ok _ -> None
+                        )
                 }
         }
 

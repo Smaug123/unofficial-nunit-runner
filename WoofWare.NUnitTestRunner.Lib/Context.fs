@@ -7,10 +7,37 @@ open System.Reflection
 open System.Runtime.Loader
 open System.Text
 open System.Threading
+open System.Threading.Tasks
 
-type private ThreadAwareWriter (local : AsyncLocal<Guid>, underlying : Dictionary<Guid, TextWriter>) =
+type private ThreadAwareWriter
+    (local : AsyncLocal<Guid>, underlying : Dictionary<Guid, TextWriter>, mem : Dictionary<Guid, MemoryStream>)
+    =
     inherit TextWriter ()
     override _.get_Encoding () = Encoding.Default
+
+    member internal _.DumpOutput () : string Task =
+        use prev = ExecutionContext.Capture ()
+
+        let tcs = TaskCompletionSource<_> ()
+
+        (fun _ ->
+            (fun () ->
+                match mem.TryGetValue local.Value with
+                | true, output -> tcs.SetResult (output.ToArray ())
+                | false, _ ->
+                    let wanted =
+                        mem |> Seq.map (fun (KeyValue (a, b)) -> $"%O{a}") |> String.concat "\n"
+
+                    failwith $"no such context: %O{local.Value}\nwanted:\n"
+            )
+            |> lock underlying
+        )
+        |> fun action -> ExecutionContext.Run (prev, action, ())
+
+        task {
+            let! bytes = tcs.Task
+            return Encoding.Default.GetString bytes
+        }
 
     override this.Write (v : char) : unit =
         use prev = ExecutionContext.Capture ()
@@ -68,8 +95,8 @@ type TestContexts =
         let stdoutWriters = Dictionary ()
         let stderrWriters = Dictionary ()
         let local = AsyncLocal ()
-        let stdoutWriter = new ThreadAwareWriter (local, stdoutWriters)
-        let stderrWriter = new ThreadAwareWriter (local, stderrWriters)
+        let stdoutWriter = new ThreadAwareWriter (local, stdoutWriters, stdouts)
+        let stderrWriter = new ThreadAwareWriter (local, stderrWriters, stderrs)
 
         {
             StdOuts = stdouts
@@ -84,25 +111,23 @@ type TestContexts =
     member internal this.Stdout : TextWriter = this.StdOutWriter
     member internal this.Stderr : TextWriter = this.StdErrWriter
 
-    member internal this.GetStdout () =
-        let id = this.AsyncLocal.Value
-
+    member internal this.DumpStdout (id : Guid) : string =
         lock
             this.StdOutWriters
             (fun () ->
                 this.StdOutWriters.[id].Flush ()
                 this.StdOuts.[id].ToArray ()
             )
+        |> Encoding.Default.GetString
 
-    member internal this.GetStderr () =
-        let id = this.AsyncLocal.Value
-
+    member internal this.DumpStderr (id : Guid) : string =
         lock
             this.StdErrWriters
             (fun () ->
                 this.StdErrWriters.[id].Flush ()
                 this.StdErrs.[id].ToArray ()
             )
+        |> Encoding.Default.GetString
 
     member internal this.NewOutputs () =
         let id = Guid.NewGuid ()
