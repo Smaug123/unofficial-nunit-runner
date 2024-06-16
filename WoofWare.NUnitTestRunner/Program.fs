@@ -2,8 +2,7 @@
 
 open System
 open System.IO
-open System.Reflection
-open System.Runtime.Loader
+open System.Threading.Tasks
 open Spectre.Console
 
 // Fix for https://github.com/Smaug123/unofficial-nunit-runner/issues/8
@@ -16,28 +15,6 @@ type SetBaseDir (testDll : FileInfo) =
     interface IDisposable with
         member _.Dispose () =
             AppContext.SetData ("APP_CONTEXT_BASE_DIRECTORY", oldBaseDir)
-
-
-type Ctx (dll : FileInfo, runtimes : DirectoryInfo list) =
-    inherit AssemblyLoadContext ()
-
-    override this.Load (target : AssemblyName) : Assembly =
-        let path = Path.Combine (dll.Directory.FullName, $"%s{target.Name}.dll")
-
-        if File.Exists path then
-            this.LoadFromAssemblyPath path
-        else
-
-        runtimes
-        |> List.tryPick (fun di ->
-            let path = Path.Combine (di.FullName, $"%s{target.Name}.dll")
-
-            if File.Exists path then
-                this.LoadFromAssemblyPath path |> Some
-            else
-                None
-        )
-        |> Option.defaultValue null
 
 
 module Program =
@@ -71,7 +48,9 @@ module Program =
 
         use _ = new SetBaseDir (testDll)
 
-        let ctx = Ctx (testDll, DotnetRuntime.locate testDll)
+        use contexts = TestContexts.Empty ()
+
+        let ctx = LoadContext (testDll, DotnetRuntime.locate testDll, contexts)
         let assy = ctx.LoadFromAssemblyPath testDll.FullName
 
         let levelOfParallelism, par =
@@ -115,8 +94,19 @@ module Program =
 
         let testFixtures = assy.ExportedTypes |> Seq.map TestFixture.parse |> Seq.toList
 
+        use par = new ParallelQueue (levelOfParallelism, par)
+
         let creationTime = DateTimeOffset.Now
-        let results = testFixtures |> List.collect (TestFixture.run progress filter)
+
+        let results =
+            testFixtures
+            |> List.map (TestFixture.run contexts par progress filter)
+            |> Task.WhenAll
+
+        if not (results.Wait (TimeSpan.FromHours 2.0)) then
+            failwith "Tests failed to terminate within two hours"
+
+        let results = results.Result |> Seq.concat |> List.ofSeq
 
         let finishTime = DateTimeOffset.Now
         let finishTimeHumanReadable = finishTime.ToString @"yyyy-MM-dd HH:mm:ss"

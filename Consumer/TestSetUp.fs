@@ -1,5 +1,6 @@
 namespace Consumer
 
+open System
 open FsUnitTyped
 open System.Threading
 open NUnit.Framework
@@ -11,6 +12,8 @@ module TestSetUp =
 
     [<OneTimeSetUp>]
     let oneTimeSetUp () =
+        Console.WriteLine "I'm being set up for the first time!"
+
         if Interlocked.Increment haveOneTimeSetUp <> 1 then
             failwith "one time setup happened more than once"
 
@@ -22,12 +25,14 @@ module TestSetUp =
 
     [<SetUp>]
     let setUp () =
+        Console.WriteLine "It's a set-up!"
         haveOneTimeSetUp.Value |> shouldEqual 1
         let newId = Interlocked.Increment setUpTimes
         lock setUpTimesSeen (fun () -> setUpTimesSeen.Add newId)
 
     [<TearDown>]
     let tearDown () =
+        Console.WriteLine "I'm a tear-down!"
         let newId = Interlocked.Increment tearDownTimes
         lock tearDownTimesSeen (fun () -> tearDownTimesSeen.Add newId)
 
@@ -35,6 +40,8 @@ module TestSetUp =
 
     [<OneTimeTearDown>]
     let oneTimeTearDown () =
+        Console.WriteLine "I'm being torn down, finally!"
+
         if Interlocked.Increment haveOneTimeTearDown <> 1 then
             failwith "one time tear down happened more than once"
 
@@ -48,6 +55,7 @@ module TestSetUp =
     [<Test>]
     let ``Test 1`` () =
         haveOneTimeTearDown.Value |> shouldEqual 0
+        Console.WriteLine "By the way, I'm test 1"
         1 |> shouldEqual 1
 
     [<TestCase "h">]
