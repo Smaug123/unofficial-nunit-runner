@@ -71,7 +71,7 @@ jobs:
     - name: Build
       run: 'nix develop --command dotnet build --no-restore --configuration Release'
     - name: Test using self
-      run: 'nix develop --command dotnet exec ./WoofWare.NUnitTestRunner/bin/Release/net8.0/WoofWare.NUnitTestRunner.dll ./Consumer/bin/Release/net8.0/Consumer.dll --trx TrxOut/out.trx'
+      run: 'nix develop --command dotnet exec ./WoofWare.NUnitTestRunner/bin/Release/net8.0/WoofWare.NUnitTestRunner.dll ./Consumer/bin/Release/**/Consumer.dll --trx TrxOut/out.trx'
     - name: Parse Trx files
       uses: NasAmin/trx-parser@v0.6.0
       if: always()
