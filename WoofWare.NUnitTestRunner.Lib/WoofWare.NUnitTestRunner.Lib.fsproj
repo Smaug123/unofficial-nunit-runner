@@ -14,7 +14,7 @@
       <PackageId>WoofWare.NUnitTestRunner.Lib</PackageId>
       <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
       <WarnOn>FS3559</WarnOn>
-      <WoofWareMyriadPluginVersion>2.1.44</WoofWareMyriadPluginVersion>
+      <WoofWareMyriadPluginVersion>2.1.45</WoofWareMyriadPluginVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -44,10 +44,10 @@
       <EmbeddedResource Include="version.json" />
     </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="WoofWare.PrattParser" Version="0.1.2" />
+    <PackageReference Include="WoofWare.PrattParser" Version="0.2.1" />
     <PackageReference Update="FSharp.Core" Version="6.0.0" />
-    <PackageReference Include="WoofWare.DotnetRuntimeLocator" Version="0.1.4" />
-    <PackageReference Include="WoofWare.Myriad.Plugins.Attributes" Version="3.1.6" />
+    <PackageReference Include="WoofWare.DotnetRuntimeLocator" Version="0.1.9" />
+    <PackageReference Include="WoofWare.Myriad.Plugins.Attributes" Version="3.1.7" />
     <PackageReference Include="Myriad.SDK" Version="0.8.3" />
     <PackageReference Include="WoofWare.Myriad.Plugins" Version="$(WoofWareMyriadPluginVersion)" PrivateAssets="all" />
   </ItemGroup>
