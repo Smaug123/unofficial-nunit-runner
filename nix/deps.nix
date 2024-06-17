@@ -248,22 +248,22 @@
   })
   (fetchNuGet {
     pname = "WoofWare.DotnetRuntimeLocator";
-    version = "0.1.4";
-    sha256 = "19pp4qlyf18g704ppbcsm1rhjqjpi84py18yljj9nx70331m8bpg";
+    version = "0.1.9";
+    sha256 = "14yc3ixcn58wy0v3pbj0hjfj4iv5k1ckig0dg1n7njx30510kzyj";
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins";
-    version = "2.1.44";
-    sha256 = "0rp9hpkah60gd9x0ba2izr9ff1g7yhzv5a4pkhi5fbrwf5rpqpwx";
+    version = "2.1.45";
+    sha256 = "1i9s9aq8dqnxyn01sa10dd24y9i7cgv2d0rshmrkvbvbjkcnz9vs";
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins.Attributes";
-    version = "3.1.6";
-    sha256 = "0786pr1p0nq0854mqi2cddmh185j3jihwn6azz9wiy6nxawjbrd2";
+    version = "3.1.7";
+    sha256 = "1v1wsrjh7qz2khrlbcysj50yydqc9njj09vs1jglwscjhml1wl1v";
   })
   (fetchNuGet {
     pname = "WoofWare.PrattParser";
-    version = "0.1.2";
-    sha256 = "0spypcwsbn805yrs6grjj68ccva902lhkq93mxy32rdply1xs34q";
+    version = "0.2.1";
+    sha256 = "1cb9496fbbrdc40dirjmc7ax02ghr27ahqq5hpk96rdzyaang9hg";
   })
 ]
