@@ -265,6 +265,10 @@ WoofWare.NUnitTestRunner.SingleTestMethodModule inherit obj
 WoofWare.NUnitTestRunner.SingleTestMethodModule.parse [static method]: string list -> System.Reflection.MethodInfo -> System.Reflection.CustomAttributeData list -> (WoofWare.NUnitTestRunner.SingleTestMethod option * System.Reflection.CustomAttributeData list)
 WoofWare.NUnitTestRunner.TestContexts inherit obj, implements WoofWare.NUnitTestRunner.TestContexts System.IEquatable, System.Collections.IStructuralEquatable, IDisposable
 WoofWare.NUnitTestRunner.TestContexts.Empty [static method]: unit -> WoofWare.NUnitTestRunner.TestContexts
+WoofWare.NUnitTestRunner.TestContexts.get_Stderr [method]: unit -> System.IO.TextWriter
+WoofWare.NUnitTestRunner.TestContexts.get_Stdout [method]: unit -> System.IO.TextWriter
+WoofWare.NUnitTestRunner.TestContexts.Stderr [property]: [read-only] System.IO.TextWriter
+WoofWare.NUnitTestRunner.TestContexts.Stdout [property]: [read-only] System.IO.TextWriter
 WoofWare.NUnitTestRunner.TestFailure inherit obj, implements WoofWare.NUnitTestRunner.TestFailure System.IEquatable, System.Collections.IStructuralEquatable - union type with 3 cases
 WoofWare.NUnitTestRunner.TestFailure+SetUpFailed inherit WoofWare.NUnitTestRunner.TestFailure
 WoofWare.NUnitTestRunner.TestFailure+SetUpFailed.get_Item [method]: unit -> WoofWare.NUnitTestRunner.UserMethodFailure
@@ -395,6 +399,7 @@ WoofWare.NUnitTestRunner.TestMemberSuccess.Ok [static property]: [read-only] Woo
 WoofWare.NUnitTestRunner.TestMemberSuccess.Tag [property]: [read-only] int
 WoofWare.NUnitTestRunner.TestProgress inherit obj
 WoofWare.NUnitTestRunner.TestProgress.toStderr [static method]: unit -> WoofWare.NUnitTestRunner.ITestProgress
+WoofWare.NUnitTestRunner.TestProgress.toWriter [static method]: System.IO.TextWriter -> WoofWare.NUnitTestRunner.ITestProgress
 WoofWare.NUnitTestRunner.TrxCounters inherit obj, implements WoofWare.NUnitTestRunner.TrxCounters System.IEquatable, System.Collections.IStructuralEquatable
 WoofWare.NUnitTestRunner.TrxCounters..ctor [constructor]: (System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32, System.UInt32)
 WoofWare.NUnitTestRunner.TrxCounters.Aborted [property]: [read-only] System.UInt32
