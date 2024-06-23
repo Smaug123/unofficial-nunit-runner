@@ -1,12 +1,15 @@
 ﻿namespace WoofWare.NUnitTestRunner
 
 open System
+open System.Diagnostics
 open System.IO
+open System.Reflection
 open System.Threading.Tasks
 open Spectre.Console
 
 module Program =
-    let main argv =
+    // This is actually transcribed into C# in WoofWare.NUnitTestRunner.StartupHookLogic.
+    let execute argv =
         let startTime = DateTimeOffset.Now
 
         let args = argv |> List.ofArray |> Args.Parse
@@ -30,8 +33,6 @@ module Program =
         | LogLevel.Verbose ->
             for d in runtime do
                 stderr.WriteLine $".NET runtime directory: %s{d.FullName}"
-
-        use _ = new SetBaseDir (args.Dll)
 
         use contexts = TestContexts.Empty ()
 
@@ -88,6 +89,52 @@ module Program =
         match report.ResultsSummary.Outcome with
         | TrxOutcome.Completed -> 0
         | _ -> 1
+
+    let main argv =
+        let args = argv |> List.ofArray |> Args.Parse
+
+        let psi = ProcessStartInfo "dotnet"
+
+        match args.Trx with
+        | None -> ()
+        | Some trx -> psi.EnvironmentVariables.Add ("WOOFWARE_NUNIT_GENERATE_TRX", trx.FullName)
+
+        match args.LevelOfParallelism with
+        | None -> ()
+        | Some par -> psi.EnvironmentVariables.Add ("WOOFWARE_NUNIT_PARALLELISM_LEVEL", string<int> par)
+
+        match args.Filter with
+        | None -> ()
+        | Some (filter, _) -> psi.EnvironmentVariables.Add ("WOOFWARE_NUNIT_FILTER", filter)
+
+        match args.Timeout with
+        | None -> ()
+        | Some timeout ->
+            psi.EnvironmentVariables.Add ("WOOFWARE_NUNIT_TIMEOUT_SECS", string<int> (int<float> timeout.TotalSeconds))
+
+        psi.ArgumentList.Add "exec"
+        psi.ArgumentList.Add args.Dll.FullName
+
+        let us = Assembly.GetExecutingAssembly().Location |> FileInfo
+
+        let startupHook =
+            Path.Combine (us.Directory.FullName, "WoofWare.NUnitTestRunner.StartupHook.dll")
+
+        psi.EnvironmentVariables.Add ("DOTNET_STARTUP_HOOKS", startupHook)
+
+        psi.EnvironmentVariables.Add (
+            "WOOFWARE_NUNIT_LIB",
+            Path.Combine (us.Directory.FullName, "WoofWare.NUnitTestRunner.Lib.dll")
+        )
+
+        use proc = new Process ()
+        proc.StartInfo <- psi
+
+        if not (proc.Start ()) then
+            failwith "Failed to start dotnet"
+
+        proc.WaitForExit ()
+        proc.ExitCode
 
     [<EntryPoint>]
     let reallyMain argv =

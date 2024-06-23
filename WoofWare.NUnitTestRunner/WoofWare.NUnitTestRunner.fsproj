@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
+    <RollForward>Major</RollForward>
     <PackAsTool>true</PackAsTool>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Authors>Patrick Stevens</Authors>
@@ -29,6 +30,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WoofWare.NUnitTestRunner.Lib\WoofWare.NUnitTestRunner.Lib.fsproj" />
+    <ProjectReference Include="..\WoofWare.NUnitTestRunner.StartupHookLogic\WoofWare.NUnitTestRunner.StartupHookLogic.csproj" />
+    <ProjectReference Include="..\WoofWare.NUnitTestRunner.StartupHook\WoofWare.NUnitTestRunner.StartupHook.csproj" />
   </ItemGroup>
 
   <ItemGroup>

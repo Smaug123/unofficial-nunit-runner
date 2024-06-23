@@ -1,6 +1,7 @@
 namespace WoofWare.NUnitTestRunner
 
 open System
+open System.IO
 
 /// Represents something which knows how to report progress through a test suite.
 /// Note that we don't guarantee anything about parallelism; you must make sure
@@ -24,22 +25,25 @@ type ITestProgress =
 /// Methods for constructing specific ITestProgress objects.
 [<RequireQualifiedAccess>]
 module TestProgress =
-    /// An ITestProgress which logs to stderr.
-    let toStderr () : ITestProgress =
+    /// An ITestProgress which logs to the given writer.
+    let toWriter (writer : TextWriter) : ITestProgress =
         { new ITestProgress with
             member _.OnTestFixtureStart name testCount =
                 let plural = if testCount = 1 then "" else "s"
-                Console.Error.WriteLine $"Running test fixture: %s{name} (%i{testCount} test%s{plural} to run)"
+                writer.WriteLine $"Running test fixture: %s{name} (%i{testCount} test%s{plural} to run)"
 
             member _.OnTestMemberStart name =
-                Console.Error.WriteLine $"Running test: %s{name}"
+                writer.WriteLine $"Running test: %s{name}"
 
             member _.OnTestFailed name failure =
-                Console.Error.WriteLine $"Test failed: %O{failure}"
+                writer.WriteLine $"Test failed: %O{failure}"
 
             member _.OnTestMemberFinished name =
-                Console.Error.WriteLine $"Finished test %s{name}"
+                writer.WriteLine $"Finished test %s{name}"
 
             member _.OnTestMemberSkipped name =
-                Console.Error.WriteLine $"Skipping test due to filter: %s{name}"
+                writer.WriteLine $"Skipping test due to filter: %s{name}"
         }
+
+    /// An ITestProgress which logs to stderr.
+    let toStderr () : ITestProgress = toWriter Console.Error

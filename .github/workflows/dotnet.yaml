@@ -38,7 +38,7 @@ jobs:
     - name: Build
       run: 'nix develop --command dotnet build --no-restore --configuration ${{matrix.config}}'
     - name: Test
-      run: 'nix develop --command dotnet test --no-build --verbosity normal --configuration ${{matrix.config}}'
+      run: 'nix develop --command dotnet test --no-build --verbosity normal --configuration ${{matrix.config}} --framework net8.0'
 
   selftest:
     runs-on: ubuntu-latest
@@ -57,10 +57,6 @@ jobs:
       security-events: none
       statuses: read
 
-    strategy:
-      matrix:
-        framework: ["net6.0", "net8.0"]
-
     steps:
     - uses: actions/checkout@v4
       with:
@@ -75,7 +71,49 @@ jobs:
     - name: Build
       run: 'nix develop --command dotnet build --no-restore --configuration Release'
     - name: Test using self
-      run: 'nix develop --command dotnet exec ./WoofWare.NUnitTestRunner/bin/Release/net8.0/WoofWare.NUnitTestRunner.dll ./Consumer/bin/Release/${{matrix.framework}}/Consumer.dll --trx TrxOut/out.trx'
+      run: 'nix develop --command dotnet exec ./WoofWare.NUnitTestRunner/bin/Release/net6.0/WoofWare.NUnitTestRunner.dll ./Consumer/bin/Release/net8.0/Consumer.dll --trx TrxOut/out.trx'
+    - name: Parse Trx files
+      uses: NasAmin/trx-parser@v0.6.0
+      if: always()
+      id: trx-parser
+      with:
+        TRX_PATH: ${{ github.workspace }}/TrxOut
+        REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  selftest-net6:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: none
+      checks: write
+      contents: read
+      deployments: none
+      id-token: none
+      issues: none
+      discussions: none
+      packages: none
+      pages: none
+      pull-requests: read
+      repository-projects: none
+      security-events: none
+      statuses: read
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # so that NerdBank.GitVersioning has access to history
+    - name: Install Nix
+      uses: cachix/install-nix-action@V27
+      with:
+        extra_nix_config: |
+          access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+    - name: Restore dependencies
+      run: nix develop --command dotnet restore
+    - name: Build runner
+      run: 'nix develop --command dotnet build WoofWare.NUnitTestRunner --configuration Release'
+    - name: Build target
+      run: 'nix develop --command dotnet build Consumer --configuration Release'
+    - name: Test using self
+      run: 'nix develop .#net6 --command ./WoofWare.NUnitTestRunner/bin/Release/net6.0/WoofWare.NUnitTestRunner ./Consumer/bin/Release/net6.0/Consumer.dll --trx TrxOut/out.trx'
     - name: Parse Trx files
       uses: NasAmin/trx-parser@v0.6.0
       if: always()

@@ -56,13 +56,20 @@
           doCheck = true;
         };
       };
-      devShell = pkgs.mkShell {
-        packages = [
-          (pkgs.dotnetCorePackages.combinePackages [dotnet-sdk pkgs.dotnetCorePackages.runtime_6_0])
-          pkgs.alejandra
-          pkgs.nodePackages.markdown-link-check
-          pkgs.shellcheck
-        ];
+      devShells = {
+        default = pkgs.mkShell {
+          packages = [
+            dotnet-sdk
+            pkgs.alejandra
+            pkgs.nodePackages.markdown-link-check
+            pkgs.shellcheck
+          ];
+        };
+        net6 = pkgs.mkShell {
+          packages = [
+            pkgs.dotnetCorePackages.runtime_6_0
+          ];
+        };
       };
     });
 }

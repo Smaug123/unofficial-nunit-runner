@@ -89,8 +89,13 @@ type TestContexts =
             AsyncLocal = local
         }
 
-    member internal this.Stdout : TextWriter = this.StdOutWriter
-    member internal this.Stderr : TextWriter = this.StdErrWriter
+    /// An output stream which will identify the ExecutionContext it's being written to from,
+    /// and will separate that output into its own stream internally.
+    member this.Stdout : TextWriter = this.StdOutWriter
+
+    /// An output stream which will identify the ExecutionContext it's being written to from,
+    /// and will separate that output into its own stream internally.
+    member this.Stderr : TextWriter = this.StdErrWriter
 
     member internal this.DumpStdout (id : OutputStreamId) : string =
         lock

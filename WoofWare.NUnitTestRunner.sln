@@ -8,6 +8,10 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "WoofWare.NUnitTestRunner.Li
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "WoofWare.NUnitTestRunner.Test", "WoofWare.NUnitTestRunner\WoofWare.NUnitTestRunner.Test\WoofWare.NUnitTestRunner.Test.fsproj", "{443B01B3-2A8C-45CF-96D6-1D890EEA0533}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WoofWare.NUnitTestRunner.StartupHook", "WoofWare.NUnitTestRunner.StartupHook\WoofWare.NUnitTestRunner.StartupHook.csproj", "{E2C73D96-570C-4E3C-B997-707AF8BB0E6A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WoofWare.NUnitTestRunner.StartupHookLogic", "WoofWare.NUnitTestRunner.StartupHookLogic\WoofWare.NUnitTestRunner.StartupHookLogic.csproj", "{A70627C8-9D19-42C2-AFEB-CFBDDDCE045D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +34,13 @@ Global
 		{443B01B3-2A8C-45CF-96D6-1D890EEA0533}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{443B01B3-2A8C-45CF-96D6-1D890EEA0533}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{443B01B3-2A8C-45CF-96D6-1D890EEA0533}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2C73D96-570C-4E3C-B997-707AF8BB0E6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2C73D96-570C-4E3C-B997-707AF8BB0E6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2C73D96-570C-4E3C-B997-707AF8BB0E6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2C73D96-570C-4E3C-B997-707AF8BB0E6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A70627C8-9D19-42C2-AFEB-CFBDDDCE045D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A70627C8-9D19-42C2-AFEB-CFBDDDCE045D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A70627C8-9D19-42C2-AFEB-CFBDDDCE045D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A70627C8-9D19-42C2-AFEB-CFBDDDCE045D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

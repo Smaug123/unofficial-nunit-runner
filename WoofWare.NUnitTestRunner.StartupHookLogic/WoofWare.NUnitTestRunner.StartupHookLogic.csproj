@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WoofWare.NUnitTestRunner.Lib\WoofWare.NUnitTestRunner.Lib.fsproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="StartupHookLogic.cs"/>
+  </ItemGroup>
+
+</Project>

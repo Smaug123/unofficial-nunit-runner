@@ -9,6 +9,7 @@
     <ItemGroup>
         <Compile Include="NoAttribute.fs" />
         <Compile Include="Inconclusive.fs" />
+        <Compile Include="RunSubProcess.fs" />
         <Compile Include="TestNonParallel.fs" />
         <Compile Include="TestParallel.fs" />
         <Compile Include="TestStdout.fs" />

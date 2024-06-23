@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WoofWare.NUnitTestRunner.StartupHookLogic\WoofWare.NUnitTestRunner.StartupHookLogic.csproj" />
+    <ProjectReference Include="..\WoofWare.NUnitTestRunner.Lib\WoofWare.NUnitTestRunner.Lib.fsproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="StartupHook.cs"/>
+  </ItemGroup>
+
+</Project>
