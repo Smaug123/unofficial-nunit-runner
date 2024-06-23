@@ -109,9 +109,9 @@ jobs:
     - name: Restore dependencies
       run: nix develop --command dotnet restore
     - name: Build runner
-      run: 'nix develop --command dotnet build WoofWare.NUnitTestRunner --no-restore --configuration Release --self-contained --runtime linux-x64'
+      run: 'nix develop --command dotnet build WoofWare.NUnitTestRunner --configuration Release --self-contained --runtime linux-x64'
     - name: Build target
-      run: 'nix develop --command dotnet build Consumer --no-restore --configuration Release'
+      run: 'nix develop --command dotnet build Consumer --configuration Release'
     - name: Test using self
       run: 'nix develop .#net6 --command ./WoofWare.NUnitTestRunner/bin/Release/net8.0/WoofWare.NUnitTestRunner ./Consumer/bin/Release/net6.0/Consumer.dll --trx TrxOut/out.trx'
     - name: Parse Trx files
