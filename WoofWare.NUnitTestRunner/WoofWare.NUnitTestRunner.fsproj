@@ -29,6 +29,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WoofWare.NUnitTestRunner.Lib\WoofWare.NUnitTestRunner.Lib.fsproj" />
+    <ProjectReference Include="..\WoofWare.NUnitTestRunner.StartupHookLogic\WoofWare.NUnitTestRunner.StartupHookLogic.csproj" />
+    <ProjectReference Include="..\WoofWare.NUnitTestRunner.StartupHook\WoofWare.NUnitTestRunner.StartupHook.csproj" />
   </ItemGroup>
 
   <ItemGroup>

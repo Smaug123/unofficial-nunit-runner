@@ -20,7 +20,8 @@ type Args =
     {
         Dll : FileInfo
         Trx : FileInfo option
-        Filter : Filter option
+        /// Also contains the original string which specified the filter.
+        Filter : (string * Filter) option
         Logging : LogLevel
         LevelOfParallelism : int option
         Timeout : TimeSpan option
@@ -33,7 +34,7 @@ type Args =
 
         let rec go
             (trx : FileInfo option)
-            (filter : Filter option)
+            (filter : (string * Filter) option)
             (logging : LogLevel option)
             (par : int option)
             (timeout : TimeSpan option)
@@ -53,7 +54,7 @@ type Args =
             | "--filter" :: filterStr :: rest ->
                 match filter with
                 | Some _ -> failwith "Two conflicting filters; you can only specify --filter once"
-                | None -> go trx (Some (Filter.parse filterStr)) logging par timeout rest
+                | None -> go trx (Some (filterStr, Filter.parse filterStr)) logging par timeout rest
             | Key "--trx" trxStr :: rest
             | "--trx" :: trxStr :: rest ->
                 match trx with
