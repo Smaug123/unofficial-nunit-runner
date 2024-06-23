@@ -16,7 +16,7 @@ public class StartupHookLogic
 
         // Load test runner lib
         Assembly.LoadFrom(
-            "/Users/patrick/Documents/GitHub/WoofWare.NUnitTestRunner/WoofWare.NUnitTestRunner.Lib/bin/Debug/net6.0/WoofWare.NunitTestRunner.Lib.dll");
+            "/Users/patrick/Documents/GitHub/WoofWare.NUnitTestRunner/WoofWare.NUnitTestRunner.Lib/bin/Debug/net6.0/WoofWare.NUnitTestRunner.Lib.dll");
 
         var startTime = DateTimeOffset.Now;
         var attrs = AssemblyLevelAttributesModule.get(assy);
