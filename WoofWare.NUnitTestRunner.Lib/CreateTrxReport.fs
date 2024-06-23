@@ -3,6 +3,7 @@ namespace WoofWare.NUnitTestRunner
 open System
 open System.Reflection
 
+/// Methods for constructing TRX reports.
 [<RequireQualifiedAccess>]
 module BuildTrxReport =
 
