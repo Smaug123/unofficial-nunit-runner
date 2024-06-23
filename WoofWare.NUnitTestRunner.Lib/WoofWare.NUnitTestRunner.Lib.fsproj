@@ -19,6 +19,7 @@
 
     <ItemGroup>
       <Compile Include="AssemblyInfo.fs" />
+      <Compile Include="AppContext.fs" />
       <Compile Include="RuntimeConfig.fs" />
       <Compile Include="GeneratedRuntimeConfig.fs">
         <MyriadFile>RuntimeConfig.fs</MyriadFile>
@@ -29,6 +30,7 @@
       <Compile Include="Result.fs" />
       <Compile Include="Domain.fs" />
       <Compile Include="Filter.fs" />
+      <Compile Include="Args.fs" />
       <Compile Include="ParallelQueue.fs" />
       <Compile Include="SingleTestMethod.fs" />
       <Compile Include="TestProgress.fs" />
@@ -46,11 +48,11 @@
       <EmbeddedResource Include="version.json" />
     </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="WoofWare.PrattParser" Version="0.2.1" />
+    <PackageReference Include="WoofWare.PrattParser" Version="0.2.2" />
     <PackageReference Update="FSharp.Core" Version="6.0.0" />
     <PackageReference Include="WoofWare.DotnetRuntimeLocator" Version="0.1.9" />
     <PackageReference Include="WoofWare.Myriad.Plugins.Attributes" Version="3.1.7" />
-    <PackageReference Include="Myriad.SDK" Version="0.8.3" />
+    <PackageReference Include="Myriad.SDK" Version="0.8.3" PrivateAssets="all" />
     <PackageReference Include="WoofWare.Myriad.Plugins" Version="$(WoofWareMyriadPluginVersion)" PrivateAssets="all" />
   </ItemGroup>
 
