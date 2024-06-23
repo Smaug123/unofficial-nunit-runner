@@ -1,13 +1,12 @@
 ﻿using System.Reflection;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Core;
-using WoofWare.NUnitTestRunner;
 
-namespace StartupHookLogic;
+namespace WoofWare.NUnitTestRunner.StartupHookLogic;
 
-public class Class1
+public class StartupHookLogic
 {
-    static void DoIt()
+    private static void DoIt()
     {
         var assy = Assembly.GetEntryAssembly()!;
         var assyLoc = new FileInfo(assy.Location);
@@ -44,12 +43,8 @@ public class Class1
         var report = BuildTrxReport.build(assy, creationTime, startTime, ListModule.OfSeq(sorted));
         // TODO: trx
         if (report.ResultsSummary.Outcome.Equals(TrxOutcome.Completed))
-        {
             Environment.Exit(0);
-        }
         else
-        {
             Environment.Exit(1);
-        }
     }
 }
