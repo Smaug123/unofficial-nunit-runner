@@ -19,7 +19,6 @@
 
     <ItemGroup>
       <Compile Include="AssemblyInfo.fs" />
-      <Compile Include="AppContext.fs" />
       <Compile Include="RuntimeConfig.fs" />
       <Compile Include="GeneratedRuntimeConfig.fs">
         <MyriadFile>RuntimeConfig.fs</MyriadFile>

@@ -34,8 +34,6 @@ module Program =
             for d in runtime do
                 stderr.WriteLine $".NET runtime directory: %s{d.FullName}"
 
-        use _ = new SetBaseDir (args.Dll)
-
         use contexts = TestContexts.Empty ()
 
         let ctx = LoadContext (args.Dll, runtime, contexts)
