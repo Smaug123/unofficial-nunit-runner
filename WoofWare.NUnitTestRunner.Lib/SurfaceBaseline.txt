@@ -243,8 +243,6 @@ WoofWare.NUnitTestRunner.ParallelQueue.Run [method]: WoofWare.NUnitTestRunner.Te
 WoofWare.NUnitTestRunner.ParallelQueue.RunTestSetup [method]: WoofWare.NUnitTestRunner.TestFixtureRunningToken -> (unit -> 'a) -> ('a * WoofWare.NUnitTestRunner.TestFixtureSetupToken) System.Threading.Tasks.Task
 WoofWare.NUnitTestRunner.ParallelQueue.RunTestTearDown [method]: WoofWare.NUnitTestRunner.TestFixtureSetupToken -> (unit -> 'a) -> ('a * WoofWare.NUnitTestRunner.TestFixtureTearDownToken) System.Threading.Tasks.Task
 WoofWare.NUnitTestRunner.ParallelQueue.StartTestFixture [method]: WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.TestFixtureRunningToken System.Threading.Tasks.Task
-WoofWare.NUnitTestRunner.SetBaseDir inherit obj, implements IDisposable
-WoofWare.NUnitTestRunner.SetBaseDir..ctor [constructor]: System.IO.FileInfo
 WoofWare.NUnitTestRunner.SingleTestMethod inherit obj, implements WoofWare.NUnitTestRunner.SingleTestMethod System.IEquatable, System.Collections.IStructuralEquatable
 WoofWare.NUnitTestRunner.SingleTestMethod..ctor [constructor]: (System.Reflection.MethodInfo, WoofWare.NUnitTestRunner.TestKind, WoofWare.NUnitTestRunner.Modifier list, string list, int option, WoofWare.NUnitTestRunner.Combinatorial option, unit WoofWare.NUnitTestRunner.Parallelizable option)
 WoofWare.NUnitTestRunner.SingleTestMethod.Categories [property]: [read-only] string list
