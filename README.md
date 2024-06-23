@@ -14,3 +14,8 @@ However, we would recommend phrasing some of them differently, for maximum peace
 WoofWare.NUnitTestRunner has *limited* support for parallelism.
 By default, we run tests serially; we may or may not respect the NUnit parallelism attributes to any given extent (but we will never incorrectly run tests in parallel).
 For example, as of this writing, we do not run any tests in parallel (but the internal infrastructure is set up so that we will be able to do this soon).
+
+## `TestContext`
+
+WoofWare.NUnitTestRunner has partial support for NUnit's `TestContext`.
+See [the test file](./Consumer/TestContext.fs) for everything we expect to work.

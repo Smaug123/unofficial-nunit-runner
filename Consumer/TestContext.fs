@@ -7,8 +7,9 @@ open NUnit.Framework
 module TestContext =
 
     [<TestCase 3>]
-    let ``Context has appropriate values`` (_ : int) =
-        TestContext.Progress.WriteLine "hi!"
+    let ``Context has appropriate values`` (i : int) =
+        // We explicitly cannot support this (https://github.com/dotnet/dotnet-api-docs/pull/3869/files).
+        // TestContext.Progress.WriteLine "hi!"
 
         TestContext.CurrentContext.Test.MethodName
         |> shouldEqual "Context has appropriate values"
@@ -22,4 +23,5 @@ module TestContext =
         TestContext.CurrentContext.Test.FullName
         |> shouldEqual "Consumer.TestContext.Context has appropriate values(3)"
 
+        i |> shouldEqual 3
         TestContext.CurrentContext.Test.Arguments |> List.ofArray |> shouldEqual [ 3 ]
