@@ -1,3 +1,18 @@
+WoofWare.NUnitTestRunner.Args inherit obj, implements WoofWare.NUnitTestRunner.Args System.IEquatable, System.Collections.IStructuralEquatable
+WoofWare.NUnitTestRunner.Args..ctor [constructor]: (System.IO.FileInfo, System.IO.FileInfo option, (string * WoofWare.NUnitTestRunner.Filter) option, WoofWare.NUnitTestRunner.LogLevel, int option, System.TimeSpan option)
+WoofWare.NUnitTestRunner.Args.Dll [property]: [read-only] System.IO.FileInfo
+WoofWare.NUnitTestRunner.Args.Filter [property]: [read-only] (string * WoofWare.NUnitTestRunner.Filter) option
+WoofWare.NUnitTestRunner.Args.get_Dll [method]: unit -> System.IO.FileInfo
+WoofWare.NUnitTestRunner.Args.get_Filter [method]: unit -> (string * WoofWare.NUnitTestRunner.Filter) option
+WoofWare.NUnitTestRunner.Args.get_LevelOfParallelism [method]: unit -> int option
+WoofWare.NUnitTestRunner.Args.get_Logging [method]: unit -> WoofWare.NUnitTestRunner.LogLevel
+WoofWare.NUnitTestRunner.Args.get_Timeout [method]: unit -> System.TimeSpan option
+WoofWare.NUnitTestRunner.Args.get_Trx [method]: unit -> System.IO.FileInfo option
+WoofWare.NUnitTestRunner.Args.LevelOfParallelism [property]: [read-only] int option
+WoofWare.NUnitTestRunner.Args.Logging [property]: [read-only] WoofWare.NUnitTestRunner.LogLevel
+WoofWare.NUnitTestRunner.Args.Parse [static method]: string list -> WoofWare.NUnitTestRunner.Args
+WoofWare.NUnitTestRunner.Args.Timeout [property]: [read-only] System.TimeSpan option
+WoofWare.NUnitTestRunner.Args.Trx [property]: [read-only] System.IO.FileInfo option
 WoofWare.NUnitTestRunner.AssemblyLevelAttributes inherit obj, implements WoofWare.NUnitTestRunner.AssemblyLevelAttributes System.IEquatable, System.Collections.IStructuralEquatable, WoofWare.NUnitTestRunner.AssemblyLevelAttributes System.IComparable, System.IComparable, System.Collections.IStructuralComparable
 WoofWare.NUnitTestRunner.AssemblyLevelAttributes..ctor [constructor]: (int option, WoofWare.NUnitTestRunner.AssemblyParallelScope WoofWare.NUnitTestRunner.Parallelizable option)
 WoofWare.NUnitTestRunner.AssemblyLevelAttributes.get_Parallelism [method]: unit -> int option
@@ -155,6 +170,20 @@ WoofWare.NUnitTestRunner.ITestProgress.OnTestMemberSkipped [method]: string -> u
 WoofWare.NUnitTestRunner.ITestProgress.OnTestMemberStart [method]: string -> unit
 WoofWare.NUnitTestRunner.LoadContext inherit System.Runtime.Loader.AssemblyLoadContext
 WoofWare.NUnitTestRunner.LoadContext..ctor [constructor]: (System.IO.FileInfo, System.IO.DirectoryInfo list, WoofWare.NUnitTestRunner.TestContexts)
+WoofWare.NUnitTestRunner.LogLevel inherit obj, implements WoofWare.NUnitTestRunner.LogLevel System.IEquatable, System.Collections.IStructuralEquatable, WoofWare.NUnitTestRunner.LogLevel System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 2 cases
+WoofWare.NUnitTestRunner.LogLevel+Tags inherit obj
+WoofWare.NUnitTestRunner.LogLevel+Tags.Nothing [static field]: int = 0
+WoofWare.NUnitTestRunner.LogLevel+Tags.Verbose [static field]: int = 1
+WoofWare.NUnitTestRunner.LogLevel.get_IsNothing [method]: unit -> bool
+WoofWare.NUnitTestRunner.LogLevel.get_IsVerbose [method]: unit -> bool
+WoofWare.NUnitTestRunner.LogLevel.get_Nothing [static method]: unit -> WoofWare.NUnitTestRunner.LogLevel
+WoofWare.NUnitTestRunner.LogLevel.get_Tag [method]: unit -> int
+WoofWare.NUnitTestRunner.LogLevel.get_Verbose [static method]: unit -> WoofWare.NUnitTestRunner.LogLevel
+WoofWare.NUnitTestRunner.LogLevel.IsNothing [property]: [read-only] bool
+WoofWare.NUnitTestRunner.LogLevel.IsVerbose [property]: [read-only] bool
+WoofWare.NUnitTestRunner.LogLevel.Nothing [static property]: [read-only] WoofWare.NUnitTestRunner.LogLevel
+WoofWare.NUnitTestRunner.LogLevel.Tag [property]: [read-only] int
+WoofWare.NUnitTestRunner.LogLevel.Verbose [static property]: [read-only] WoofWare.NUnitTestRunner.LogLevel
 WoofWare.NUnitTestRunner.Match inherit obj, implements WoofWare.NUnitTestRunner.Match System.IEquatable, System.Collections.IStructuralEquatable, WoofWare.NUnitTestRunner.Match System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 2 cases
 WoofWare.NUnitTestRunner.Match+Contains inherit WoofWare.NUnitTestRunner.Match
 WoofWare.NUnitTestRunner.Match+Contains.get_Item [method]: unit -> string
@@ -214,6 +243,8 @@ WoofWare.NUnitTestRunner.ParallelQueue.Run [method]: WoofWare.NUnitTestRunner.Te
 WoofWare.NUnitTestRunner.ParallelQueue.RunTestSetup [method]: WoofWare.NUnitTestRunner.TestFixtureRunningToken -> (unit -> 'a) -> ('a * WoofWare.NUnitTestRunner.TestFixtureSetupToken) System.Threading.Tasks.Task
 WoofWare.NUnitTestRunner.ParallelQueue.RunTestTearDown [method]: WoofWare.NUnitTestRunner.TestFixtureSetupToken -> (unit -> 'a) -> ('a * WoofWare.NUnitTestRunner.TestFixtureTearDownToken) System.Threading.Tasks.Task
 WoofWare.NUnitTestRunner.ParallelQueue.StartTestFixture [method]: WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.TestFixtureRunningToken System.Threading.Tasks.Task
+WoofWare.NUnitTestRunner.SetBaseDir inherit obj, implements IDisposable
+WoofWare.NUnitTestRunner.SetBaseDir..ctor [constructor]: System.IO.FileInfo
 WoofWare.NUnitTestRunner.SingleTestMethod inherit obj, implements WoofWare.NUnitTestRunner.SingleTestMethod System.IEquatable, System.Collections.IStructuralEquatable
 WoofWare.NUnitTestRunner.SingleTestMethod..ctor [constructor]: (System.Reflection.MethodInfo, WoofWare.NUnitTestRunner.TestKind, WoofWare.NUnitTestRunner.Modifier list, string list, int option, WoofWare.NUnitTestRunner.Combinatorial option, unit WoofWare.NUnitTestRunner.Parallelizable option)
 WoofWare.NUnitTestRunner.SingleTestMethod.Categories [property]: [read-only] string list
