@@ -2,7 +2,7 @@ namespace WoofWare.NUnitTestRunner
 
 open System
 open System.IO
-open PrattParser
+open WoofWare.PrattParser
 
 // Documentation:
 // https://learn.microsoft.com/en-us/dotnet/core/testing/selective-unit-tests?pivots=mstest

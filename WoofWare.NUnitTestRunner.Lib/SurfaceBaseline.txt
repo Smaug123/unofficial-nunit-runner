@@ -1,3 +1,11 @@
+WoofWare.NUnitTestRunner.AssemblyLevelAttributes inherit obj, implements WoofWare.NUnitTestRunner.AssemblyLevelAttributes System.IEquatable, System.Collections.IStructuralEquatable, WoofWare.NUnitTestRunner.AssemblyLevelAttributes System.IComparable, System.IComparable, System.Collections.IStructuralComparable
+WoofWare.NUnitTestRunner.AssemblyLevelAttributes..ctor [constructor]: (int option, WoofWare.NUnitTestRunner.AssemblyParallelScope WoofWare.NUnitTestRunner.Parallelizable option)
+WoofWare.NUnitTestRunner.AssemblyLevelAttributes.get_Parallelism [method]: unit -> int option
+WoofWare.NUnitTestRunner.AssemblyLevelAttributes.get_Parallelizable [method]: unit -> WoofWare.NUnitTestRunner.AssemblyParallelScope WoofWare.NUnitTestRunner.Parallelizable option
+WoofWare.NUnitTestRunner.AssemblyLevelAttributes.Parallelism [property]: [read-only] int option
+WoofWare.NUnitTestRunner.AssemblyLevelAttributes.Parallelizable [property]: [read-only] WoofWare.NUnitTestRunner.AssemblyParallelScope WoofWare.NUnitTestRunner.Parallelizable option
+WoofWare.NUnitTestRunner.AssemblyLevelAttributesModule inherit obj
+WoofWare.NUnitTestRunner.AssemblyLevelAttributesModule.get [static method]: System.Reflection.Assembly -> WoofWare.NUnitTestRunner.AssemblyLevelAttributes
 WoofWare.NUnitTestRunner.AssemblyParallelScope inherit obj, implements WoofWare.NUnitTestRunner.AssemblyParallelScope System.IEquatable, System.Collections.IStructuralEquatable, WoofWare.NUnitTestRunner.AssemblyParallelScope System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 2 cases
 WoofWare.NUnitTestRunner.AssemblyParallelScope+Tags inherit obj
 WoofWare.NUnitTestRunner.AssemblyParallelScope+Tags.Children [static field]: int = 0
@@ -12,6 +20,8 @@ WoofWare.NUnitTestRunner.AssemblyParallelScope.get_Tag [method]: unit -> int
 WoofWare.NUnitTestRunner.AssemblyParallelScope.IsChildren [property]: [read-only] bool
 WoofWare.NUnitTestRunner.AssemblyParallelScope.IsFixtures [property]: [read-only] bool
 WoofWare.NUnitTestRunner.AssemblyParallelScope.Tag [property]: [read-only] int
+WoofWare.NUnitTestRunner.BuildTrxReport inherit obj
+WoofWare.NUnitTestRunner.BuildTrxReport.build [static method]: System.Reflection.Assembly -> System.DateTimeOffset -> System.DateTimeOffset -> WoofWare.NUnitTestRunner.FixtureRunResults list -> WoofWare.NUnitTestRunner.TrxReport
 WoofWare.NUnitTestRunner.ClassParallelScope inherit obj, implements WoofWare.NUnitTestRunner.ClassParallelScope System.IEquatable, System.Collections.IStructuralEquatable, WoofWare.NUnitTestRunner.ClassParallelScope System.IComparable, System.IComparable, System.Collections.IStructuralComparable - union type with 4 cases
 WoofWare.NUnitTestRunner.ClassParallelScope+Tags inherit obj
 WoofWare.NUnitTestRunner.ClassParallelScope+Tags.All [static field]: int = 3
