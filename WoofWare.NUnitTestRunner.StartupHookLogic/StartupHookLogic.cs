@@ -67,10 +67,13 @@ public class StartupHookLogic
             timeout = TimeSpan.FromSeconds(Int32.Parse(timeoutVar));
         }
 
+        var normalErr = Console.Error;
         using var contexts = TestContexts.Empty();
+        Console.SetOut(contexts.Stdout);
+        Console.SetError(contexts.Stderr);
         var results =
             Task.WhenAll(testFixtures.Select(x =>
-                TestFixtureModule.run(contexts, par, TestProgress.toStderr(), filter, x)));
+                TestFixtureModule.run(contexts, par, TestProgress.toWriter(normalErr), filter, x)));
 
         if (!results.Wait(timeout))
         {
@@ -88,7 +91,7 @@ public class StartupHookLogic
             var trxPath = new FileInfo(trxFile);
             trxPath.Directory!.Create();
             File.WriteAllText(trxPath.FullName, contents);
-            Console.Error.WriteLine($"Written TRX file: {trxPath.FullName}");
+            normalErr.WriteLine($"Written TRX file: {trxPath.FullName}");
         }
 
         if (report.ResultsSummary.Outcome.Equals(TrxOutcome.Completed))
