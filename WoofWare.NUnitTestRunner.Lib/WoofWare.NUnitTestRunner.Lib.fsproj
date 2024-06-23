@@ -36,6 +36,8 @@
       <Compile Include="TestFixture.fs" />
       <Compile Include="Xml.fs" />
       <Compile Include="TrxReport.fs" />
+      <Compile Include="CreateTrxReport.fs" />
+      <Compile Include="AssemblyLevelAttributes.fs" />
       <None Include="..\README.md">
         <Pack>True</Pack>
         <PackagePath>\</PackagePath>
@@ -51,7 +53,7 @@
     <PackageReference Include="Myriad.SDK" Version="0.8.3" />
     <PackageReference Include="WoofWare.Myriad.Plugins" Version="$(WoofWareMyriadPluginVersion)" PrivateAssets="all" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <MyriadSdkGenerator Include="$(NuGetPackageRoot)/woofware.myriad.plugins/$(WoofWareMyriadPluginVersion)/lib/net6.0/WoofWare.Myriad.Plugins.dll" />
   </ItemGroup>
