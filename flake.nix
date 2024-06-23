@@ -57,8 +57,8 @@
         };
       };
       devShell = pkgs.mkShell {
-        buildInputs = [dotnet-sdk];
         packages = [
+          (pkgs.dotnetCorePackages.combinePackages [dotnet-sdk pkgs.dotnetCorePackages.runtime_6_0])
           pkgs.alejandra
           pkgs.nodePackages.markdown-link-check
           pkgs.shellcheck
