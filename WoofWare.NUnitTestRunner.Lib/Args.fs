@@ -11,22 +11,33 @@ module internal Patterns =
         else
             None
 
+/// Represents how verbose the test runner's logging should be.
 [<RequireQualifiedAccess>]
 type LogLevel =
+    /// Don't log any information about the test run.
     | Nothing
+    /// Log as much information as is available about the test run.
     | Verbose
 
+/// Arguments controlling the test runner itself (not the tests therein).
 type Args =
     {
+        /// The DLL containing the tests we'll reflectively discover and invoke.
         Dll : FileInfo
+        /// If set, the output file into which we will write a TRX report. (We'll create parent directories as necessary.)
         Trx : FileInfo option
         /// Also contains the original string which specified the filter.
         Filter : (string * Filter) option
+        /// How verbose to be with the test runner's own logging.
         Logging : LogLevel
+        /// Maximum number of tests which can run concurrently. This setting overrides any LevelOfParallelism reflectively
+        /// extracted from the assembly under test.
         LevelOfParallelism : int option
+        /// Abort if the test runner is running for longer than this timeout.
         Timeout : TimeSpan option
     }
 
+    /// Parse `argv` into a structured Args.
     static member Parse (args : string list) : Args =
         match args with
         | [] -> failwith "The first arg must be a positional arg, the DLL to test."
