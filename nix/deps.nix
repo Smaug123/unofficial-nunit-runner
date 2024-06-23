@@ -263,7 +263,7 @@
   })
   (fetchNuGet {
     pname = "WoofWare.PrattParser";
-    version = "0.2.1";
-    sha256 = "1cb9496fbbrdc40dirjmc7ax02ghr27ahqq5hpk96rdzyaang9hg";
+    version = "0.2.2";
+    sha256 = "0cgrmd1kc3k224lsjhy5npalwg6kpqd8nx78szi1yq67kyb0farq";
   })
 ]
