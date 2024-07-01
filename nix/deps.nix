@@ -253,13 +253,13 @@
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins";
-    version = "2.1.51";
-    sha256 = "1pdzdnjvq0a2gnbbz5gy9fzvxkyg6nl6x1k68xkm2a6gdkhkf68z";
+    version = "2.1.52";
+    sha256 = "03cx16c9zhc2yjldrks4kfh8xx3x757zjhjk98sd7i8q7s6agqyn";
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins.Attributes";
-    version = "3.1.7";
-    sha256 = "1v1wsrjh7qz2khrlbcysj50yydqc9njj09vs1jglwscjhml1wl1v";
+    version = "3.1.8";
+    sha256 = "0xhgl5kkw5hn15ghry3k0w7h4v2d6aww9dmpb7j49aims1r6c76c";
   })
   (fetchNuGet {
     pname = "WoofWare.PrattParser";
