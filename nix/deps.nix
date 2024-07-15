@@ -8,8 +8,8 @@
   })
   (fetchNuGet {
     pname = "fantomas";
-    version = "6.3.9";
-    hash = "sha256-XRPC5cXMoTJLLHe3f5A3+uXakbL+D7DlX0sA52KMZKw=";
+    version = "6.3.10";
+    hash = "sha256-2m4YevDp9CRm/Ci2hguDXd6DUMElRg3hNAne9LHntWM=";
   })
   (fetchNuGet {
     pname = "FsCheck";
@@ -258,8 +258,8 @@
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins.Attributes";
-    version = "3.1.8";
-    hash = "sha256-zBxmctA1qkTkWbe2xLkyTWwCDwdz+AxfCRYWPmehD3Y=";
+    version = "3.1.9";
+    hash = "sha256-atV9vJlhLvXYrJvS9ET1A7M+LY9IdgBSTyGhz2Vom5U=";
   })
   (fetchNuGet {
     pname = "WoofWare.PrattParser";
