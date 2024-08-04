@@ -5,7 +5,7 @@
   ],
   "pathFilters": [
     "./",
-    "^./WoofWare.NUnitTestRunner.Test",
+    ":^./WoofWare.NUnitTestRunner.Test",
     ":/WoofWare.NUnitTestRunner.Lib",
     ":/Directory.Build.props",
     ":/README.md"
