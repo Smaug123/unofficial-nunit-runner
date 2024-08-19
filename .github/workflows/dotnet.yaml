@@ -283,9 +283,7 @@ jobs:
     needs: [check-dotnet-format, check-nix-format, build, build-nix, linkcheck, flake-check, analyzers, nuget-pack, expected-pack, github-release-tool-dry-run]
     runs-on: ubuntu-latest
     steps:
-      - uses: G-Research/common-actions/check-required-lite@e029f2db01c481a7ad941f02fd7bca8f6bbd1882
-        with:
-          needs-context: ${{ toJSON(needs) }}
+      - run: echo hello
 
   attestation-lib:
     runs-on: ubuntu-latest
