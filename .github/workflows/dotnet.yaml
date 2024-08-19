@@ -249,7 +249,7 @@ jobs:
           path: packed-lib
       - name: Check NuGet contents (lib)
         # Verify that there is exactly one nupkg in the artifact that would be NuGet published
-        run: if [[ $(find packed-lib -maxdepth 1 -name 'WoofWare.NUnitTestRunner.Lib.*.nupkg' -printf c | wc -c) -ne "1" ]]; then exit 1; fi
+        run: exit 1
       - name: Download NuGet artifact (tool)
         uses: actions/download-artifact@v4
         with:
