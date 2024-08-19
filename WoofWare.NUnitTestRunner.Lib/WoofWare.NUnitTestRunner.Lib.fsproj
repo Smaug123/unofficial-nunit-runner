@@ -14,7 +14,7 @@
       <PackageId>WoofWare.NUnitTestRunner.Lib</PackageId>
       <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
       <WarnOn>FS3559</WarnOn>
-      <WoofWareMyriadPluginVersion>2.1.56</WoofWareMyriadPluginVersion>
+      <WoofWareMyriadPluginVersion>2.1.57</WoofWareMyriadPluginVersion>
     </PropertyGroup>
 
     <ItemGroup>
