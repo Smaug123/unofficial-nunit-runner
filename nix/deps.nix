@@ -3,8 +3,8 @@
 {fetchNuGet}: [
   (fetchNuGet {
     pname = "ApiSurface";
-    version = "4.0.43";
-    hash = "sha256-CO5a0ZCWvD4fZXQL9l0At0y0vqmN3TT2+TuUw4ZNoC8=";
+    version = "4.0.44";
+    hash = "sha256-1su3UcdsyG9OoPwiMqo07rUMKhkVKlohRK4fA8mbxvI=";
   })
   (fetchNuGet {
     pname = "fantomas";
@@ -253,8 +253,8 @@
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins";
-    version = "2.1.56";
-    hash = "sha256-hNZu+L8N80P9Jbi0xPlDDZSd+HbE1QuTIy+1r5iAwuk=";
+    version = "2.1.57";
+    hash = "sha256-SBKtJR9kbBRW49CdNoTcVibv/hkhBIm3pEzYZAxizIw=";
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins.Attributes";
