@@ -8,8 +8,8 @@
   })
   (fetchNuGet {
     pname = "fantomas";
-    version = "6.3.11";
-    hash = "sha256-11bHGEAZTNtdp2pTg5zqLrQiyI/j/AT7GGL/2CR4+dw=";
+    version = "6.3.12";
+    hash = "sha256-LFZn2cO72FlsmLI0vTLz52Bn4XBeGILTOr8rz/EuXeg=";
   })
   (fetchNuGet {
     pname = "Fantomas.Core";
@@ -73,13 +73,13 @@
   })
   (fetchNuGet {
     pname = "Microsoft.CodeCoverage";
-    version = "17.11.0";
-    hash = "sha256-XglInnx5GePUYHG7n2NLX+WfK7kJnornsWOW/5FnOXE=";
+    version = "17.11.1";
+    hash = "sha256-1dLlK3NGh88PuFYZiYpT+izA96etxhU3BSgixDgdtGA=";
   })
   (fetchNuGet {
     pname = "Microsoft.NET.Test.Sdk";
-    version = "17.11.0";
-    hash = "sha256-WjyA78+PG9ZloWTt9Hf1ek3VVj2FfJ9fAjqklnN+fWw=";
+    version = "17.11.1";
+    hash = "sha256-0JUEucQ2lzaPgkrjm/NFLBTbqU1dfhvhN3Tl3moE6mI=";
   })
   (fetchNuGet {
     pname = "Microsoft.NETCore.App.Host.linux-arm64";
@@ -143,13 +143,13 @@
   })
   (fetchNuGet {
     pname = "Microsoft.TestPlatform.ObjectModel";
-    version = "17.11.0";
-    hash = "sha256-mCI3MCV6nyrGLrBat5VvK5LrXTEKlsdp9NkpZyJYwVg=";
+    version = "17.11.1";
+    hash = "sha256-5vX+vCzFY3S7xfMVIv8OlMMFtdedW9UIJzc0WEc+vm4=";
   })
   (fetchNuGet {
     pname = "Microsoft.TestPlatform.TestHost";
-    version = "17.11.0";
-    hash = "sha256-gViDLobza22kuLvB4JdlGtbANqwBHRwf1wLmIHMw9Eo=";
+    version = "17.11.1";
+    hash = "sha256-wSkY0H1fQAq0H3LcKT4u7Y5RzhAAPa6yueVN84g8HxU=";
   })
   (fetchNuGet {
     pname = "Myriad.Core";
@@ -323,8 +323,8 @@
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins.Attributes";
-    version = "3.2.1";
-    hash = "sha256-z9xnSrexuPeXBSDNu0kFTfCcGXXs5Ehyh80kEbGvr0U=";
+    version = "3.4.1";
+    hash = "sha256-ZhSqD/8cRYA8qdAesTGFm0ipyIEqFwksrOUsZbfmrOg=";
   })
   (fetchNuGet {
     pname = "WoofWare.PrattParser";
