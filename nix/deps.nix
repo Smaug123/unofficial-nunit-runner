@@ -8,8 +8,8 @@
   })
   (fetchNuGet {
     pname = "fantomas";
-    version = "6.3.12";
-    hash = "sha256-LFZn2cO72FlsmLI0vTLz52Bn4XBeGILTOr8rz/EuXeg=";
+    version = "6.3.15";
+    hash = "sha256-Gjw7MxjUNckMWSfnOye4UTe5fZWnor6RHCls3PNsuG8=";
   })
   (fetchNuGet {
     pname = "Fantomas.Core";
@@ -43,8 +43,8 @@
   })
   (fetchNuGet {
     pname = "FsUnit";
-    version = "6.0.0";
-    hash = "sha256-q87WQf6MqGhzvaQ7WkkUlCdoE94DY0CD5PaXEj64A6M=";
+    version = "6.0.1";
+    hash = "sha256-vka/aAgWhDCl5tu+kgO7GtSaHOOvlSaWxG+tExwGXpI=";
   })
   (fetchNuGet {
     pname = "Microsoft.AspNetCore.App.Ref";
@@ -318,13 +318,13 @@
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins";
-    version = "2.2.1";
-    hash = "sha256-3dDAmJ2nqcIJmm45tkHNZAtEmvYcnslzm03QsbDpRkY=";
+    version = "3.0.1";
+    hash = "sha256-DmzlNj7tlZi4P3Gk6GVZmadQ0CZWi4wMVaSwlCJQN4o=";
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins.Attributes";
-    version = "3.4.1";
-    hash = "sha256-ZhSqD/8cRYA8qdAesTGFm0ipyIEqFwksrOUsZbfmrOg=";
+    version = "3.6.1";
+    hash = "sha256-9QWoQM4SA9t1kB9S7QiPfbztCxItQVBOunjTYeAA1Sk=";
   })
   (fetchNuGet {
     pname = "WoofWare.PrattParser";
