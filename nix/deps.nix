@@ -318,8 +318,8 @@
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins";
-    version = "2.2.1";
-    hash = "sha256-3dDAmJ2nqcIJmm45tkHNZAtEmvYcnslzm03QsbDpRkY=";
+    version = "3.0.1";
+    hash = "sha256-DmzlNj7tlZi4P3Gk6GVZmadQ0CZWi4wMVaSwlCJQN4o=";
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins.Attributes";
