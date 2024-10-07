@@ -3,8 +3,8 @@
 {fetchNuGet}: [
   (fetchNuGet {
     pname = "ApiSurface";
-    version = "4.1.5";
-    hash = "sha256-Kbt18XLk1gvZfzGca885HaXZB119APay85KzI546PYM=";
+    version = "4.1.6";
+    hash = "sha256-9AphYmU9vkf5yA4uo1FXICUwlzCj4D3GdSn3RJvCNR0=";
   })
   (fetchNuGet {
     pname = "fantomas";
@@ -178,23 +178,23 @@
   })
   (fetchNuGet {
     pname = "NuGet.Common";
-    version = "6.11.0";
-    hash = "sha256-eb7G07RyZv4AQT6ItRqdBuUf9e9BXcQygsy5RNEXfNE=";
+    version = "6.11.1";
+    hash = "sha256-UyZtDyTuymC+sKSX+ripOI6MmJZn11loVapVs4uzaGo=";
   })
   (fetchNuGet {
     pname = "NuGet.Configuration";
-    version = "6.11.0";
-    hash = "sha256-2SNZkX64SB15glzQx3k+vI7btr8Yqg4CayaaaK1B0AQ=";
+    version = "6.11.1";
+    hash = "sha256-JH2UCpjYg8pkqxQ4j4BrWiTKhGzgfn55NMr32wf6+FQ=";
   })
   (fetchNuGet {
     pname = "NuGet.Frameworks";
-    version = "6.11.0";
-    hash = "sha256-8DC7V2IlCjiMDQ9yWbl7QQHia6OpBrbWh5rL0qa0Opw=";
+    version = "6.11.1";
+    hash = "sha256-p25Oa7wJjwF+2puIhBkZZkKSuk4jGq7xikYSCdfp9Vc=";
   })
   (fetchNuGet {
     pname = "NuGet.Packaging";
-    version = "6.11.0";
-    hash = "sha256-LVLvxcB6SMdayxAsrc5bCuLLt25fqPr6KfYcYoWWIQk=";
+    version = "6.11.1";
+    hash = "sha256-1yY3p5hQwbUgYCyHnBcuGWiiIib1ppPYt2ntxwXSJW0=";
   })
   (fetchNuGet {
     pname = "NuGet.Protocol";
@@ -203,8 +203,8 @@
   })
   (fetchNuGet {
     pname = "NuGet.Versioning";
-    version = "6.11.0";
-    hash = "sha256-03edgWvbqUtbzpBBTIxTwsSRoj1T2muGVL+vTuIHXag=";
+    version = "6.11.1";
+    hash = "sha256-fl8lyChMjV7Sp8keAP7CdXZh7ARN/mU39T3gG74jDWY=";
   })
   (fetchNuGet {
     pname = "NUnit";
@@ -312,23 +312,33 @@
     hash = "sha256-aSJZ17MjqaZNQkprfxm/09LaCoFtpdWmqU9BTROzWX4=";
   })
   (fetchNuGet {
+    pname = "TypeEquality";
+    version = "0.3.0";
+    hash = "sha256-V50xAOzzyUJrY+MYPRxtnqW5MVeATXCes89wPprv1r4=";
+  })
+  (fetchNuGet {
     pname = "WoofWare.DotnetRuntimeLocator";
     version = "0.1.9";
     hash = "sha256-0v8JQgGjS3tseA28OFmYZUcinYRArjs28BwVy3oczJM=";
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins";
-    version = "3.1.1";
-    hash = "sha256-kAQCi6zyFxPfDOIXn3dKg4M9wJYCpW7/Z8Ic7+yuFNg=";
+    version = "4.0.5";
+    hash = "sha256-7WmEeSLZvVA5mT9jK8JvNTFwjfgZEBXL6N1fstbl0ZM=";
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins.Attributes";
-    version = "3.6.2";
-    hash = "sha256-Z8j9it7dC9i/SuKo133KZywBkzHL7JtAWFojA1jLpAc=";
+    version = "3.6.3";
+    hash = "sha256-KcswaTwDnZ+cGtFNdnWKQMhAPBVvaWtAVR+3eQYv0Ko=";
   })
   (fetchNuGet {
     pname = "WoofWare.PrattParser";
     version = "0.2.2";
     hash = "sha256-OCsHlp/HYB/i1+h0ixq+0zxO1bXFQ6kpEWIONkOr+TE=";
+  })
+  (fetchNuGet {
+    pname = "WoofWare.Whippet.Fantomas";
+    version = "0.2.1";
+    hash = "sha256-38LPop5tQ14oqzi0dSzBp2m53fugIMyWed67xnZmJqk=";
   })
 ]
