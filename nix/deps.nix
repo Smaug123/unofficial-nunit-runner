@@ -328,8 +328,8 @@
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins.Attributes";
-    version = "3.6.3";
-    hash = "sha256-KcswaTwDnZ+cGtFNdnWKQMhAPBVvaWtAVR+3eQYv0Ko=";
+    version = "3.6.4";
+    hash = "sha256-fNWldUSkIxq5Y9nqIRSrEE8R+/pUcX1Ji/wkomATg+4=";
   })
   (fetchNuGet {
     pname = "WoofWare.PrattParser";
