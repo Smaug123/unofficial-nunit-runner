@@ -18,6 +18,7 @@ type ParallelScope =
 
 [<RequireQualifiedAccess>]
 module ParallelScope =
+    /// Convert the weakly-typed C# enum that is NUnit's `ParallelScope` to a strongly-typed representation.
     let ofInt (n : int) =
         match n with
         | 512 -> ParallelScope.Fixtures
