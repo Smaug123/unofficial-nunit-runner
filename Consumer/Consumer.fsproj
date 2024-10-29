@@ -12,6 +12,7 @@
         <Compile Include="RunSubProcess.fs" />
         <Compile Include="TestNonParallel.fs" />
         <Compile Include="TestParallel.fs" />
+        <Compile Include="TestParallelIndividualTest.fs" />
         <Compile Include="TestStdout.fs" />
         <Compile Include="TestParameterisedFixture.fs" />
         <Compile Include="TestSetUp.fs" />
