@@ -23,6 +23,7 @@
       <Compile Include="GeneratedRuntimeConfig.fs">
         <MyriadFile>RuntimeConfig.fs</MyriadFile>
       </Compile>
+      <Compile Include="ParallelScope.fs" />
       <Compile Include="DotnetRuntime.fs" />
       <Compile Include="Array.fs" />
       <Compile Include="List.fs" />

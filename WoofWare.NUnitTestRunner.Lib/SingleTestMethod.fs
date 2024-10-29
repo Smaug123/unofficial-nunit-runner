@@ -94,7 +94,27 @@ module SingleTestMethod =
                     match par with
                     | Some _ -> failwith $"Got multiple parallelization attributes on %s{method.Name}"
                     | None ->
-                        (remaining, isTest, sources, hasData, mods, cats, repeat, comb, Some (Parallelizable.Yes ()))
+                        let arg =
+                            match Seq.toList attr.ConstructorArguments with
+                            | [] -> Parallelizable.Yes ()
+                            | [ x ] ->
+                                if x.ArgumentType.Name <> "ParallelScope" then
+                                    failwith
+                                        $"Got argument %O{x.Value} of unrecognised type %s{x.ArgumentType.Name} on [<Parallelizable>] attribute; expected ParallelScope"
+
+                                match ParallelScope.ofInt (unbox<int> x.Value) with
+                                | ParallelScope.Children ->
+                                    failwith
+                                        $"Unexpected ParallelScope.Children on test %s{method.Name}; this is not valid on individual tests"
+                                | ParallelScope.Fixtures ->
+                                    failwith
+                                        $"Unexpected ParallelScope.Children on test %s{method.Name}; this is not valid on individual tests"
+                                | ParallelScope.All
+                                | ParallelScope.Self -> Parallelizable.Yes ()
+                                | ParallelScope.None -> Parallelizable.No
+                            | s -> failwith $"Got multiple arguments on a [<Parallelizable>] attribute: %O{s}"
+
+                        (remaining, isTest, sources, hasData, mods, cats, repeat, comb, Some arg)
                 | s when s.StartsWith ("NUnit.Framework", StringComparison.Ordinal) ->
                     failwith $"Unrecognised attribute on function %s{method.Name}: %s{attr.AttributeType.FullName}"
                 | _ -> (attr :: remaining, isTest, sources, hasData, mods, cats, repeat, comb, par)

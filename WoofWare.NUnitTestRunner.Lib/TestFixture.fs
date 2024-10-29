@@ -620,14 +620,16 @@ module TestFixture =
                         | [ v ] ->
                             match v.Value with
                             | :? int as v ->
-                                match v with
-                                | 512 -> categories, args, Some (Parallelizable.Yes ClassParallelScope.Fixtures)
-                                | 256 -> categories, args, Some (Parallelizable.Yes ClassParallelScope.Children)
-                                | 257 -> categories, args, Some (Parallelizable.Yes ClassParallelScope.All)
-                                | 1 -> categories, args, Some (Parallelizable.Yes ClassParallelScope.Self)
-                                | v ->
-                                    failwith
-                                        $"Could not recognise value %i{v} of parallel scope in %s{parentType.FullName}"
+                                match ParallelScope.ofInt v with
+                                | ParallelScope.Fixtures ->
+                                    categories, args, Some (Parallelizable.Yes ClassParallelScope.Fixtures)
+                                | ParallelScope.Children ->
+                                    categories, args, Some (Parallelizable.Yes ClassParallelScope.Children)
+                                | ParallelScope.All ->
+                                    categories, args, Some (Parallelizable.Yes ClassParallelScope.All)
+                                | ParallelScope.Self ->
+                                    categories, args, Some (Parallelizable.Yes ClassParallelScope.Self)
+                                | ParallelScope.None -> categories, args, Some Parallelizable.No
                             | v ->
                                 failwith
                                     $"Unexpectedly non-int value %O{v} of parallel scope in %s{parentType.FullName}"

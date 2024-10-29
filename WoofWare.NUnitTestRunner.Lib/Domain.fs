@@ -61,6 +61,24 @@ type Parallelizable<'scope> =
     /// This test must always be run on its own.
     | No
 
+[<RequireQualifiedAccess>]
+module Parallelizable =
+    /// Functorial map.
+    let inline map<'a, 'b> ([<InlineIfLambda>] f : 'a -> 'b) (p : Parallelizable<'a>) : Parallelizable<'b> =
+        match p with
+        | Parallelizable.No -> Parallelizable.No
+        | Parallelizable.Yes a -> Parallelizable.Yes (f a)
+
+    /// Functorial bind.
+    let inline bind<'a, 'b>
+        ([<InlineIfLambda>] f : 'a -> Parallelizable<'b>)
+        (p : Parallelizable<'a>)
+        : Parallelizable<'b>
+        =
+        match p with
+        | Parallelizable.No -> Parallelizable.No
+        | Parallelizable.Yes a -> f a
+
 /// A single method or member which holds some tests. (Often such a member will represent only one test, but e.g.
 /// if it has [<TestCaseSource>] then it represents multiple tests.)
 type SingleTestMethod =
