@@ -41,12 +41,16 @@ module AssemblyLevelAttributes =
                     | [ v ] ->
                         match v.Value with
                         | :? int as v ->
-                            match v with
-                            | 512 -> levelPar, Some (Parallelizable.Yes AssemblyParallelScope.Fixtures)
-                            | 256 -> levelPar, Some (Parallelizable.Yes AssemblyParallelScope.Children)
-                            | 257 -> failwith "ParallelScope.All is invalid on assemblies; only Fixtures or Children"
-                            | 1 -> failwith "ParallelScope.Self is invalid on assemblies; only Fixtures or Children"
-                            | v -> failwith $"Could not recognise value %i{v} of parallel scope on assembly"
+                            match ParallelScope.ofInt v with
+                            | ParallelScope.Fixtures ->
+                                levelPar, Some (Parallelizable.Yes AssemblyParallelScope.Fixtures)
+                            | ParallelScope.Children ->
+                                levelPar, Some (Parallelizable.Yes AssemblyParallelScope.Children)
+                            | ParallelScope.None -> levelPar, Some Parallelizable.No
+                            | ParallelScope.All ->
+                                failwith "ParallelScope.All is invalid on assemblies; only Fixtures or Children"
+                            | ParallelScope.Self ->
+                                failwith "ParallelScope.Self is invalid on assemblies; only Fixtures or Children"
                         | v -> failwith $"Unexpectedly non-int value %O{v} of parallel scope on assembly"
                     | _ -> failwith "unexpectedly got multiple args to Parallelizable on assembly"
             | _ -> levelPar, par
