@@ -38,7 +38,8 @@ jobs:
     - name: Build
       run: 'nix develop --command dotnet build --no-restore --configuration ${{matrix.config}}'
     - name: Test
-      run: 'nix develop --command dotnet test --no-build --verbosity normal --configuration ${{matrix.config}} --framework net8.0'
+      run: |
+          nix develop --command dotnet test --no-build --verbosity normal --configuration ${{matrix.config}} --framework net8.0 --filter 'FullyQualifiedName !~ FailingConsumer'
 
   selftest-intended-failures:
     runs-on: ubuntu-latest
@@ -61,7 +62,6 @@ jobs:
       run: 'nix develop --command xmlstarlet sel -N x="http://microsoft.com/schemas/VisualStudio/TeamTest/2010" -t -m "//x:UnitTestResult" -v "@testName" -o ": " -v ".//x:ErrorInfo/x:Message" -n TrxOut/out.trx > snapshot.txt'
     - name: Check output matches expected
       run: 'actual=$(cat snapshot.txt | sort) expected=$(cat FailingConsumer/expected.txt | sort) [ "$expected" == "$actual" ]'
-
 
   selftest:
     runs-on: ubuntu-latest
