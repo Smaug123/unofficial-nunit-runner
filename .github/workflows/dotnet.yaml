@@ -60,7 +60,7 @@ jobs:
     - name: Munge output
       run: 'nix develop --command xmlstarlet sel -N x="http://microsoft.com/schemas/VisualStudio/TeamTest/2010" -t -m "//x:UnitTestResult" -v "@testName" -o ": " -v ".//x:ErrorInfo/x:Message" -n TrxOut/out.trx > snapshot.txt'
     - name: Check output matches expected
-      run: 'actual=$(cat snapshot.txt | sort) expected=$(cat FailingConsumer/expected.txt | sort) [ "$expected" -eq "$actual" ]'
+      run: 'actual=$(cat snapshot.txt | sort) expected=$(cat FailingConsumer/expected.txt | sort) [ "$expected" == "$actual" ]'
 
 
   selftest:
