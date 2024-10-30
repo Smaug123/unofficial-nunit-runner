@@ -16,3 +16,10 @@ type TestParameterisedFixtureMultiple (i : int, v : bool) =
     member _.Thing () =
         v |> shouldEqual v
         i |> shouldEqual i
+
+[<TestFixture>]
+module TestThing =
+    type DU = | Foo of int
+
+    [<Test>]
+    let foo (i : DU) = ()
