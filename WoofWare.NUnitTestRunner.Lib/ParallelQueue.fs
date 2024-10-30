@@ -314,7 +314,7 @@ type ParallelQueue
                 let t () =
                     { new ThunkEvaluator<_> with
                         member _.Eval<'b> (t : unit -> 'b) rc =
-                            let tcs = TaskCompletionSource ()
+                            let tcs = TaskCompletionSource TaskCreationOptions.RunContinuationsAsynchronously
                             use ec = ExecutionContext.Capture ()
 
                             fun () ->

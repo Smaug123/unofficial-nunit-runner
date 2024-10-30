@@ -164,6 +164,18 @@ module BuildTrxReport =
                                     | Some s -> s
 
                                 (Some stackTrace, message)
+                            | TestFailure.TestFailed (UserMethodFailure.BadParameters (_, expected, actual))
+                            | TestFailure.SetUpFailed (UserMethodFailure.BadParameters (_, expected, actual))
+                            | TestFailure.TearDownFailed (UserMethodFailure.BadParameters (_, expected, actual)) ->
+                                let newMessage =
+                                    $"had parameter count mismatch: expected %i{expected.Length}, actual %i{actual.Length}"
+
+                                let message =
+                                    match message with
+                                    | None -> newMessage
+                                    | Some message -> $"%s{message}\n%s{newMessage}"
+
+                                (stackTrace, Some message)
                             | TestFailure.TestFailed (UserMethodFailure.ReturnedNonUnit (_, ret))
                             | TestFailure.SetUpFailed (UserMethodFailure.ReturnedNonUnit (_, ret))
                             | TestFailure.TearDownFailed (UserMethodFailure.ReturnedNonUnit (_, ret)) ->
@@ -186,6 +198,14 @@ module BuildTrxReport =
                         {
                             StackTrace = (exc : Exception).ToString () |> Some
                             Message = None
+                        }
+                        |> Some
+                    | Choice3Of3 (UserMethodFailure.BadParameters (_, expected, actual)) ->
+                        {
+                            StackTrace = None
+                            Message =
+                                $"parameter count mismatch, expected %i{expected.Length}, actual %i{actual.Length}"
+                                |> Some
                         }
                         |> Some
                     | Choice3Of3 (UserMethodFailure.ReturnedNonUnit (_, ret)) ->
