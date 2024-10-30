@@ -1,0 +1,1 @@
+foo: had parameter count mismatch: expected 1, actual 0

@@ -703,13 +703,21 @@ WoofWare.NUnitTestRunner.TrxUnitTestResult.TestId [property]: [read-only] System
 WoofWare.NUnitTestRunner.TrxUnitTestResult.TestListId [property]: [read-only] System.Guid
 WoofWare.NUnitTestRunner.TrxUnitTestResult.TestName [property]: [read-only] string
 WoofWare.NUnitTestRunner.TrxUnitTestResult.TestType [property]: [read-only] System.Guid
-WoofWare.NUnitTestRunner.UserMethodFailure inherit obj, implements WoofWare.NUnitTestRunner.UserMethodFailure System.IEquatable, System.Collections.IStructuralEquatable - union type with 2 cases
+WoofWare.NUnitTestRunner.UserMethodFailure inherit obj, implements WoofWare.NUnitTestRunner.UserMethodFailure System.IEquatable, System.Collections.IStructuralEquatable - union type with 3 cases
+WoofWare.NUnitTestRunner.UserMethodFailure+BadParameters inherit WoofWare.NUnitTestRunner.UserMethodFailure
+WoofWare.NUnitTestRunner.UserMethodFailure+BadParameters.actual [property]: [read-only] obj []
+WoofWare.NUnitTestRunner.UserMethodFailure+BadParameters.expected [property]: [read-only] System.Type []
+WoofWare.NUnitTestRunner.UserMethodFailure+BadParameters.get_actual [method]: unit -> obj []
+WoofWare.NUnitTestRunner.UserMethodFailure+BadParameters.get_expected [method]: unit -> System.Type []
+WoofWare.NUnitTestRunner.UserMethodFailure+BadParameters.get_name [method]: unit -> string
+WoofWare.NUnitTestRunner.UserMethodFailure+BadParameters.name [property]: [read-only] string
 WoofWare.NUnitTestRunner.UserMethodFailure+ReturnedNonUnit inherit WoofWare.NUnitTestRunner.UserMethodFailure
 WoofWare.NUnitTestRunner.UserMethodFailure+ReturnedNonUnit.get_name [method]: unit -> string
 WoofWare.NUnitTestRunner.UserMethodFailure+ReturnedNonUnit.get_result [method]: unit -> obj
 WoofWare.NUnitTestRunner.UserMethodFailure+ReturnedNonUnit.name [property]: [read-only] string
 WoofWare.NUnitTestRunner.UserMethodFailure+ReturnedNonUnit.result [property]: [read-only] obj
 WoofWare.NUnitTestRunner.UserMethodFailure+Tags inherit obj
+WoofWare.NUnitTestRunner.UserMethodFailure+Tags.BadParameters [static field]: int = 2
 WoofWare.NUnitTestRunner.UserMethodFailure+Tags.ReturnedNonUnit [static field]: int = 0
 WoofWare.NUnitTestRunner.UserMethodFailure+Tags.Threw [static field]: int = 1
 WoofWare.NUnitTestRunner.UserMethodFailure+Threw inherit WoofWare.NUnitTestRunner.UserMethodFailure
@@ -718,13 +726,16 @@ WoofWare.NUnitTestRunner.UserMethodFailure+Threw.get_name [method]: unit -> stri
 WoofWare.NUnitTestRunner.UserMethodFailure+Threw.Item2 [property]: [read-only] System.Exception
 WoofWare.NUnitTestRunner.UserMethodFailure+Threw.name [property]: [read-only] string
 WoofWare.NUnitTestRunner.UserMethodFailure.Equals [method]: (WoofWare.NUnitTestRunner.UserMethodFailure, System.Collections.IEqualityComparer) -> bool
+WoofWare.NUnitTestRunner.UserMethodFailure.get_IsBadParameters [method]: unit -> bool
 WoofWare.NUnitTestRunner.UserMethodFailure.get_IsReturnedNonUnit [method]: unit -> bool
 WoofWare.NUnitTestRunner.UserMethodFailure.get_IsThrew [method]: unit -> bool
 WoofWare.NUnitTestRunner.UserMethodFailure.get_Name [method]: unit -> string
 WoofWare.NUnitTestRunner.UserMethodFailure.get_Tag [method]: unit -> int
+WoofWare.NUnitTestRunner.UserMethodFailure.IsBadParameters [property]: [read-only] bool
 WoofWare.NUnitTestRunner.UserMethodFailure.IsReturnedNonUnit [property]: [read-only] bool
 WoofWare.NUnitTestRunner.UserMethodFailure.IsThrew [property]: [read-only] bool
 WoofWare.NUnitTestRunner.UserMethodFailure.Name [property]: [read-only] string
+WoofWare.NUnitTestRunner.UserMethodFailure.NewBadParameters [static method]: (string, System.Type [], obj []) -> WoofWare.NUnitTestRunner.UserMethodFailure
 WoofWare.NUnitTestRunner.UserMethodFailure.NewReturnedNonUnit [static method]: (string, obj) -> WoofWare.NUnitTestRunner.UserMethodFailure
 WoofWare.NUnitTestRunner.UserMethodFailure.NewThrew [static method]: (string, System.Exception) -> WoofWare.NUnitTestRunner.UserMethodFailure
 WoofWare.NUnitTestRunner.UserMethodFailure.Tag [property]: [read-only] int

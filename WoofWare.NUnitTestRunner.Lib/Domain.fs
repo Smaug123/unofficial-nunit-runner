@@ -162,6 +162,8 @@ type UserMethodFailure =
     | ReturnedNonUnit of name : string * result : obj
     /// A method threw.
     | Threw of name : string * exn
+    /// Parameter count mismatch.
+    | BadParameters of name : string * expected : Type[] * actual : obj[]
 
     /// Human-readable representation of the user failure.
     override this.ToString () =
@@ -170,12 +172,22 @@ type UserMethodFailure =
             $"User-defined method '%s{method}' returned a non-unit: %O{ret}"
         | UserMethodFailure.Threw (method, exc) ->
             $"User-defined method '%s{method}' threw: %s{exc.Message}\n  %s{exc.StackTrace}"
+        | UserMethodFailure.BadParameters (method, expected, actual) ->
+            let expectedStr = expected |> Seq.map (fun t -> t.Name) |> String.concat ", "
+
+            let actualStr =
+                actual
+                |> Seq.map (fun s -> if isNull s then "null" else s.ToString ())
+                |> String.concat ", "
+
+            $"User-defined method '%s{method}' had parameter count mismatch. Expected: (%s{expectedStr}) (%i{expected.Length} params). Actual: (%s{actualStr}) (%i{actual.Length} params)"
 
     /// Name (not fully-qualified) of the method which failed.
     member this.Name =
         match this with
         | UserMethodFailure.Threw (name, _)
         | UserMethodFailure.ReturnedNonUnit (name, _) -> name
+        | UserMethodFailure.BadParameters (name, _, _) -> name
 
 /// Represents the failure of a single run of one test. An error signalled this way is a user error: the unit under
 /// test has misbehaved.

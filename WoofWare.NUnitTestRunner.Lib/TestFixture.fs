@@ -90,8 +90,15 @@ module TestFixture =
                 let result =
                     try
                         head.Invoke (containingObject, args) |> Ok
-                    with :? TargetInvocationException as e ->
-                        Error (UserMethodFailure.Threw (head.Name, e.InnerException))
+                    with
+                    | :? TargetInvocationException as e -> Error (UserMethodFailure.Threw (head.Name, e.InnerException))
+                    | :? TargetParameterCountException ->
+                        UserMethodFailure.BadParameters (
+                            head.Name,
+                            head.GetParameters () |> Array.map (fun pm -> pm.ParameterType),
+                            args
+                        )
+                        |> Error
 
                 match result with
                 | Error e -> Error (wrap e)
