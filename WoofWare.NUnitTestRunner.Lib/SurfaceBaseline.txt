@@ -311,7 +311,7 @@ WoofWare.NUnitTestRunner.SingleTestMethod.Parallelize [property]: [read-only] un
 WoofWare.NUnitTestRunner.SingleTestMethod.Repeat [property]: [read-only] int option
 WoofWare.NUnitTestRunner.SingleTestMethodModule inherit obj
 WoofWare.NUnitTestRunner.SingleTestMethodModule.parse [static method]: string list -> System.Reflection.MethodInfo -> System.Reflection.CustomAttributeData list -> (WoofWare.NUnitTestRunner.SingleTestMethod option * System.Reflection.CustomAttributeData list)
-WoofWare.NUnitTestRunner.TestContexts inherit obj, implements WoofWare.NUnitTestRunner.TestContexts System.IEquatable, System.Collections.IStructuralEquatable, IDisposable
+WoofWare.NUnitTestRunner.TestContexts inherit obj, implements IDisposable
 WoofWare.NUnitTestRunner.TestContexts.Empty [static method]: unit -> WoofWare.NUnitTestRunner.TestContexts
 WoofWare.NUnitTestRunner.TestContexts.get_Stderr [method]: unit -> System.IO.TextWriter
 WoofWare.NUnitTestRunner.TestContexts.get_Stdout [method]: unit -> System.IO.TextWriter
