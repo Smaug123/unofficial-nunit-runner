@@ -103,48 +103,6 @@ jobs:
         TRX_PATH: ${{ github.workspace }}/TrxOut
         REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  selftest-net6:
-    runs-on: ubuntu-latest
-    permissions:
-      actions: none
-      checks: write
-      contents: read
-      deployments: none
-      id-token: none
-      issues: none
-      discussions: none
-      packages: none
-      pages: none
-      pull-requests: read
-      repository-projects: none
-      security-events: none
-      statuses: read
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0 # so that NerdBank.GitVersioning has access to history
-    - name: Install Nix
-      uses: cachix/install-nix-action@v30
-      with:
-        extra_nix_config: |
-          access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-    - name: Restore dependencies
-      run: nix develop --command dotnet restore
-    - name: Build runner
-      run: 'nix develop --command dotnet build WoofWare.NUnitTestRunner --configuration Release'
-    - name: Build target
-      run: 'nix develop --command dotnet build Consumer --configuration Release'
-    - name: Test using self
-      run: 'nix develop .#net6 --command ./WoofWare.NUnitTestRunner/bin/Release/net6.0/WoofWare.NUnitTestRunner ./Consumer/bin/Release/net6.0/Consumer.dll --trx TrxOut/out.trx'
-    - name: Parse Trx files
-      uses: NasAmin/trx-parser@v0.6.0
-      if: always()
-      id: trx-parser
-      with:
-        TRX_PATH: ${{ github.workspace }}/TrxOut
-        REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   analyzers:
     runs-on: ubuntu-latest
     permissions:
@@ -303,7 +261,7 @@ jobs:
 
   all-required-checks-complete:
     if: ${{ always() }}
-    needs: [check-dotnet-format, check-nix-format, build, build-nix, linkcheck, flake-check, analyzers, nuget-pack, expected-pack, github-release-tool-dry-run]
+    needs: [check-dotnet-format, check-nix-format, build, build-nix, linkcheck, flake-check, analyzers, nuget-pack, expected-pack, github-release-tool-dry-run, selftest-intended-failures, selftest]
     runs-on: ubuntu-latest
     steps:
       - uses: G-Research/common-actions/check-required-lite@2b7dc49cb14f3344fbe6019c14a31165e258c059
