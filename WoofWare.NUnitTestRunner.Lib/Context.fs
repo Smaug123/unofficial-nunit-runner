@@ -55,6 +55,7 @@ type private ThreadAwareWriter
         |> fun action -> ExecutionContext.Run (prev, action, ())
 
 /// Wraps up the necessary context to intercept global state.
+[<NoEquality ; NoComparison>]
 type TestContexts =
     private
         {

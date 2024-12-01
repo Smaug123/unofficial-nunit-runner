@@ -14,7 +14,7 @@
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
       pname = "unofficial-nunit-runner";
-      dotnet-sdk = pkgs.dotnet-sdk_8;
+      dotnet-sdk = pkgs.dotnetCorePackages.sdk_8_0;
       dotnet-runtime = pkgs.dotnetCorePackages.runtime_8_0;
       version = "0.1";
       dotnetTool = dllOverride: toolName: toolVersion: hash:
@@ -64,11 +64,6 @@
             pkgs.nodePackages.markdown-link-check
             pkgs.shellcheck
             pkgs.xmlstarlet
-          ];
-        };
-        net6 = pkgs.mkShell {
-          packages = [
-            pkgs.dotnetCorePackages.runtime_6_0
           ];
         };
       };

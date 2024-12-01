@@ -4,7 +4,7 @@
     <IsPackable>false</IsPackable>
     <IsPublishable>false</IsPublishable>
     <RestorePackagesPath>../.analyzerpackages/</RestorePackagesPath>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     <AutomaticallyUseReferenceAssemblyPackages>false</AutomaticallyUseReferenceAssemblyPackages> <!-- We don't want to build this project, so we do not need the reference assemblies for the framework we chose.-->
   </PropertyGroup>
