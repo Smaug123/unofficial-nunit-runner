@@ -71,6 +71,18 @@ public class StartupHookLogic
         using var contexts = TestContexts.Empty();
         Console.SetOut(contexts.Stdout);
         Console.SetError(contexts.Stderr);
+
+        var nunitAssembly = Assembly.Load("NUnit.Framework");
+        if (object.ReferenceEquals(nunitAssembly, null))
+        {
+            throw new Exception("Could not load NUnit.Framework");
+        }
+
+        var testContext = nunitAssembly.DefinedTypes.First(t => t.FullName == "NUnit.Framework.TestContext") ?? throw new Exception("Could not find TestContext type");
+        var currentContextField = testContext.GetField("CurrentContext", BindingFlags.Static | BindingFlags.Public) ?? throw new Exception("Could not find CurrentContext field on TestContext");
+        var currentContext = currentContextField.GetValue(null) ?? throw new Exception("Could not obtain value of CurrentContext");
+        currentContextField.SetValue(currentContext, currentContext);
+
         var results =
             Task.WhenAll(testFixtures.Select(x =>
                 TestFixtureModule.run(contexts, par, TestProgress.toWriter(normalErr), filter, x)));
