@@ -3,8 +3,8 @@
 {fetchNuGet}: [
   (fetchNuGet {
     pname = "ApiSurface";
-    version = "4.1.12";
-    hash = "sha256-imrohpb9OqYzH17RBK6esXZx0ySivIM20yOqu24wLTU=";
+    version = "4.1.15";
+    hash = "sha256-E0J62c/viqvVBvBA5lBPG90BgPCrA6+cS/h4MZjKz+k=";
   })
   (fetchNuGet {
     pname = "fantomas";
@@ -163,8 +163,8 @@
   })
   (fetchNuGet {
     pname = "Nerdbank.GitVersioning";
-    version = "3.6.146";
-    hash = "sha256-6lpjiwxVrwjNUhPQ6C7LzazKdBQlAbmyEQk/qxrmr8Y=";
+    version = "3.7.112";
+    hash = "sha256-vrItlaH5MpBHa4MI1cQgI11NAe4W3XsxR9DizFE7fus=";
   })
   (fetchNuGet {
     pname = "Newtonsoft.Json";
@@ -208,8 +208,8 @@
   })
   (fetchNuGet {
     pname = "NUnit";
-    version = "4.2.2";
-    hash = "sha256-+0OS67ITalmG9arYCgQF/+YbmPRnB3pIIykew0kvoCc=";
+    version = "4.3.0";
+    hash = "sha256-dL8+6yL7nwgQKZR3wo2hAOUt3d2EFN10GJH1LzY89I8=";
   })
   (fetchNuGet {
     pname = "NUnit3TestAdapter";
@@ -323,18 +323,18 @@
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins";
-    version = "4.0.7";
-    hash = "sha256-PlDfBVInMd7VxHA8ZYMtRZVsNCL+cAfQ8wZYAzoT1u0=";
+    version = "4.0.9";
+    hash = "sha256-VWpStkuvdFZWsEs/tC0mjChneFgxWw+1YETH+3aCoz4=";
   })
   (fetchNuGet {
     pname = "WoofWare.Myriad.Plugins.Attributes";
-    version = "3.6.4";
-    hash = "sha256-fNWldUSkIxq5Y9nqIRSrEE8R+/pUcX1Ji/wkomATg+4=";
+    version = "3.6.6";
+    hash = "sha256-68T5JQNp4V0DDad0I3snVh8BCe7rz11mLyvm60hxwaA=";
   })
   (fetchNuGet {
     pname = "WoofWare.PrattParser";
-    version = "0.2.2";
-    hash = "sha256-OCsHlp/HYB/i1+h0ixq+0zxO1bXFQ6kpEWIONkOr+TE=";
+    version = "0.2.3";
+    hash = "sha256-PsfU33BFsaA8LwlZMkSwmoA4hLb7Vkm2gYm48MglqxY=";
   })
   (fetchNuGet {
     pname = "WoofWare.Whippet.Fantomas";
