@@ -43,8 +43,8 @@
   })
   (fetchNuGet {
     pname = "FsUnit";
-    version = "6.0.1";
-    hash = "sha256-vka/aAgWhDCl5tu+kgO7GtSaHOOvlSaWxG+tExwGXpI=";
+    version = "7.0.0";
+    hash = "sha256-eoHwX2wPrmP8Wgq2v91tWJvQG+5v4iNYG5jMLPwKXNc=";
   })
   (fetchNuGet {
     pname = "Microsoft.AspNetCore.App.Ref";
