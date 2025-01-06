@@ -41,8 +41,8 @@
   },
   {
     "pname": "FsUnit",
-    "version": "7.0.0",
-    "hash": "sha256-eoHwX2wPrmP8Wgq2v91tWJvQG+5v4iNYG5jMLPwKXNc="
+    "version": "7.0.1",
+    "hash": "sha256-K85CIdxMeFSHEKZk6heIXp/oFjWAn7dBILKrw49pJUY="
   },
   {
     "pname": "Microsoft.AspNetCore.App.Ref",
