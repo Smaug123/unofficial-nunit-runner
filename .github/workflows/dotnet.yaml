@@ -242,7 +242,7 @@ jobs:
 
   all-required-checks-complete:
     if: ${{ always() }}
-    needs: [check-dotnet-format, check-nix-format, build, build-nix, linkcheck, flake-check, analyzers, nuget-pack, expected-pack, selftest-intended-failures, selftest]
+    needs: [github-release-dry-run, check-dotnet-format, check-nix-format, build, build-nix, linkcheck, flake-check, analyzers, nuget-pack, expected-pack, selftest-intended-failures, selftest]
     runs-on: ubuntu-latest
     steps:
       - uses: G-Research/common-actions/check-required-lite@2b7dc49cb14f3344fbe6019c14a31165e258c059
@@ -350,6 +350,37 @@ jobs:
           nuget-key: ${{ secrets.NUGET_API_KEY }}
           nupkg-dir: packed/
           dotnet: ${{ steps.identify-dotnet.outputs.dotnet }}
+
+  github-release-dry-run:
+    strategy:
+      matrix:
+        artifact:
+        - nuget-package-tool
+        - nuget-package-lib
+    runs-on: ubuntu-latest
+    needs: [nuget-pack]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download NuGet artifact (tool)
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+      - name: Compute package path
+        id: compute-path
+        run: |
+          find . -maxdepth 1 -type f -name 'WoofWare.NUnitTestRunner.*.nupkg' -exec sh -c 'echo "output=$(basename "$1")" >> $GITHUB_OUTPUT' shell {} \;
+      - name: Compute tag name
+        id: compute-tag
+        env:
+          NUPKG_PATH: ${{ steps.compute-path.output }}
+        run: echo "output=$(basename "$NUPKG_PATH" .nupkg)" >> $GITHUB_OUTPUT
+      - name: Tag and release
+        uses: G-Research/common-actions/github-release@33666a03520041a810d377d5b01507df9a5b5d83
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          target-commitish: ${{ github.sha }}
+          tag: ${{ steps.compute-tag.output }}
+          binary-contents: ${{ steps.compute-path.output }}
 
   github-release:
     strategy:
