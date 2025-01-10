@@ -417,4 +417,3 @@ jobs:
           target-commitish: ${{ github.sha }}
           tag: ${{ steps.compute-tag.outputs.output }}
           binary-contents: ${{ steps.compute-path.outputs.output }}
-          dry-run: true
