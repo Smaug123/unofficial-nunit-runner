@@ -375,12 +375,13 @@ jobs:
           NUPKG_PATH: ${{ steps.compute-path.output }}
         run: echo "output=$(basename "$NUPKG_PATH" .nupkg)" >> $GITHUB_OUTPUT
       - name: Tag and release
-        uses: G-Research/common-actions/github-release@33666a03520041a810d377d5b01507df9a5b5d83
+        uses: G-Research/common-actions/github-release@9b51229eed6e1de78c37d0f17602f9570c074c3d
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           target-commitish: ${{ github.sha }}
           tag: ${{ steps.compute-tag.output }}
           binary-contents: ${{ steps.compute-path.output }}
+          dry-run: true
 
   github-release:
     strategy:
