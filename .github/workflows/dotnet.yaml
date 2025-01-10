@@ -368,7 +368,7 @@ jobs:
       - name: Compute package path
         id: compute-path
         run: |
-          find . -maxdepth 1 -type f -name 'WoofWare.NUnitTestRunner.*.nupkg' -exec sh -c 'echo "$1" && echo "output=$(basename "$1")" >> $GITHUB_OUTPUT' shell {} \;
+          find . -maxdepth 1 -type f -name 'WoofWare.NUnitTestRunner.*.nupkg' -exec sh -c 'echo "$1" && echo "output=$(basename "$1")" >> $GITHUB_OUTPUT' shell {} \; && echo "done." && cat $GITHUB_OUTPUT
       - name: Compute tag name
         id: compute-tag
         env:
