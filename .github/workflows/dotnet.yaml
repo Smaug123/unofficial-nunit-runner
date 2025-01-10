@@ -368,12 +368,12 @@ jobs:
       - name: Compute package path
         id: compute-path
         run: |
-          find . -maxdepth 1 -type f -name 'WoofWare.NUnitTestRunner.*.nupkg' -exec sh -c 'echo "$1" && echo "output=$(basename "$1")" >> $GITHUB_OUTPUT' shell {} \; && echo "done." && cat $GITHUB_OUTPUT
+          find . -maxdepth 1 -type f -name 'WoofWare.NUnitTestRunner.*.nupkg' -exec sh -c 'echo "output=$(basename "$1")" >> $GITHUB_OUTPUT' shell {} \;
       - name: Compute tag name
         id: compute-tag
         env:
           NUPKG_PATH: ${{ steps.compute-path.outputs.output }}
-        run: echo "$NUPKG_PATH" && echo "output=$(basename "$NUPKG_PATH" .nupkg)" >> $GITHUB_OUTPUT
+        run: echo "output=$(basename "$NUPKG_PATH" .nupkg)" >> $GITHUB_OUTPUT
       - name: Tag and release
         uses: G-Research/common-actions/github-release@9b51229eed6e1de78c37d0f17602f9570c074c3d
         with:
@@ -389,7 +389,6 @@ jobs:
         artifact:
         - nuget-package-tool
         - nuget-package-lib
-
     runs-on: ubuntu-latest
     if: ${{ !github.event.repository.fork && github.ref == 'refs/heads/main' }}
     needs: [all-required-checks-complete]
@@ -409,12 +408,13 @@ jobs:
       - name: Compute tag name
         id: compute-tag
         env:
-          NUPKG_PATH: ${{ steps.compute-path.output }}
+          NUPKG_PATH: ${{ steps.compute-path.outputs.output }}
         run: echo "output=$(basename "$NUPKG_PATH" .nupkg)" >> $GITHUB_OUTPUT
       - name: Tag and release
-        uses: G-Research/common-actions/github-release@33666a03520041a810d377d5b01507df9a5b5d83
+        uses: G-Research/common-actions/github-release@9b51229eed6e1de78c37d0f17602f9570c074c3d # TODO: set this to a prod version
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           target-commitish: ${{ github.sha }}
-          tag: ${{ steps.compute-tag.output }}
-          binary-contents: ${{ steps.compute-path.output }}
+          tag: ${{ steps.compute-tag.outputs.output }}
+          binary-contents: ${{ steps.compute-path.outputs.output }}
+          dry-run: true
