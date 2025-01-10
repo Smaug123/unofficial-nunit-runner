@@ -240,28 +240,9 @@ jobs:
         # Verify that there is exactly one nupkg in the artifact that would be NuGet published
         run: if [[ $(find packed-tool -maxdepth 1 -name 'WoofWare.NUnitTestRunner.*.nupkg' -printf c | wc -c) -ne "1" ]]; then exit 1; fi
 
-  github-release-tool-dry-run:
-    needs: [nuget-pack]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Download NuGet artifact (lib)
-        uses: actions/download-artifact@v4
-        with:
-          name: nuget-package-lib
-      - name: Download NuGet artifact (tool)
-        uses: actions/download-artifact@v4
-        with:
-          name: nuget-package-tool
-      - name: Tag and release tool
-        env:
-          DRY_RUN: 1
-          GITHUB_TOKEN: mock-token
-        run: sh .github/workflows/tag.sh
-
   all-required-checks-complete:
     if: ${{ always() }}
-    needs: [check-dotnet-format, check-nix-format, build, build-nix, linkcheck, flake-check, analyzers, nuget-pack, expected-pack, github-release-tool-dry-run, selftest-intended-failures, selftest]
+    needs: [check-dotnet-format, check-nix-format, build, build-nix, linkcheck, flake-check, analyzers, nuget-pack, expected-pack, selftest-intended-failures, selftest]
     runs-on: ubuntu-latest
     steps:
       - uses: G-Research/common-actions/check-required-lite@2b7dc49cb14f3344fbe6019c14a31165e258c059
@@ -370,7 +351,13 @@ jobs:
           nupkg-dir: packed/
           dotnet: ${{ steps.identify-dotnet.outputs.dotnet }}
 
-  github-release-tool:
+  github-release:
+    strategy:
+      matrix:
+        artifact:
+        - nuget-package-tool
+        - nuget-package-lib
+
     runs-on: ubuntu-latest
     if: ${{ !github.event.repository.fork && github.ref == 'refs/heads/main' }}
     needs: [all-required-checks-complete]
@@ -382,12 +369,20 @@ jobs:
       - name: Download NuGet artifact (tool)
         uses: actions/download-artifact@v4
         with:
-          name: nuget-package-tool
-      - name: Download NuGet artifact (lib)
-        uses: actions/download-artifact@v4
-        with:
-          name: nuget-package-lib
-      - name: Tag and release plugin
+          name: ${{ matrix.artifact }}
+      - name: Compute package path
+        id: compute-path
+        run: |
+          find . -maxdepth 1 -type f -name 'WoofWare.NUnitTestRunner.*.nupkg' -exec sh -c 'basename "$1"' shell {} \;
+      - name: Compute tag name
+        id: compute-tag
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: sh .github/workflows/tag.sh
+          NUPKG_PATH: ${{ steps.compute-path.output }}
+        run: basename "$NUPKG_PATH" .nupkg
+      - name: Tag and release
+        uses: G-Research/common-actions/github-release@33666a03520041a810d377d5b01507df9a5b5d83
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          target-commitish: ${{ github.sha }}
+          tag: ${{ steps.compute-tag.output }}
+          binary-contents: ${{ steps.compute-path.output }}
