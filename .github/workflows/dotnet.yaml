@@ -242,7 +242,7 @@ jobs:
 
   all-required-checks-complete:
     if: ${{ always() }}
-    needs: [check-dotnet-format, check-nix-format, build, build-nix, linkcheck, flake-check, analyzers, nuget-pack, expected-pack, selftest-intended-failures, selftest]
+    needs: [github-release-dry-run, check-dotnet-format, check-nix-format, build, build-nix, linkcheck, flake-check, analyzers, nuget-pack, expected-pack, selftest-intended-failures, selftest]
     runs-on: ubuntu-latest
     steps:
       - uses: G-Research/common-actions/check-required-lite@2b7dc49cb14f3344fbe6019c14a31165e258c059
@@ -351,13 +351,44 @@ jobs:
           nupkg-dir: packed/
           dotnet: ${{ steps.identify-dotnet.outputs.dotnet }}
 
+  github-release-dry-run:
+    strategy:
+      matrix:
+        artifact:
+        - nuget-package-tool
+        - nuget-package-lib
+    runs-on: ubuntu-latest
+    needs: [nuget-pack]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download NuGet artifact (tool)
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+      - name: Compute package path
+        id: compute-path
+        run: |
+          find . -maxdepth 1 -type f -name 'WoofWare.NUnitTestRunner.*.nupkg' -exec sh -c 'echo "output=$(basename "$1")" >> $GITHUB_OUTPUT' shell {} \;
+      - name: Compute tag name
+        id: compute-tag
+        env:
+          NUPKG_PATH: ${{ steps.compute-path.outputs.output }}
+        run: echo "output=$(basename "$NUPKG_PATH" .nupkg)" >> $GITHUB_OUTPUT
+      - name: Tag and release
+        uses: G-Research/common-actions/github-release@9b51229eed6e1de78c37d0f17602f9570c074c3d
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          target-commitish: ${{ github.sha }}
+          tag: ${{ steps.compute-tag.outputs.output }}
+          binary-contents: ${{ steps.compute-path.outputs.output }}
+          dry-run: true
+
   github-release:
     strategy:
       matrix:
         artifact:
         - nuget-package-tool
         - nuget-package-lib
-
     runs-on: ubuntu-latest
     if: ${{ !github.event.repository.fork && github.ref == 'refs/heads/main' }}
     needs: [all-required-checks-complete]
@@ -373,16 +404,16 @@ jobs:
       - name: Compute package path
         id: compute-path
         run: |
-          find . -maxdepth 1 -type f -name 'WoofWare.NUnitTestRunner.*.nupkg' -exec sh -c 'basename "$1" >> $GITHUB_OUTPUT' shell {} \;
+          find . -maxdepth 1 -type f -name 'WoofWare.NUnitTestRunner.*.nupkg' -exec sh -c 'echo "output=$(basename "$1")" >> $GITHUB_OUTPUT' shell {} \;
       - name: Compute tag name
         id: compute-tag
         env:
-          NUPKG_PATH: ${{ steps.compute-path.output }}
-        run: basename "$NUPKG_PATH" .nupkg >> $GITHUB_OUTPUT
+          NUPKG_PATH: ${{ steps.compute-path.outputs.output }}
+        run: echo "output=$(basename "$NUPKG_PATH" .nupkg)" >> $GITHUB_OUTPUT
       - name: Tag and release
-        uses: G-Research/common-actions/github-release@33666a03520041a810d377d5b01507df9a5b5d83
+        uses: G-Research/common-actions/github-release@9b51229eed6e1de78c37d0f17602f9570c074c3d # TODO: set this to a prod version
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           target-commitish: ${{ github.sha }}
-          tag: ${{ steps.compute-tag.output }}
-          binary-contents: ${{ steps.compute-path.output }}
+          tag: ${{ steps.compute-tag.outputs.output }}
+          binary-contents: ${{ steps.compute-path.outputs.output }}
