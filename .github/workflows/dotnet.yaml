@@ -378,7 +378,7 @@ jobs:
         id: compute-tag
         env:
           NUPKG_PATH: ${{ steps.compute-path.output }}
-        run: basename "$NUPKG_PATH" .nupkg
+        run: basename "$NUPKG_PATH" .nupkg >> $GITHUB_OUTPUT
       - name: Tag and release
         uses: G-Research/common-actions/github-release@33666a03520041a810d377d5b01507df9a5b5d83
         with:
