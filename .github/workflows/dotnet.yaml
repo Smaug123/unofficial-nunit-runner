@@ -372,15 +372,15 @@ jobs:
       - name: Compute tag name
         id: compute-tag
         env:
-          NUPKG_PATH: ${{ steps.compute-path.output }}
+          NUPKG_PATH: ${{ steps.compute-path.outputs.output }}
         run: echo "$NUPKG_PATH" && echo "output=$(basename "$NUPKG_PATH" .nupkg)" >> $GITHUB_OUTPUT
       - name: Tag and release
         uses: G-Research/common-actions/github-release@9b51229eed6e1de78c37d0f17602f9570c074c3d
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           target-commitish: ${{ github.sha }}
-          tag: ${{ steps.compute-tag.output }}
-          binary-contents: ${{ steps.compute-path.output }}
+          tag: ${{ steps.compute-tag.outputs.output }}
+          binary-contents: ${{ steps.compute-path.outputs.output }}
           dry-run: true
 
   github-release:
