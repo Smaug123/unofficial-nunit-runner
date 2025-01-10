@@ -373,12 +373,12 @@ jobs:
       - name: Compute package path
         id: compute-path
         run: |
-          find . -maxdepth 1 -type f -name 'WoofWare.NUnitTestRunner.*.nupkg' -exec sh -c 'basename "$1" >> $GITHUB_OUTPUT' shell {} \;
+          find . -maxdepth 1 -type f -name 'WoofWare.NUnitTestRunner.*.nupkg' -exec sh -c 'echo "output=$(basename "$1")" >> $GITHUB_OUTPUT' shell {} \;
       - name: Compute tag name
         id: compute-tag
         env:
           NUPKG_PATH: ${{ steps.compute-path.output }}
-        run: basename "$NUPKG_PATH" .nupkg >> $GITHUB_OUTPUT
+        run: echo "output=$(basename "$NUPKG_PATH" .nupkg)" >> $GITHUB_OUTPUT
       - name: Tag and release
         uses: G-Research/common-actions/github-release@33666a03520041a810d377d5b01507df9a5b5d83
         with:
