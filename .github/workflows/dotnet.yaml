@@ -375,7 +375,7 @@ jobs:
           NUPKG_PATH: ${{ steps.compute-path.outputs.output }}
         run: echo "output=$(basename "$NUPKG_PATH" .nupkg)" >> $GITHUB_OUTPUT
       - name: Tag and release
-        uses: G-Research/common-actions/github-release@9b51229eed6e1de78c37d0f17602f9570c074c3d
+        uses: G-Research/common-actions/github-release@19d7281a0f9f83e13c78f99a610dbc80fc59ba3b
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           target-commitish: ${{ github.sha }}
@@ -411,7 +411,7 @@ jobs:
           NUPKG_PATH: ${{ steps.compute-path.outputs.output }}
         run: echo "output=$(basename "$NUPKG_PATH" .nupkg)" >> $GITHUB_OUTPUT
       - name: Tag and release
-        uses: G-Research/common-actions/github-release@9b51229eed6e1de78c37d0f17602f9570c074c3d # TODO: set this to a prod version
+        uses: G-Research/common-actions/github-release@19d7281a0f9f83e13c78f99a610dbc80fc59ba3b
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           target-commitish: ${{ github.sha }}
