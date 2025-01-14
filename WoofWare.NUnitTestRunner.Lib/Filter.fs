@@ -155,9 +155,7 @@ module internal Lexer =
 [<RequireQualifiedAccess>]
 module internal ParsedFilter =
     let private unescape (s : string) : string =
-        System.Xml.XmlReader
-            .Create(new StringReader ("<r>" + s + "</r>"))
-            .ReadElementString ()
+        System.Xml.XmlReader.Create(new StringReader ("<r>" + s + "</r>")).ReadElementString ()
 
     let private atom (inputString : string) (token : Token) : ParsedFilter option =
         let start, len = token.Trivia
