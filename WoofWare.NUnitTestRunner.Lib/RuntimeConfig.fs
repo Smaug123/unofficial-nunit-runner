@@ -1,16 +1,15 @@
 namespace WoofWare.NUnitTestRunner
 
 open System
-open WoofWare.Myriad.Plugins
 
-[<JsonParse>]
+// Myriad runs the JsonParse generator on this
 type internal FrameworkDescription =
     {
         Name : string
         Version : string
     }
 
-[<JsonParse>]
+// Myriad runs the JsonParse generator on this
 type internal RuntimeOptions =
     {
         Tfm : string
@@ -21,7 +20,7 @@ type internal RuntimeOptions =
         RollForward : string option
     }
 
-[<JsonParse>]
+// Myriad runs the JsonParse generator on this
 type internal RuntimeConfig =
     {
         RuntimeOptions : RuntimeOptions
