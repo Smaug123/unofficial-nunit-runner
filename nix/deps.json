@@ -1,8 +1,8 @@
 [
   {
     "pname": "ApiSurface",
-    "version": "4.1.17",
-    "hash": "sha256-ZYIW++7vXYV/7TTNUkV36QDN6yJbHymsKcxTUscTnvA="
+    "version": "4.1.20",
+    "hash": "sha256-koWgO9FC9ax+Ij56ug8kxeyknl0yhLqnNLOUdxtqqo4="
   },
   {
     "pname": "fantomas",
@@ -211,33 +211,33 @@
   },
   {
     "pname": "NuGet.Common",
-    "version": "6.13.1",
-    "hash": "sha256-uDSZzCzMETKJE2pYAh9n110YrLPVs83+cxcyNCv9V/o="
+    "version": "6.13.2",
+    "hash": "sha256-ASLa/Jigg5Eop0ZrXPl98RW2rxnJRC7pbbxhuV74hFw="
   },
   {
     "pname": "NuGet.Configuration",
-    "version": "6.13.1",
-    "hash": "sha256-fjit3Qhqu+egLgxvJRD6zQ6U2H+OxsLoy7HYcbXJgBY="
+    "version": "6.13.2",
+    "hash": "sha256-z8VW1YdRDanyyRTDYRvRkSv/XPR3c/hMM1y8cNNjx0Y="
   },
   {
     "pname": "NuGet.Frameworks",
-    "version": "6.13.1",
-    "hash": "sha256-upL6cboghOYed6acdlVljMa9nCSExYoBgQlD5QcJ+ek="
+    "version": "6.13.2",
+    "hash": "sha256-caDyc+WgYOo43AUTjtbP0MyvYDb6JweEKDdIul61Cac="
   },
   {
     "pname": "NuGet.Packaging",
-    "version": "6.13.1",
-    "hash": "sha256-khq+grMovEsO95wAhCHmauL60LB83NkWnDY5zcImXT4="
+    "version": "6.13.2",
+    "hash": "sha256-lhO+SFwIYZ4aPHxIGm5ubkkE2a5Ve2xgtroRbNh7hpw="
   },
   {
     "pname": "NuGet.Protocol",
-    "version": "6.13.1",
-    "hash": "sha256-0zqowx5iNMMzTSF0HO2Zzc1qqyCB/nEhNHFH8Z0jxzc="
+    "version": "6.13.2",
+    "hash": "sha256-5lnAHHZjy7A4vgv65AeBAs64mSNpuoUjxW3HnrMpuzY="
   },
   {
     "pname": "NuGet.Versioning",
-    "version": "6.13.1",
-    "hash": "sha256-NymrrcVZUoc78elPHYIoBFG2NpdIEZYEeqk6FTdvZug="
+    "version": "6.13.2",
+    "hash": "sha256-gmpyBpKnt+GHqgx/2uFKp+J2csbxEAy1E7WdVT117sw="
   },
   {
     "pname": "NUnit",
@@ -356,23 +356,23 @@
   },
   {
     "pname": "WoofWare.DotnetRuntimeLocator",
-    "version": "0.1.11",
-    "hash": "sha256-btWYnXxZzAnEcAE3Ufvz+Z3cJqtW7EGXs5OZMEHIWr8="
+    "version": "0.1.12",
+    "hash": "sha256-6pNZs0/R2LnLKSODq9DyHhGo2C+SDyz9k7D/13/78so="
   },
   {
     "pname": "WoofWare.Myriad.Plugins",
-    "version": "4.0.12",
-    "hash": "sha256-6o8oE5loEpKFVMRXf/rmY0YDW/iRF2Zic1lkfsOXcSo="
+    "version": "4.0.13",
+    "hash": "sha256-ak0YjK+b8ruLLVgwkR2h2O8wmJkdtNZGQTM3j3BxVgk="
   },
   {
     "pname": "WoofWare.Myriad.Plugins.Attributes",
-    "version": "3.6.7",
-    "hash": "sha256-YvrXS2ZMoMZkWgGxxcumyoqQkg4cSjGQzCrMbBCCtXM="
+    "version": "3.6.8",
+    "hash": "sha256-k8Oum0xbv90yHmYr770w7uskMcAwZfyFI5uHaes5Yxg="
   },
   {
     "pname": "WoofWare.PrattParser",
-    "version": "0.2.3",
-    "hash": "sha256-PsfU33BFsaA8LwlZMkSwmoA4hLb7Vkm2gYm48MglqxY="
+    "version": "0.2.4",
+    "hash": "sha256-aNTa2C300jUCsQ+iVSoothbCvBWdg7OzCJknwG5HV6g="
   },
   {
     "pname": "WoofWare.Whippet.Fantomas",
