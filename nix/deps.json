@@ -365,6 +365,11 @@
     "hash": "sha256-ak0YjK+b8ruLLVgwkR2h2O8wmJkdtNZGQTM3j3BxVgk="
   },
   {
+    "pname": "WoofWare.Myriad.Plugins.Attributes",
+    "version": "3.6.8",
+    "hash": "sha256-k8Oum0xbv90yHmYr770w7uskMcAwZfyFI5uHaes5Yxg="
+  },
+  {
     "pname": "WoofWare.PrattParser",
     "version": "0.2.4",
     "hash": "sha256-aNTa2C300jUCsQ+iVSoothbCvBWdg7OzCJknwG5HV6g="
