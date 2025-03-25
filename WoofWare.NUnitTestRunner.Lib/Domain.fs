@@ -138,10 +138,17 @@ type TestFixture =
         Tests : SingleTestMethod list
         /// If this fixture has declared a parallelisability, that goes here.
         Parallelize : Parallelizable<ClassParallelScope> option
+        /// It is possible to mark a fixture as "Explicit" or "Ignored", for example.
+        Modifiers : Modifier list
     }
 
     /// A test fixture about which we know nothing. No tests, no setup/teardown.
-    static member Empty (ty : Type) (par : Parallelizable<ClassParallelScope> option) (args : obj list list) =
+    static member Empty
+        (ty : Type)
+        (par : Parallelizable<ClassParallelScope> option)
+        (modifiers : Modifier list)
+        (args : obj list list)
+        =
         {
             ContainingAssembly = ty.Assembly
             Type = ty
@@ -153,6 +160,7 @@ type TestFixture =
             Parameters = args
             Tests = []
             Parallelize = par
+            Modifiers = modifiers
         }
 
 /// User code in the unit under test has failed somehow.

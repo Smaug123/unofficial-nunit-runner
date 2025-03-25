@@ -597,15 +597,15 @@ module TestFixture =
     /// Interpret this type as a [<TestFixture>], extracting the test members from it and annotating them with all
     /// relevant information about how we should run them.
     let parse (parentType : Type) : TestFixture =
-        let categories, args, par =
-            (([], [], None), parentType.CustomAttributes)
-            ||> Seq.fold (fun (categories, args, par) attr ->
+        let categories, args, mods, par =
+            (([], [], [], None), parentType.CustomAttributes)
+            ||> Seq.fold (fun (categories, args, mods, par) attr ->
                 match attr.AttributeType.FullName with
                 | "NUnit.Framework.SetUpFixtureAttribute" ->
                     failwith "This test runner does not support SetUpFixture. Please shout if you want this."
                 | "NUnit.Framework.CategoryAttribute" ->
                     let cat = attr.ConstructorArguments |> Seq.exactlyOne |> _.Value |> unbox<string>
-                    cat :: categories, args, par
+                    cat :: categories, args, mods, par
                 | "NUnit.Framework.TestFixtureAttribute" ->
                     let newArgs =
                         match attr.ConstructorArguments |> Seq.map _.Value |> Seq.toList with
@@ -613,38 +613,52 @@ module TestFixture =
                             x |> Seq.cast<CustomAttributeTypedArgument> |> Seq.map _.Value |> Seq.toList
                         | xs -> xs
 
-                    categories, newArgs :: args, par
+                    categories, newArgs :: args, mods, par
                 | "NUnit.Framework.NonParallelizableAttribute" ->
                     match par with
                     | Some _ -> failwith $"Got multiple parallelism attributes on %s{parentType.FullName}"
-                    | None -> categories, args, Some Parallelizable.No
+                    | None -> categories, args, mods, Some Parallelizable.No
                 | "NUnit.Framework.ParallelizableAttribute" ->
                     match par with
                     | Some _ -> failwith $"Got multiple parallelism attributes on %s{parentType.FullName}"
                     | None ->
                         match attr.ConstructorArguments |> Seq.toList with
-                        | [] -> categories, args, Some (Parallelizable.Yes ClassParallelScope.Self)
+                        | [] -> categories, args, mods, Some (Parallelizable.Yes ClassParallelScope.Self)
                         | [ v ] ->
                             match v.Value with
                             | :? int as v ->
                                 match ParallelScope.ofInt v with
                                 | ParallelScope.Fixtures ->
-                                    categories, args, Some (Parallelizable.Yes ClassParallelScope.Fixtures)
+                                    categories, args, mods, Some (Parallelizable.Yes ClassParallelScope.Fixtures)
                                 | ParallelScope.Children ->
-                                    categories, args, Some (Parallelizable.Yes ClassParallelScope.Children)
+                                    categories, args, mods, Some (Parallelizable.Yes ClassParallelScope.Children)
                                 | ParallelScope.All ->
-                                    categories, args, Some (Parallelizable.Yes ClassParallelScope.All)
+                                    categories, args, mods, Some (Parallelizable.Yes ClassParallelScope.All)
                                 | ParallelScope.Self ->
-                                    categories, args, Some (Parallelizable.Yes ClassParallelScope.Self)
-                                | ParallelScope.None -> categories, args, Some Parallelizable.No
+                                    categories, args, mods, Some (Parallelizable.Yes ClassParallelScope.Self)
+                                | ParallelScope.None -> categories, args, mods, Some Parallelizable.No
                             | v ->
                                 failwith
                                     $"Unexpectedly non-int value %O{v} of parallel scope in %s{parentType.FullName}"
                         | _ -> failwith $"unexpectedly got multiple args to Parallelizable on %s{parentType.FullName}"
-                | _ -> categories, args, par
+                | "NUnit.Framework.ExplicitAttribute" ->
+                    let reason =
+                        attr.ConstructorArguments
+                        |> Seq.tryHead
+                        |> Option.map (_.Value >> unbox<string>)
+
+                    categories, args, Modifier.Explicit reason :: mods, par
+                | "NUnit.Framework.IgnoreAttribute" ->
+                    let reason =
+                        attr.ConstructorArguments
+                        |> Seq.tryHead
+                        |> Option.map (_.Value >> unbox<string>)
+
+                    categories, args, Modifier.Ignored reason :: mods, par
+                | _ -> categories, args, mods, par
             )
 
-        (TestFixture.Empty parentType par args, parentType.GetRuntimeMethods ())
+        (TestFixture.Empty parentType par mods args, parentType.GetRuntimeMethods ())
         ||> Seq.fold (fun state mi ->
             ((state, []), mi.CustomAttributes)
             ||> Seq.fold (fun (state, unrecognisedAttrs) attr ->
@@ -717,6 +731,8 @@ module TestFixture =
 
     /// Run every test (except those which fail the `filter`) in this test fixture, as well as the
     /// appropriate setup and tear-down logic.
+    ///
+    /// If the TestFixture has modifiers that specify no tests should be run, we don't run any tests.
     let run
         (contexts : TestContexts)
         (par : ParallelQueue)
@@ -725,6 +741,26 @@ module TestFixture =
         (tests : TestFixture)
         : FixtureRunResults list Task
         =
+        match
+            tests.Modifiers
+            |> List.tryFind (
+                function
+                | Modifier.Explicit _
+                | Modifier.Ignored _ -> true
+            )
+        with
+        | Some modifier ->
+            let reason =
+                match modifier with
+                | Modifier.Explicit (Some reason) -> reason
+                | Modifier.Ignored (Some reason) -> reason
+                | Modifier.Ignored None -> "test fixture marked Ignore"
+                | Modifier.Explicit None -> "test fixture marked Explicit"
+
+            progress.OnTestFixtureSkipped tests.Name reason
+            Task.FromResult []
+        | None ->
+
         match tests.Parameters with
         | [] -> [ null ]
         | args -> args |> List.map List.toArray

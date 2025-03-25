@@ -10,6 +10,8 @@ type ITestProgress =
     /// Called just before we start executing the setup logic for the given test fixture.
     /// We tell you how many test methods there are in the fixture.
     abstract OnTestFixtureStart : name : string -> testCount : int -> unit
+    /// Called when skipping the test fixture with the given name, e.g. because it's `[<Explicit>]`.
+    abstract OnTestFixtureSkipped : name : string -> reason : string -> unit
     /// Called just before we start executing the test(s) indicated by a particular method.
     abstract OnTestMemberStart : name : string -> unit
     /// Called when a test fails. (This may be called repeatedly with the same `name`, e.g. if the test
@@ -31,6 +33,9 @@ module TestProgress =
             member _.OnTestFixtureStart name testCount =
                 let plural = if testCount = 1 then "" else "s"
                 writer.WriteLine $"Running test fixture: %s{name} (%i{testCount} test%s{plural} to run)"
+
+            member _.OnTestFixtureSkipped name reason =
+                writer.WriteLine $"Skipping test fixture (%s{reason}): %s{name}"
 
             member _.OnTestMemberStart name =
                 writer.WriteLine $"Running test: %s{name}"
