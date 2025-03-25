@@ -170,8 +170,9 @@ WoofWare.NUnitTestRunner.IndividualTestRunMetadata.StdOut [property]: [read-only
 WoofWare.NUnitTestRunner.IndividualTestRunMetadata.TestId [property]: [read-only] System.Guid
 WoofWare.NUnitTestRunner.IndividualTestRunMetadata.TestName [property]: [read-only] string
 WoofWare.NUnitTestRunner.IndividualTestRunMetadata.Total [property]: [read-only] System.TimeSpan
-WoofWare.NUnitTestRunner.ITestProgress - interface with 5 member(s)
+WoofWare.NUnitTestRunner.ITestProgress - interface with 6 member(s)
 WoofWare.NUnitTestRunner.ITestProgress.OnTestFailed [method]: string -> WoofWare.NUnitTestRunner.TestMemberFailure -> unit
+WoofWare.NUnitTestRunner.ITestProgress.OnTestFixtureSkipped [method]: string -> string -> unit
 WoofWare.NUnitTestRunner.ITestProgress.OnTestFixtureStart [method]: string -> int -> unit
 WoofWare.NUnitTestRunner.ITestProgress.OnTestMemberFinished [method]: string -> unit
 WoofWare.NUnitTestRunner.ITestProgress.OnTestMemberSkipped [method]: string -> unit
@@ -346,11 +347,12 @@ WoofWare.NUnitTestRunner.TestFailure.NewTearDownFailed [static method]: WoofWare
 WoofWare.NUnitTestRunner.TestFailure.NewTestFailed [static method]: WoofWare.NUnitTestRunner.UserMethodFailure -> WoofWare.NUnitTestRunner.TestFailure
 WoofWare.NUnitTestRunner.TestFailure.Tag [property]: [read-only] int
 WoofWare.NUnitTestRunner.TestFixture inherit obj, implements WoofWare.NUnitTestRunner.TestFixture System.IEquatable, System.Collections.IStructuralEquatable
-WoofWare.NUnitTestRunner.TestFixture..ctor [constructor]: (System.Reflection.Assembly, string, System.Type, System.Reflection.MethodInfo option, System.Reflection.MethodInfo option, System.Reflection.MethodInfo list, System.Reflection.MethodInfo list, obj list list, WoofWare.NUnitTestRunner.SingleTestMethod list, WoofWare.NUnitTestRunner.ClassParallelScope WoofWare.NUnitTestRunner.Parallelizable option)
+WoofWare.NUnitTestRunner.TestFixture..ctor [constructor]: (System.Reflection.Assembly, string, System.Type, System.Reflection.MethodInfo option, System.Reflection.MethodInfo option, System.Reflection.MethodInfo list, System.Reflection.MethodInfo list, obj list list, WoofWare.NUnitTestRunner.SingleTestMethod list, WoofWare.NUnitTestRunner.ClassParallelScope WoofWare.NUnitTestRunner.Parallelizable option, WoofWare.NUnitTestRunner.Modifier list)
 WoofWare.NUnitTestRunner.TestFixture.ContainingAssembly [property]: [read-only] System.Reflection.Assembly
-WoofWare.NUnitTestRunner.TestFixture.Empty [static method]: System.Type -> WoofWare.NUnitTestRunner.ClassParallelScope WoofWare.NUnitTestRunner.Parallelizable option -> obj list list -> WoofWare.NUnitTestRunner.TestFixture
+WoofWare.NUnitTestRunner.TestFixture.Empty [static method]: System.Type -> WoofWare.NUnitTestRunner.ClassParallelScope WoofWare.NUnitTestRunner.Parallelizable option -> WoofWare.NUnitTestRunner.Modifier list -> obj list list -> WoofWare.NUnitTestRunner.TestFixture
 WoofWare.NUnitTestRunner.TestFixture.Equals [method]: (WoofWare.NUnitTestRunner.TestFixture, System.Collections.IEqualityComparer) -> bool
 WoofWare.NUnitTestRunner.TestFixture.get_ContainingAssembly [method]: unit -> System.Reflection.Assembly
+WoofWare.NUnitTestRunner.TestFixture.get_Modifiers [method]: unit -> WoofWare.NUnitTestRunner.Modifier list
 WoofWare.NUnitTestRunner.TestFixture.get_Name [method]: unit -> string
 WoofWare.NUnitTestRunner.TestFixture.get_OneTimeSetUp [method]: unit -> System.Reflection.MethodInfo option
 WoofWare.NUnitTestRunner.TestFixture.get_OneTimeTearDown [method]: unit -> System.Reflection.MethodInfo option
@@ -360,6 +362,7 @@ WoofWare.NUnitTestRunner.TestFixture.get_SetUp [method]: unit -> System.Reflecti
 WoofWare.NUnitTestRunner.TestFixture.get_TearDown [method]: unit -> System.Reflection.MethodInfo list
 WoofWare.NUnitTestRunner.TestFixture.get_Tests [method]: unit -> WoofWare.NUnitTestRunner.SingleTestMethod list
 WoofWare.NUnitTestRunner.TestFixture.get_Type [method]: unit -> System.Type
+WoofWare.NUnitTestRunner.TestFixture.Modifiers [property]: [read-only] WoofWare.NUnitTestRunner.Modifier list
 WoofWare.NUnitTestRunner.TestFixture.Name [property]: [read-only] string
 WoofWare.NUnitTestRunner.TestFixture.OneTimeSetUp [property]: [read-only] System.Reflection.MethodInfo option
 WoofWare.NUnitTestRunner.TestFixture.OneTimeTearDown [property]: [read-only] System.Reflection.MethodInfo option

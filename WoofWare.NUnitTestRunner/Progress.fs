@@ -13,6 +13,10 @@ module Progress =
             member _.OnTestFixtureStart name testCount =
                 console.MarkupLine $"[white]Running tests: %s{Markup.Escape name}[/]"
 
+            member _.OnTestFixtureSkipped name reason =
+                console.MarkupLine
+                    $"[yellow]Skipping test fixture (%s{Markup.Escape reason}): %s{Markup.Escape name}[/]"
+
             member _.OnTestMemberFinished name =
                 console.MarkupLine $"[gray]Finished test: %s{Markup.Escape name}[/]"
 
