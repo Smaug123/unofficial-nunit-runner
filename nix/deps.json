@@ -21,8 +21,8 @@
   },
   {
     "pname": "FsCheck",
-    "version": "3.1.0",
-    "hash": "sha256-u0Ha94EjClJ8evNSHu8d6+Dx9qYM3kV3sl1PEq9gF8s="
+    "version": "3.2.0",
+    "hash": "sha256-ksZ4vLgWwyQOzFuK2BczdtDtWWYmedG7UBAg4pYuI8g="
   },
   {
     "pname": "fsharp-analyzers",
@@ -266,8 +266,8 @@
   },
   {
     "pname": "Spectre.Console",
-    "version": "0.49.1",
-    "hash": "sha256-tqSVojyuQjuB34lXo759NOcyLgNIw815mKXJPq5JFDo="
+    "version": "0.50.0",
+    "hash": "sha256-3MNgumQSXzuXVGj7kLb5FMkTH/LoFohMvUjAZ7nyHfo="
   },
   {
     "pname": "System.Collections.Immutable",
@@ -303,6 +303,11 @@
     "pname": "System.Memory",
     "version": "4.5.5",
     "hash": "sha256-EPQ9o1Kin7KzGI5O3U3PUQAZTItSbk9h/i4rViN3WiI="
+  },
+  {
+    "pname": "System.Memory",
+    "version": "4.6.3",
+    "hash": "sha256-JgeK63WMmumF6L+FH5cwJgYdpqXrSDcgTQwtIgTHKVU="
   },
   {
     "pname": "System.Private.Uri",
