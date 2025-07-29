@@ -123,8 +123,11 @@ module TestFixture =
                                     | None -> return! runMethods wrap rest args
                                     | Some e -> return Error (UserMethodFailure.Threw (head.Name, e) |> wrap)
                                 }
-                            // The following type-test just unconditionally seems to fail
+                            // We'd like to do this type-test:
                             // | :? Async<unit> as result ->
+                            // but instead we have to do all this reflective nonsense, because FSharpAsync is not part
+                            // of the .NET runtime, so is instead in a different AssemblyLoadContext to us!
+                            // It's in the user-code context, not ours.
                             | ret ->
                                 let ty = ret.GetType ()
 
