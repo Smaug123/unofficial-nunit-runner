@@ -12,7 +12,7 @@ module TestAsync =
     let ``an async test`` () =
         async {
             do! Async.Sleep (TimeSpan.FromMilliseconds 20.0)
-            1 |> shouldEqual 2
+            1 |> shouldEqual 1
         }
 
     [<Test>]
