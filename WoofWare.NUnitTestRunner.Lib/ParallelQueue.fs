@@ -4,16 +4,16 @@ open System
 open System.Threading
 open System.Threading.Tasks
 
-type private ThunkEvaluator<'ret> =
-    abstract Eval<'a> : (unit -> 'a) -> AsyncReplyChannel<Result<'a, exn>> -> 'ret
+type private AsyncThunkEvaluator<'ret> =
+    abstract Eval<'a> : (unit -> Async<'a>) -> AsyncReplyChannel<Result<'a, exn>> -> 'ret
 
-type private ThunkCrate =
-    abstract Apply<'ret> : ThunkEvaluator<'ret> -> 'ret
+type private AsyncThunkCrate =
+    abstract Apply<'ret> : AsyncThunkEvaluator<'ret> -> 'ret
 
 [<RequireQualifiedAccess>]
-module private ThunkCrate =
-    let make<'a> (t : unit -> 'a) (rc : AsyncReplyChannel<Result<'a, exn>>) : ThunkCrate =
-        { new ThunkCrate with
+module private AsyncThunkCrate =
+    let make<'a> (t : unit -> Async<'a>) (rc : AsyncReplyChannel<Result<'a, exn>>) : AsyncThunkCrate =
+        { new AsyncThunkCrate with
             member _.Apply e = e.Eval t rc
         }
 
@@ -41,7 +41,11 @@ type private MailboxMessage =
     | Quit of AsyncReplyChannel<unit>
     /// Check current state, see if we need to start more tests, etc.
     | Reconcile
-    | RunTest of within : TestFixture * Parallelizable<unit> option * test : ThunkCrate * context : ExecutionContext
+    | RunTestAsync of
+        within : TestFixture *
+        Parallelizable<unit> option *
+        test : AsyncThunkCrate *
+        context : ExecutionContext
     | BeginTestFixture of TestFixture * AsyncReplyChannel<TestFixtureRunningToken>
     | EndTestFixture of TestFixtureTearDownToken * AsyncReplyChannel<unit>
 
@@ -310,26 +314,31 @@ type ParallelQueue
                     rc.Reply ()
                     m.Post MailboxMessage.Reconcile
                     return! processTask (Running state) m
-            | MailboxMessage.RunTest (withinFixture, par, message, capturedContext) ->
+            | MailboxMessage.RunTestAsync (withinFixture, par, message, capturedContext) ->
                 let t () =
-                    { new ThunkEvaluator<_> with
-                        member _.Eval<'b> (t : unit -> 'b) rc =
+                    { new AsyncThunkEvaluator<_> with
+                        member _.Eval<'b> (t : unit -> Async<'b>) rc =
                             let tcs = TaskCompletionSource TaskCreationOptions.RunContinuationsAsynchronously
 
                             fun () ->
                                 ExecutionContext.Run (
                                     capturedContext,
                                     (fun _ ->
-                                        let result =
-                                            try
-                                                let r = t ()
-                                                Ok r
-                                            with e ->
-                                                Error e
+                                        async {
+                                            let! result =
+                                                async {
+                                                    try
+                                                        let! r = t ()
+                                                        return Ok r
+                                                    with e ->
+                                                        return Error e
+                                                }
 
-                                        tcs.SetResult ()
-                                        m.Post MailboxMessage.Reconcile
-                                        rc.Reply result
+                                            tcs.SetResult ()
+                                            m.Post MailboxMessage.Reconcile
+                                            rc.Reply result
+                                        }
+                                        |> Async.StartImmediate
                                     ),
                                     ()
                                 )
@@ -353,19 +362,19 @@ type ParallelQueue
     let mb = new MailboxProcessor<_> (processTask MailboxState.Idle)
     do mb.Start ()
 
-    /// Request to run the given action, freely in parallel with other running tests.
+    /// Request to run the given async action, freely in parallel with other running tests.
     /// The resulting Task will return when the action has completed.
-    member _.Run<'a>
+    member _.RunAsync<'a>
         (TestFixtureSetupToken parent)
         (scope : Parallelizable<unit> option)
-        (action : unit -> 'a)
+        (action : unit -> Async<'a>)
         : 'a Task
         =
         let ec = ExecutionContext.Capture ()
 
         task {
             let! result =
-                (fun rc -> MailboxMessage.RunTest (parent, scope, ThunkCrate.make action rc, ec))
+                (fun rc -> MailboxMessage.RunTestAsync (parent, scope, AsyncThunkCrate.make action rc, ec))
                 |> mb.PostAndAsyncReply
                 |> Async.StartAsTask
 
@@ -373,6 +382,16 @@ type ParallelQueue
             | Ok o -> return o
             | Error e -> return Exception.reraiseWithOriginalStackTrace e
         }
+
+    /// Request to run the given action, freely in parallel with other running tests.
+    /// The resulting Task will return when the action has completed.
+    member this.Run<'a>
+        (parent : TestFixtureSetupToken)
+        (scope : Parallelizable<unit> option)
+        (action : unit -> 'a)
+        : 'a Task
+        =
+        this.RunAsync parent scope (fun () -> async.Return (action ()))
 
     /// Declare that we wish to start the given test fixture. The resulting Task will return
     /// when you are allowed to start running tests from that fixture.
@@ -396,7 +415,14 @@ type ParallelQueue
             let ec = ExecutionContext.Capture ()
 
             let! response =
-                (fun rc -> MailboxMessage.RunTest (parent, par, ThunkCrate.make action rc, ec))
+                (fun rc ->
+                    MailboxMessage.RunTestAsync (
+                        parent,
+                        par,
+                        AsyncThunkCrate.make (fun () -> async.Return (action ())) rc,
+                        ec
+                    )
+                )
                 |> mb.PostAndAsyncReply
 
             match response with
@@ -422,7 +448,14 @@ type ParallelQueue
             let ec = ExecutionContext.Capture ()
 
             let! response =
-                (fun rc -> MailboxMessage.RunTest (parent, par, ThunkCrate.make action rc, ec))
+                (fun rc ->
+                    MailboxMessage.RunTestAsync (
+                        parent,
+                        par,
+                        AsyncThunkCrate.make (fun () -> async.Return (action ())) rc,
+                        ec
+                    )
+                )
                 |> mb.PostAndAsyncReply
 
             match response with

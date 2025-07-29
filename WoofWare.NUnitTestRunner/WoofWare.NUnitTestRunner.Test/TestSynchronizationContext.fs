@@ -243,23 +243,18 @@ module TestSynchronizationContext =
             do! queue.EndTestFixture teardown
         }
 
-(*
     [<Test>]
     let ``ExecutionContext flows correctly through async operations`` () =
         task {
             // Create a test fixture
             let dummyFixture =
-                TestFixture.Empty
-                    typeof<obj>
-                    (Some (Parallelizable.Yes ClassParallelScope.All))
-                    []
-                    []
+                TestFixture.Empty typeof<obj> (Some (Parallelizable.Yes ClassParallelScope.All)) [] []
 
             use contexts = TestContexts.Empty ()
-            use queue = new ParallelQueue(Some 4, None)
+            use queue = new ParallelQueue (Some 4, None)
 
             // Track which context values we see during execution
-            let contextValues = System.Collections.Concurrent.ConcurrentBag<Guid * Guid>()
+            let contextValues = System.Collections.Concurrent.ConcurrentBag<Guid * Guid> ()
 
             // Start the fixture
             let! running = queue.StartTestFixture dummyFixture
@@ -267,42 +262,45 @@ module TestSynchronizationContext =
 
             // Create several async operations with different context values
             let tasks =
-                [1..10]
+                [ 1..10 ]
                 |> List.map (fun i ->
                     task {
                         // Set a unique context value
-                        let expectedId = Guid.NewGuid()
+                        let expectedId = Guid.NewGuid ()
                         let outputId = OutputStreamId expectedId
                         contexts.AsyncLocal.Value <- outputId
 
                         // Run an async operation that checks the context at multiple points
                         let! actualId =
-                            queue.RunAsync setup None (fun () ->
-                                async {
-                                    // Check context immediately
-                                    let immediate = contexts.AsyncLocal.Value
-                                    let (OutputStreamId immediateGuid) = immediate
-                                    contextValues.Add(expectedId, immediateGuid)
+                            queue.RunAsync
+                                setup
+                                None
+                                (fun () ->
+                                    async {
+                                        // Check context immediately
+                                        let immediate = contexts.AsyncLocal.Value
+                                        let (OutputStreamId immediateGuid) = immediate
+                                        contextValues.Add (expectedId, immediateGuid)
 
-                                    // Yield to allow potential context loss
-                                    do! Async.Sleep 10
+                                        // Yield to allow potential context loss
+                                        do! Async.Sleep 10
 
-                                    // Check context after yield
-                                    let afterYield = contexts.AsyncLocal.Value
-                                    let (OutputStreamId afterYieldGuid) = afterYield
-                                    contextValues.Add(expectedId, afterYieldGuid)
+                                        // Check context after yield
+                                        let afterYield = contexts.AsyncLocal.Value
+                                        let (OutputStreamId afterYieldGuid) = afterYield
+                                        contextValues.Add (expectedId, afterYieldGuid)
 
-                                    // Do some actual async work
-                                    do! Task.Delay(10) |> Async.AwaitTask
+                                        // Do some actual async work
+                                        do! Task.Delay (10) |> Async.AwaitTask
 
-                                    // Check context after task
-                                    let afterTask = contexts.AsyncLocal.Value
-                                    let (OutputStreamId afterTaskGuid) = afterTask
-                                    contextValues.Add(expectedId, afterTaskGuid)
+                                        // Check context after task
+                                        let afterTask = contexts.AsyncLocal.Value
+                                        let (OutputStreamId afterTaskGuid) = afterTask
+                                        contextValues.Add (expectedId, afterTaskGuid)
 
-                                    return afterTaskGuid
-                                }
-                            )
+                                        return afterTaskGuid
+                                    }
+                                )
 
                         // Verify the returned value matches what we set
                         actualId |> shouldEqual expectedId
@@ -310,12 +308,12 @@ module TestSynchronizationContext =
                 )
 
             // Wait for all tasks
-            let! results = Task.WhenAll(tasks)
+            let! results = Task.WhenAll (tasks)
             results |> Array.iter id
 
             // Verify all context values were correct
             let allValues = contextValues |> Seq.toList
-            allValues |> shouldHaveLength 30  // 3 checks per operation * 10 operations
+            allValues |> shouldHaveLength 30 // 3 checks per operation * 10 operations
 
             // Every captured value should match its expected value
             for expected, actual in allValues do
@@ -330,80 +328,69 @@ module TestSynchronizationContext =
     let ``ExecutionContext isolation between concurrent operations`` () =
         task {
             let dummyFixture =
-                TestFixture.Empty
-                    typeof<obj>
-                    (Some (Parallelizable.Yes ClassParallelScope.All))
-                    []
-                    []
+                TestFixture.Empty typeof<obj> (Some (Parallelizable.Yes ClassParallelScope.All)) [] []
 
             use contexts = TestContexts.Empty ()
-            use queue = new ParallelQueue(Some 4, None)
+            use queue = new ParallelQueue (Some 4, None)
 
             let! running = queue.StartTestFixture dummyFixture
             let! _, setup = queue.RunTestSetup running (fun () -> ())
 
             // Use a barrier to ensure operations run concurrently
-            let barrier = new Barrier(3)
-            let seenValues = System.Collections.Concurrent.ConcurrentBag<int * Guid option>()
+            let barrier = new Barrier (3)
+            let seenValues = System.Collections.Concurrent.ConcurrentBag<int * Guid> ()
 
             // Create operations that will definitely run concurrently
             let tasks =
-                [1..3]
+                [ 1..3 ]
                 |> List.map (fun i ->
                     task {
                         // Each task sets its own context value
-                        let myId = Guid.NewGuid()
+                        let myId = Guid.NewGuid ()
                         contexts.AsyncLocal.Value <- OutputStreamId myId
 
                         let! result =
-                            queue.RunAsync setup (Some (Parallelizable.Yes ())) (fun () ->
-                                async {
-                                    // Wait for all tasks to reach this point
-                                    barrier.SignalAndWait() |> ignore
+                            queue.RunAsync
+                                setup
+                                (Some (Parallelizable.Yes ()))
+                                (fun () ->
+                                    async {
+                                        // Wait for all tasks to reach this point
+                                        barrier.SignalAndWait () |> ignore
 
-                                    // Now check what value we see
-                                    let currentValue = contexts.AsyncLocal.Value
-                                    match currentValue with
-                                    | OutputStreamId guid -> seenValues.Add(i, Some guid)
-                                    | _ -> seenValues.Add(i, None)
+                                        // Now check what value we see
+                                        let currentValue = contexts.AsyncLocal.Value
 
-                                    // Do some async work
-                                    do! Async.Sleep 5
+                                        match currentValue with
+                                        | OutputStreamId guid -> seenValues.Add (i, guid)
 
-                                    // Check again after async work
-                                    let afterAsync = contexts.AsyncLocal.Value
-                                    match afterAsync with
-                                    | OutputStreamId guid ->
-                                        return guid
-                                    | _ ->
-                                        return failwith "Lost context after async"
-                                }
-                            )
+                                        // Do some async work
+                                        do! Async.Sleep 5
+
+                                        // Check again after async work
+                                        let afterAsync = contexts.AsyncLocal.Value
+
+                                        match afterAsync with
+                                        | OutputStreamId guid -> return guid
+                                    }
+                                )
 
                         // Each task should see its own value
                         result |> shouldEqual myId
                     }
                 )
 
-            let! results = Task.WhenAll(tasks)
+            let! results = Task.WhenAll (tasks)
             results |> Array.iter id
 
             // Verify we saw 3 different values (one per task)
             let values = seenValues |> Seq.toList
             values |> shouldHaveLength 3
 
-            // Each task should have seen a value
-            for (taskId, value) in values do
-                value |> shouldNotEqual None
-
             // All seen values should be different (no context bleeding)
-            let uniqueValues =
-                values
-                |> List.choose snd
-                |> List.distinct
+            let uniqueValues = values |> List.map snd |> List.distinct
             uniqueValues |> shouldHaveLength 3
 
             let! _, teardown = queue.RunTestTearDown setup (fun () -> ())
             do! queue.EndTestFixture teardown
         }
-*)

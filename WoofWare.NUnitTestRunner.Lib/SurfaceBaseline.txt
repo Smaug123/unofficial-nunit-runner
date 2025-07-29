@@ -256,6 +256,7 @@ WoofWare.NUnitTestRunner.ParallelQueue inherit obj, implements IDisposable
 WoofWare.NUnitTestRunner.ParallelQueue..ctor [constructor]: (int option, WoofWare.NUnitTestRunner.AssemblyParallelScope WoofWare.NUnitTestRunner.Parallelizable option, System.Threading.CancellationToken option)
 WoofWare.NUnitTestRunner.ParallelQueue.EndTestFixture [method]: WoofWare.NUnitTestRunner.TestFixtureTearDownToken -> unit System.Threading.Tasks.Task
 WoofWare.NUnitTestRunner.ParallelQueue.Run [method]: WoofWare.NUnitTestRunner.TestFixtureSetupToken -> unit WoofWare.NUnitTestRunner.Parallelizable option -> (unit -> 'a) -> 'a System.Threading.Tasks.Task
+WoofWare.NUnitTestRunner.ParallelQueue.RunAsync [method]: WoofWare.NUnitTestRunner.TestFixtureSetupToken -> unit WoofWare.NUnitTestRunner.Parallelizable option -> (unit -> 'a Microsoft.FSharp.Control.FSharpAsync) -> 'a System.Threading.Tasks.Task
 WoofWare.NUnitTestRunner.ParallelQueue.RunTestSetup [method]: WoofWare.NUnitTestRunner.TestFixtureRunningToken -> (unit -> 'a) -> ('a * WoofWare.NUnitTestRunner.TestFixtureSetupToken) System.Threading.Tasks.Task
 WoofWare.NUnitTestRunner.ParallelQueue.RunTestTearDown [method]: WoofWare.NUnitTestRunner.TestFixtureSetupToken -> (unit -> 'a) -> ('a * WoofWare.NUnitTestRunner.TestFixtureTearDownToken) System.Threading.Tasks.Task
 WoofWare.NUnitTestRunner.ParallelQueue.StartTestFixture [method]: WoofWare.NUnitTestRunner.TestFixture -> WoofWare.NUnitTestRunner.TestFixtureRunningToken System.Threading.Tasks.Task
