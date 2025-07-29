@@ -366,13 +366,13 @@
   },
   {
     "pname": "WoofWare.Myriad.Plugins",
-    "version": "8.0.4",
-    "hash": "sha256-/cX7B1QDOnyYRaetl1pQRkeVNLA7vP25TJfBZhi2j/c="
+    "version": "8.0.5",
+    "hash": "sha256-IfTT2GM9ktUW5BQoKQGFKK39BAKeziJJnrOIL7Vs19o="
   },
   {
     "pname": "WoofWare.Myriad.Plugins.Attributes",
-    "version": "3.6.11",
-    "hash": "sha256-UI8wT1a3CuQUeXb1qIHCiimGJ1qBjK9ZOQN2/N5fNdg="
+    "version": "3.6.12",
+    "hash": "sha256-90uiVtc5exCbkcdS8DgTmlEZZT8/AdrY0QuFzy+FHUo="
   },
   {
     "pname": "WoofWare.PrattParser",
