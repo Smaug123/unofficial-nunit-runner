@@ -89,8 +89,8 @@ module TestSynchronizationContext =
             allValues |> shouldHaveLength 30 // 3 checks per operation * 10 operations
 
             // Every captured value should match its expected value
-            for expected, actual in allValues do
-                actual |> shouldEqual expected
+            allValues
+            |> List.iter (fun (expected, actual) -> actual |> shouldEqual expected)
 
             // Clean up
             let! _, teardown = queue.RunTestTearDown setup (fun () -> ())
