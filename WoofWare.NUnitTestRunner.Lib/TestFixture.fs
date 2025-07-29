@@ -110,13 +110,28 @@ module TestFixture =
                             | :? unit -> runMethods wrap rest args
                             | :? Task as result ->
                                 async {
-                                    do! Async.AwaitTask result
-                                    return! runMethods wrap rest args
+                                    let mutable exc = None
+
+                                    try
+                                        do! Async.AwaitTask result
+                                    with e ->
+                                        exc <- Some e
+
+                                    match exc with
+                                    | None -> return! runMethods wrap rest args
+                                    | Some e -> return Error (UserMethodFailure.Threw (head.Name, e) |> wrap)
                                 }
                             | :? Async<unit> as result ->
                                 async {
-                                    do! result
-                                    return! runMethods wrap rest args
+                                    let mutable exc = None
+                                    try
+                                        do! result
+                                    with e ->
+                                        exc <- Some e
+
+                                    match exc with
+                                    | None -> return! runMethods wrap rest args
+                                    | Some e -> return Error (UserMethodFailure.Threw (head.Name, e) |> wrap)
                                 }
                             | ret -> async.Return (UserMethodFailure.ReturnedNonUnit (head.Name, ret) |> wrap |> Error)
 
