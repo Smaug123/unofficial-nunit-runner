@@ -5,14 +5,14 @@ open System.Threading
 open System.Threading.Tasks
 
 type private ThunkEvaluator<'ret> =
-    abstract Eval<'a> : (unit -> 'a) -> AsyncReplyChannel<'a> -> 'ret
+    abstract Eval<'a> : (unit -> 'a) -> AsyncReplyChannel<Result<'a, exn>> -> 'ret
 
 type private ThunkCrate =
     abstract Apply<'ret> : ThunkEvaluator<'ret> -> 'ret
 
 [<RequireQualifiedAccess>]
 module private ThunkCrate =
-    let make<'a> (t : unit -> 'a) (rc : AsyncReplyChannel<'a>) : ThunkCrate =
+    let make<'a> (t : unit -> 'a) (rc : AsyncReplyChannel<Result<'a, exn>>) : ThunkCrate =
         { new ThunkCrate with
             member _.Apply e = e.Eval t rc
         }
@@ -41,7 +41,7 @@ type private MailboxMessage =
     | Quit of AsyncReplyChannel<unit>
     /// Check current state, see if we need to start more tests, etc.
     | Reconcile
-    | RunTest of within : TestFixture * Parallelizable<unit> option * test : ThunkCrate
+    | RunTest of within : TestFixture * Parallelizable<unit> option * test : ThunkCrate * context : ExecutionContext
     | BeginTestFixture of TestFixture * AsyncReplyChannel<TestFixtureRunningToken>
     | EndTestFixture of TestFixtureTearDownToken * AsyncReplyChannel<unit>
 
@@ -310,18 +310,23 @@ type ParallelQueue
                     rc.Reply ()
                     m.Post MailboxMessage.Reconcile
                     return! processTask (Running state) m
-            | MailboxMessage.RunTest (withinFixture, par, message) ->
+            | MailboxMessage.RunTest (withinFixture, par, message, capturedContext) ->
                 let t () =
                     { new ThunkEvaluator<_> with
                         member _.Eval<'b> (t : unit -> 'b) rc =
                             let tcs = TaskCompletionSource TaskCreationOptions.RunContinuationsAsynchronously
-                            use ec = ExecutionContext.Capture ()
 
                             fun () ->
                                 ExecutionContext.Run (
-                                    ec,
+                                    capturedContext,
                                     (fun _ ->
-                                        let result = t ()
+                                        let result =
+                                            try
+                                                let r = t ()
+                                                Ok r
+                                            with e ->
+                                                Error e
+
                                         tcs.SetResult ()
                                         m.Post MailboxMessage.Reconcile
                                         rc.Reply result
@@ -356,9 +361,18 @@ type ParallelQueue
         (action : unit -> 'a)
         : 'a Task
         =
-        (fun rc -> MailboxMessage.RunTest (parent, scope, ThunkCrate.make action rc))
-        |> mb.PostAndAsyncReply
-        |> Async.StartAsTask
+        let ec = ExecutionContext.Capture ()
+
+        task {
+            let! result =
+                (fun rc -> MailboxMessage.RunTest (parent, scope, ThunkCrate.make action rc, ec))
+                |> mb.PostAndAsyncReply
+                |> Async.StartAsTask
+
+            match result with
+            | Ok o -> return o
+            | Error e -> return Exception.reraiseWithOriginalStackTrace e
+        }
 
     /// Declare that we wish to start the given test fixture. The resulting Task will return
     /// when you are allowed to start running tests from that fixture.
@@ -379,11 +393,15 @@ type ParallelQueue
                     | Parallelizable.Yes _ -> Parallelizable.Yes ()
                 )
 
+            let ec = ExecutionContext.Capture ()
+
             let! response =
-                (fun rc -> MailboxMessage.RunTest (parent, par, ThunkCrate.make action rc))
+                (fun rc -> MailboxMessage.RunTest (parent, par, ThunkCrate.make action rc, ec))
                 |> mb.PostAndAsyncReply
 
-            return response, TestFixtureSetupToken parent
+            match response with
+            | Ok response -> return response, TestFixtureSetupToken parent
+            | Error e -> return Exception.reraiseWithOriginalStackTrace e
         }
 
     /// Run the given one-time tear-down for the test fixture.
@@ -401,11 +419,15 @@ type ParallelQueue
                     | Parallelizable.Yes _ -> Parallelizable.Yes ()
                 )
 
+            let ec = ExecutionContext.Capture ()
+
             let! response =
-                (fun rc -> MailboxMessage.RunTest (parent, par, ThunkCrate.make action rc))
+                (fun rc -> MailboxMessage.RunTest (parent, par, ThunkCrate.make action rc, ec))
                 |> mb.PostAndAsyncReply
 
-            return response, TestFixtureTearDownToken parent
+            match response with
+            | Ok response -> return response, TestFixtureTearDownToken parent
+            | Error e -> return Exception.reraiseWithOriginalStackTrace e
         }
 
     /// Declare that we have finished submitting requests to run in the given test fixture.

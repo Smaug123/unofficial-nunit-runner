@@ -8,7 +8,7 @@ open FsUnitTyped
 open WoofWare.NUnitTestRunner
 
 [<TestFixture>]
-module TestParallelQueueContext =
+module TestSynchronizationContext =
 
     [<Test>]
     let ``ExecutionContext flows correctly through synchronous operations`` () =
@@ -136,7 +136,7 @@ module TestParallelQueueContext =
                                     | OutputStreamId guid -> seenValues.Add (i, guid)
 
                                     // Do some synchronous work
-                                    Thread.Sleep (5)
+                                    Thread.Sleep 5
 
                                     // Check again after work
                                     let afterWork = contexts.AsyncLocal.Value
@@ -144,7 +144,7 @@ module TestParallelQueueContext =
                                     match afterWork with
                                     | OutputStreamId guid ->
                                         // Also verify we can write to the correct streams
-                                        contexts.Stdout.WriteLine ($"Task {i} sees context {guid}")
+                                        contexts.Stdout.WriteLine $"Task {i} sees context {guid}"
                                         guid
                                 )
 
@@ -153,7 +153,7 @@ module TestParallelQueueContext =
                     }
                 )
 
-            let! results = Task.WhenAll (tasks)
+            let! results = Task.WhenAll tasks
             results |> Array.iter id
 
             // Verify we saw 3 different values (one per task)
