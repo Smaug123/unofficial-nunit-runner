@@ -102,13 +102,25 @@ module TestFixture =
                             )
                             |> Error
 
-                    match result with
-                    | Error e -> return (Error (wrap e))
-                    | Ok result ->
+                    let! result =
                         match result with
-                        | :? unit -> return! runMethods wrap rest args
-                        | ret -> return UserMethodFailure.ReturnedNonUnit (head.Name, ret) |> wrap |> Error
+                        | Error e -> async.Return (Error (wrap e))
+                        | Ok result ->
+                            match result with
+                            | :? unit -> runMethods wrap rest args
+                            | :? Task as result ->
+                                async {
+                                    do! Async.AwaitTask result
+                                    return! runMethods wrap rest args
+                                }
+                            | :? Async<unit> as result ->
+                                async {
+                                    do! result
+                                    return! runMethods wrap rest args
+                                }
+                            | ret -> async.Return (UserMethodFailure.ReturnedNonUnit (head.Name, ret) |> wrap |> Error)
 
+                    return result
                 }
 
         async {
