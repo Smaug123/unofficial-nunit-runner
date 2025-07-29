@@ -33,8 +33,8 @@ module TestSynchronizationContext =
                     task {
                         do! Task.Yield ()
                         // Set a unique context value
-                        let expectedId = Guid.NewGuid ()
-                        let outputId = OutputStreamId expectedId
+                        let outputId = contexts.NewOutputs ()
+                        let (OutputStreamId expectedId) = outputId
                         contexts.AsyncLocal.Value <- outputId
 
                         // Run a synchronous operation that checks the context
@@ -118,8 +118,9 @@ module TestSynchronizationContext =
                 |> List.map (fun i ->
                     task {
                         // Each task sets its own context value
-                        let myId = Guid.NewGuid ()
-                        contexts.AsyncLocal.Value <- OutputStreamId myId
+                        let outputId = contexts.NewOutputs ()
+                        let (OutputStreamId myId) = outputId
+                        contexts.AsyncLocal.Value <- outputId
 
                         let! result =
                             queue.Run
@@ -181,8 +182,9 @@ module TestSynchronizationContext =
             let! _, setup = queue.RunTestSetup running (fun () -> ())
 
             // Set an initial context
-            let outerGuid = Guid.NewGuid ()
-            contexts.AsyncLocal.Value <- OutputStreamId outerGuid
+            let outputId = contexts.NewOutputs ()
+            let (OutputStreamId outerGuid) = outputId
+            contexts.AsyncLocal.Value <- outputId
 
             let! result =
                 queue.Run
@@ -195,8 +197,9 @@ module TestSynchronizationContext =
                         outerSeen |> shouldEqual outerGuid
 
                         // Now change the context for a nested operation
-                        let innerGuid = Guid.NewGuid ()
-                        contexts.AsyncLocal.Value <- OutputStreamId innerGuid
+                        let innerOutputId = contexts.NewOutputs ()
+                        let (OutputStreamId innerGuid) = innerOutputId
+                        contexts.AsyncLocal.Value <- innerOutputId
 
                         // Use Task.Run to potentially hop threads
                         let innerResult =
