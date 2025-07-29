@@ -10,12 +10,7 @@ open System.Threading
 
 type internal OutputStreamId = | OutputStreamId of Guid
 
-type private ThreadAwareWriter
-    (
-        local : AsyncLocal<OutputStreamId>,
-        underlying : Dictionary<OutputStreamId, TextWriter>,
-        mem : Dictionary<OutputStreamId, MemoryStream>
-    )
+type private ThreadAwareWriter (local : AsyncLocal<OutputStreamId>, underlying : Dictionary<OutputStreamId, TextWriter>)
     =
     inherit TextWriter ()
     override _.get_Encoding () = Encoding.Default
@@ -57,7 +52,7 @@ type private ThreadAwareWriter
 /// Wraps up the necessary context to intercept global state.
 [<NoEquality ; NoComparison>]
 type TestContexts =
-    private
+    internal
         {
             /// Accesses to this must be locked on StdOutWriters.
             StdOuts : Dictionary<OutputStreamId, MemoryStream>
@@ -77,8 +72,8 @@ type TestContexts =
         let stdoutWriters = Dictionary ()
         let stderrWriters = Dictionary ()
         let local = AsyncLocal ()
-        let stdoutWriter = new ThreadAwareWriter (local, stdoutWriters, stdouts)
-        let stderrWriter = new ThreadAwareWriter (local, stderrWriters, stderrs)
+        let stdoutWriter = new ThreadAwareWriter (local, stdoutWriters)
+        let stderrWriter = new ThreadAwareWriter (local, stderrWriters)
 
         {
             StdOuts = stdouts
