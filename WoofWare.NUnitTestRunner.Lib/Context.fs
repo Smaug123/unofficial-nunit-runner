@@ -16,9 +16,8 @@ type private ThreadAwareWriter (local : AsyncLocal<OutputStreamId>, underlying :
     override _.get_Encoding () = Encoding.Default
 
     override this.Write (v : char) : unit =
-        use prev = ExecutionContext.Capture ()
-
-        (fun _ ->
+        lock
+            underlying
             (fun () ->
                 match underlying.TryGetValue local.Value with
                 | true, output -> output.Write v
@@ -26,16 +25,12 @@ type private ThreadAwareWriter (local : AsyncLocal<OutputStreamId>, underlying :
                     let wanted =
                         underlying |> Seq.map (fun (KeyValue (a, b)) -> $"%O{a}") |> String.concat "\n"
 
-                    failwith $"no such context: %O{local.Value}\nwanted:\n"
+                    failwith $"no such context: %O{local.Value}\nwanted:\n{wanted}"
             )
-            |> lock underlying
-        )
-        |> fun action -> ExecutionContext.Run (prev, action, ())
 
     override this.WriteLine (v : string) : unit =
-        use prev = ExecutionContext.Capture ()
-
-        (fun _ ->
+        lock
+            underlying
             (fun () ->
                 match underlying.TryGetValue local.Value with
                 | true, output -> output.WriteLine v
@@ -43,11 +38,8 @@ type private ThreadAwareWriter (local : AsyncLocal<OutputStreamId>, underlying :
                     let wanted =
                         underlying |> Seq.map (fun (KeyValue (a, b)) -> $"%O{a}") |> String.concat "\n"
 
-                    failwith $"no such context: %O{local.Value}\nwanted:\n"
+                    failwith $"no such context: %O{local.Value}\nwanted:\n{wanted}"
             )
-            |> lock underlying
-        )
-        |> fun action -> ExecutionContext.Run (prev, action, ())
 
 /// Wraps up the necessary context to intercept global state.
 [<NoEquality ; NoComparison>]

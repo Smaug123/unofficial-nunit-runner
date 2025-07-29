@@ -1,6 +1,7 @@
 namespace WoofWare.NUnitTestRunner.Test
 
 open System
+open System.Text
 open System.Threading
 open System.Threading.Tasks
 open NUnit.Framework
@@ -29,7 +30,7 @@ module TestSynchronizationContext =
             // Create several synchronous operations with different context values
             let tasks =
                 [ 1..10 ]
-                |> List.map (fun i ->
+                |> List.map (fun _ ->
                     task {
                         do! Task.Yield ()
                         // Set a unique context value
@@ -49,7 +50,7 @@ module TestSynchronizationContext =
                                     contextValues.Add (expectedId, immediateGuid)
 
                                     // Do some work that might cause context issues
-                                    Thread.Sleep (10)
+                                    Thread.Sleep 10
 
                                     // Check context after work
                                     let afterWork = contexts.AsyncLocal.Value
@@ -80,7 +81,7 @@ module TestSynchronizationContext =
                 )
 
             // Wait for all tasks
-            let! results = Task.WhenAll (tasks)
+            let! results = Task.WhenAll tasks
             results |> Array.iter id
 
             // Verify all context values were correct
@@ -111,6 +112,7 @@ module TestSynchronizationContext =
             // Use a barrier to ensure operations run concurrently
             let barrier = new Barrier (3)
             let seenValues = System.Collections.Concurrent.ConcurrentBag<int * Guid> ()
+            let outputIds = System.Collections.Concurrent.ConcurrentBag<OutputStreamId> ()
 
             // Create operations that will definitely run concurrently
             let tasks =
@@ -121,6 +123,7 @@ module TestSynchronizationContext =
                         let outputId = contexts.NewOutputs ()
                         let (OutputStreamId myId) = outputId
                         contexts.AsyncLocal.Value <- outputId
+                        outputIds.Add outputId
 
                         let! result =
                             queue.Run
@@ -145,7 +148,7 @@ module TestSynchronizationContext =
                                     match afterWork with
                                     | OutputStreamId guid ->
                                         // Also verify we can write to the correct streams
-                                        contexts.Stdout.WriteLine $"Task {i} sees context {guid}"
+                                        contexts.Stdout.WriteLine $"Task %i{i} sees context %O{guid}"
                                         guid
                                 )
 
@@ -167,6 +170,16 @@ module TestSynchronizationContext =
 
             let! _, teardown = queue.RunTestTearDown setup (fun () -> ())
             do! queue.EndTestFixture teardown
+
+            // Verify stdout content for each task
+            let collectedOutputs = outputIds |> Seq.toList
+            collectedOutputs |> shouldHaveLength 3
+
+            for outputId in collectedOutputs do
+                let content = contexts.DumpStdout outputId
+                content |> shouldNotEqual ""
+                let (OutputStreamId guid) = outputId
+                content |> shouldContainText (guid.ToString ())
         }
 
     [<Test>]
