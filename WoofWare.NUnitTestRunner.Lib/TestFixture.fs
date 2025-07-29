@@ -76,105 +76,112 @@ module TestFixture =
         (test : MethodInfo)
         (containingObject : obj)
         (args : obj[])
-        : Result<TestMemberSuccess, TestFailure list> * IndividualTestRunMetadata
+        : Async<Result<TestMemberSuccess, TestFailure list> * IndividualTestRunMetadata>
         =
         let rec runMethods
             (wrap : UserMethodFailure -> TestFailure)
             (toRun : MethodInfo list)
             (args : obj[])
-            : Result<unit, _>
+            : Result<unit, TestFailure> Async
             =
             match toRun with
-            | [] -> Ok ()
+            | [] -> async.Return (Ok ())
             | head :: rest ->
-                let result =
-                    try
-                        head.Invoke (containingObject, args) |> Ok
-                    with
-                    | :? TargetInvocationException as e -> Error (UserMethodFailure.Threw (head.Name, e.InnerException))
-                    | :? TargetParameterCountException ->
-                        UserMethodFailure.BadParameters (
-                            head.Name,
-                            head.GetParameters () |> Array.map (fun pm -> pm.ParameterType),
-                            args
-                        )
-                        |> Error
+                async {
+                    let result =
+                        try
+                            head.Invoke (containingObject, args) |> Ok
+                        with
+                        | :? TargetInvocationException as e ->
+                            Error (UserMethodFailure.Threw (head.Name, e.InnerException))
+                        | :? TargetParameterCountException ->
+                            UserMethodFailure.BadParameters (
+                                head.Name,
+                                head.GetParameters () |> Array.map (fun pm -> pm.ParameterType),
+                                args
+                            )
+                            |> Error
 
-                match result with
-                | Error e -> Error (wrap e)
-                | Ok result ->
                     match result with
-                    | :? unit -> runMethods wrap rest args
-                    | ret -> UserMethodFailure.ReturnedNonUnit (head.Name, ret) |> wrap |> Error
+                    | Error e -> return (Error (wrap e))
+                    | Ok result ->
+                        match result with
+                        | :? unit -> return! runMethods wrap rest args
+                        | ret -> return UserMethodFailure.ReturnedNonUnit (head.Name, ret) |> wrap |> Error
 
-        let start = DateTimeOffset.Now
+                }
 
-        let sw = Stopwatch.StartNew ()
+        async {
+            let start = DateTimeOffset.Now
 
-        let metadata () =
-            let name =
-                if args.Length = 0 then
-                    test.Name
-                else
-                    let argsStr = args |> Seq.map string<obj> |> String.concat ","
-                    $"%s{test.Name}(%s{argsStr})"
+            let sw = Stopwatch.StartNew ()
 
-            {
-                End = DateTimeOffset.Now
-                Start = start
-                Total = sw.Elapsed
-                ComputerName = Environment.MachineName
-                ExecutionId = Guid.NewGuid ()
-                TestId = testId
-                TestName = name
-                ClassName = test.DeclaringType.FullName
-                StdOut =
-                    match contexts.DumpStdout outputId with
-                    | "" -> None
-                    | v -> Some v
-                StdErr =
-                    match contexts.DumpStderr outputId with
-                    | "" -> None
-                    | v -> Some v
-            }
+            let metadata () =
+                let name =
+                    if args.Length = 0 then
+                        test.Name
+                    else
+                        let argsStr = args |> Seq.map string<obj> |> String.concat ","
+                        $"%s{test.Name}(%s{argsStr})"
 
-        let setUpResult = runMethods TestFailure.SetUpFailed setUp [||]
-        sw.Stop ()
+                {
+                    End = DateTimeOffset.Now
+                    Start = start
+                    Total = sw.Elapsed
+                    ComputerName = Environment.MachineName
+                    ExecutionId = Guid.NewGuid ()
+                    TestId = testId
+                    TestName = name
+                    ClassName = test.DeclaringType.FullName
+                    StdOut =
+                        match contexts.DumpStdout outputId with
+                        | "" -> None
+                        | v -> Some v
+                    StdErr =
+                        match contexts.DumpStderr outputId with
+                        | "" -> None
+                        | v -> Some v
+                }
 
-        match setUpResult with
-        | Error e -> Error [ e ], metadata ()
-        | Ok () ->
-
-        sw.Start ()
-
-        let result =
-            let result = runMethods TestFailure.TestFailed [ test ] args
+            let! setUpResult = runMethods TestFailure.SetUpFailed setUp [||]
             sw.Stop ()
 
-            match result with
-            | Ok () -> Ok None
-            | Error (TestFailure.TestFailed (UserMethodFailure.Threw (_, exc)) as orig) ->
-                match exc.GetType().FullName with
-                | "NUnit.Framework.SuccessException" -> Ok None
-                | "NUnit.Framework.IgnoreException" -> Ok (Some (TestMemberSuccess.Ignored (Option.ofObj exc.Message)))
-                | "NUnit.Framework.InconclusiveException" ->
-                    Ok (Some (TestMemberSuccess.Inconclusive (Option.ofObj exc.Message)))
-                | _ -> Error orig
-            | Error orig -> Error orig
+            match setUpResult with
+            | Error e -> return Error [ e ], metadata ()
+            | Ok () ->
 
-        // Unconditionally run TearDown after tests, even if tests failed.
-        sw.Start ()
-        let tearDownResult = runMethods TestFailure.TearDownFailed tearDown [||]
-        sw.Stop ()
+            sw.Start ()
+            let! result = runMethods TestFailure.TestFailed [ test ] args
+            sw.Stop ()
 
-        let metadata = metadata ()
+            let result =
+                match result with
+                | Ok () -> Ok None
+                | Error (TestFailure.TestFailed (UserMethodFailure.Threw (_, exc)) as orig) ->
+                    match exc.GetType().FullName with
+                    | "NUnit.Framework.SuccessException" -> Ok None
+                    | "NUnit.Framework.IgnoreException" ->
+                        Ok (Some (TestMemberSuccess.Ignored (Option.ofObj exc.Message)))
+                    | "NUnit.Framework.InconclusiveException" ->
+                        Ok (Some (TestMemberSuccess.Inconclusive (Option.ofObj exc.Message)))
+                    | _ -> Error orig
+                | Error orig -> Error orig
 
-        match result, tearDownResult with
-        | Ok None, Ok () -> Ok TestMemberSuccess.Ok, metadata
-        | Ok (Some s), Ok () -> Ok s, metadata
-        | Error e, Ok ()
-        | Ok _, Error e -> Error [ e ], metadata
-        | Error e1, Error e2 -> Error [ e1 ; e2 ], metadata
+            // Unconditionally run TearDown after tests, even if tests failed.
+            sw.Start ()
+            let! tearDownResult = runMethods TestFailure.TearDownFailed tearDown [||]
+            sw.Stop ()
+
+            let metadata = metadata ()
+
+            return
+                match result, tearDownResult with
+                | Ok None, Ok () -> Ok TestMemberSuccess.Ok, metadata
+                | Ok (Some s), Ok () -> Ok s, metadata
+                | Error e, Ok ()
+                | Ok _, Error e -> Error [ e ], metadata
+                | Error e1, Error e2 -> Error [ e1 ; e2 ], metadata
+        }
 
     let private getValues (test : SingleTestMethod) =
         let valuesAttrs =
@@ -395,20 +402,22 @@ module TestFixture =
         |> Seq.map (fun (testGuid, args) ->
             task {
                 let runMe () =
-                    progress.OnTestMemberStart test.Name
-                    let oldValue = contexts.AsyncLocal.Value
-                    let outputId = contexts.NewOutputs ()
-                    contexts.AsyncLocal.Value <- outputId
+                    async {
+                        progress.OnTestMemberStart test.Name
+                        let oldValue = contexts.AsyncLocal.Value
+                        let outputId = contexts.NewOutputs ()
+                        contexts.AsyncLocal.Value <- outputId
 
-                    let result, meta =
-                        runOne outputId contexts setUp tearDown testGuid test.Method containingObject args
+                        let! result, meta =
+                            runOne outputId contexts setUp tearDown testGuid test.Method containingObject args
 
-                    contexts.AsyncLocal.Value <- oldValue
-                    progress.OnTestMemberFinished test.Name
+                        contexts.AsyncLocal.Value <- oldValue
+                        progress.OnTestMemberFinished test.Name
 
-                    result, meta
+                        return result, meta
+                    }
 
-                let! results, summary = par.Run running test.Parallelize runMe
+                let! results, summary = par.RunAsync running test.Parallelize runMe
 
                 match results with
                 | Ok results -> return Ok results, summary
