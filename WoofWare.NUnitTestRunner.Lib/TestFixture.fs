@@ -102,6 +102,8 @@ module TestFixture =
                             )
                             |> Error
 
+                    let! ct = Async.CancellationToken
+
                     let! result =
                         match result with
                         | Error e -> async.Return (Error (wrap e))
@@ -121,19 +123,43 @@ module TestFixture =
                                     | None -> return! runMethods wrap rest args
                                     | Some e -> return Error (UserMethodFailure.Threw (head.Name, e) |> wrap)
                                 }
-                            | :? Async<unit> as result ->
-                                async {
-                                    let mutable exc = None
-                                    try
-                                        do! result
-                                    with e ->
-                                        exc <- Some e
+                            // The following type-test just unconditionally seems to fail
+                            // | :? Async<unit> as result ->
+                            | ret ->
+                                let ty = ret.GetType ()
 
-                                    match exc with
-                                    | None -> return! runMethods wrap rest args
-                                    | Some e -> return Error (UserMethodFailure.Threw (head.Name, e) |> wrap)
-                                }
-                            | ret -> async.Return (UserMethodFailure.ReturnedNonUnit (head.Name, ret) |> wrap |> Error)
+                                if ty.Namespace = "Microsoft.FSharp.Control" && ty.Name = "FSharpAsync`1" then
+                                    match ty.GenericTypeArguments |> Array.map (fun t -> t.FullName) with
+                                    | [| "Microsoft.FSharp.Core.Unit" |] ->
+                                        let asyncModule = ty.Assembly.GetType ("Microsoft.FSharp.Control.FSharpAsync")
+                                        // let catch = asyncModule.GetMethod("Catch").MakeGenericMethod [| ty.GenericTypeArguments.[0] |]
+                                        // let caught = catch.Invoke ((null: obj), [| ret |])
+                                        let startAsTask =
+                                            asyncModule.GetMethod("StartAsTask").MakeGenericMethod
+                                                [| ty.GenericTypeArguments.[0] |]
+
+                                        let started =
+                                            startAsTask.Invoke ((null : obj), [| ret ; (null : obj) ; (null : obj) |])
+                                            |> unbox<Task>
+
+                                        async {
+                                            let! res = Async.AwaitTask started |> Async.Catch
+
+                                            match res with
+                                            | Choice1Of2 () -> return! runMethods wrap rest args
+                                            | Choice2Of2 e ->
+                                                return
+                                                    Error (
+                                                        UserMethodFailure.Threw (head.Name, started.Exception) |> wrap
+                                                    )
+                                        }
+                                    | _ ->
+                                        UserMethodFailure.ReturnedNonUnit (head.Name, ret)
+                                        |> wrap
+                                        |> Error
+                                        |> async.Return
+                                else
+                                    async.Return (UserMethodFailure.ReturnedNonUnit (head.Name, ret) |> wrap |> Error)
 
                     return result
                 }

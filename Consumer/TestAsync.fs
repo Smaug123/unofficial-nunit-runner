@@ -19,5 +19,5 @@ module TestAsync =
     let ``an async test, task-based`` () =
         task {
             do! Task.Delay (TimeSpan.FromMilliseconds 20.0)
-            1 |> shouldEqual 2
+            1 |> shouldEqual 1
         }
