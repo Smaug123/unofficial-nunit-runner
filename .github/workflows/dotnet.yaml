@@ -96,7 +96,7 @@ jobs:
     - name: Test using self
       run: 'nix develop --command dotnet exec ./WoofWare.NUnitTestRunner/bin/Release/net6.0/WoofWare.NUnitTestRunner.dll ./Consumer/bin/Release/net8.0/Consumer.dll --trx TrxOut/out.trx'
     - name: Parse Trx files
-      uses: NasAmin/trx-parser@v0.6.0
+      uses: NasAmin/trx-parser@v0.7.0
       if: always()
       id: trx-parser
       with:
