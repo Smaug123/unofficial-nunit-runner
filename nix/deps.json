@@ -1,8 +1,8 @@
 [
   {
     "pname": "ApiSurface",
-    "version": "5.0.1",
-    "hash": "sha256-0GMXEMFgWbbE2OGxW+6h4zGgQHg+IZy1aI13Dn97xSU="
+    "version": "5.0.2",
+    "hash": "sha256-zcq1H1ccQzsZQf4kolzoOBSbyz07skihgPAvQ9Jri+E="
   },
   {
     "pname": "fantomas",
@@ -31,13 +31,18 @@
   },
   {
     "pname": "FSharp.Core",
+    "version": "4.3.4",
+    "hash": "sha256-styyo+6mJy+yxE0NZG/b1hxkAjPOnJfMgd9zWzCJ5uk="
+  },
+  {
+    "pname": "FSharp.Core",
     "version": "6.0.1",
     "hash": "sha256-Ehsgt3nCJijpaVuJguC1TPVEKSkJd6PSc07D2ZQSemI="
   },
   {
     "pname": "FSharp.Core",
-    "version": "8.0.403",
-    "hash": "sha256-3XSQp7JUOU5T6gvSQXNfBF4t4gaX4J4xushH+cfM9mE="
+    "version": "9.0.303",
+    "hash": "sha256-AxR6wqodeU23KOTgkUfIgbavgbcSuzD4UBP+tiFydgA="
   },
   {
     "pname": "FsUnit",
@@ -131,8 +136,18 @@
   },
   {
     "pname": "Microsoft.NETCore.Platforms",
+    "version": "1.1.0",
+    "hash": "sha256-FeM40ktcObQJk4nMYShB61H/E8B7tIKfl9ObJ0IOcCM="
+  },
+  {
+    "pname": "Microsoft.NETCore.Platforms",
     "version": "1.1.1",
     "hash": "sha256-8hLiUKvy/YirCWlFwzdejD2Db3DaXhHxT7GSZx/znJg="
+  },
+  {
+    "pname": "Microsoft.NETCore.Targets",
+    "version": "1.1.0",
+    "hash": "sha256-0AqQ2gMS8iNlYkrD+BxtIg7cXMnr9xZHtKAuN4bjfaQ="
   },
   {
     "pname": "Microsoft.NETCore.Targets",
@@ -191,8 +206,8 @@
   },
   {
     "pname": "Nerdbank.GitVersioning",
-    "version": "3.8.38-alpha",
-    "hash": "sha256-gPMrVbjOZxXoofczF/pn6eVkLhjVSJIyQrLO2oljrDc="
+    "version": "3.8.118",
+    "hash": "sha256-Hmyy0ZKOmwN4zIhI4+MqoN8geZNc1sd033aZJ6APrO8="
   },
   {
     "pname": "Newtonsoft.Json",
@@ -285,19 +300,9 @@
     "hash": "sha256-EPQ9o1Kin7KzGI5O3U3PUQAZTItSbk9h/i4rViN3WiI="
   },
   {
-    "pname": "System.Memory",
-    "version": "4.6.3",
-    "hash": "sha256-JgeK63WMmumF6L+FH5cwJgYdpqXrSDcgTQwtIgTHKVU="
-  },
-  {
     "pname": "System.Private.Uri",
     "version": "4.3.0",
     "hash": "sha256-fVfgcoP4AVN1E5wHZbKBIOPYZ/xBeSIdsNF+bdukIRM="
-  },
-  {
-    "pname": "System.Reflection.Metadata",
-    "version": "1.6.0",
-    "hash": "sha256-JJfgaPav7UfEh4yRAQdGhLZF1brr0tUWPl6qmfNWq/E="
   },
   {
     "pname": "System.Reflection.Metadata",
