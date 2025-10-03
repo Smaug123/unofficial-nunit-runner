@@ -13,3 +13,7 @@ However, we would recommend phrasing some of them differently, for maximum peace
 
 WoofWare.NUnitTestRunner has *limited* support for parallelism.
 By default, we run tests in parallel, taking half the available processors; we may or may not respect the NUnit parallelism attributes to any given extent that they tell us to be *more* parallel (but we will never incorrectly run tests in parallel).
+
+# Licence
+
+WoofWare.NUnitTestRunner is licensed to you under the MIT licence, a copy of which can be found at [LICENSE](./LICENSE).
