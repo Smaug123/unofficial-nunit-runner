@@ -81,13 +81,13 @@
   },
   {
     "pname": "Microsoft.CodeCoverage",
-    "version": "17.14.1",
-    "hash": "sha256-f8QytG8GvRoP47rO2KEmnDLxIpyesaq26TFjDdW40Gs="
+    "version": "18.0.0",
+    "hash": "sha256-1RNxheCYASMusDC48BXtaO3MhnInw15JVfjfLM1VMGA="
   },
   {
     "pname": "Microsoft.NET.Test.Sdk",
-    "version": "17.14.1",
-    "hash": "sha256-mZUzDFvFp7x1nKrcnRd0hhbNu5g8EQYt8SKnRgdhT/A="
+    "version": "18.0.0",
+    "hash": "sha256-9iW+9mvMeZgDXwSoR08bnvRNsN4jT8OVWcjq3lcE+cs="
   },
   {
     "pname": "Microsoft.NETCore.App.Host.linux-arm64",
@@ -186,13 +186,13 @@
   },
   {
     "pname": "Microsoft.TestPlatform.ObjectModel",
-    "version": "17.14.1",
-    "hash": "sha256-QMf6O+w0IT+16Mrzo7wn+N20f3L1/mDhs/qjmEo1rYs="
+    "version": "18.0.0",
+    "hash": "sha256-O/ivHdoIO+q1n0byJ9OZO4quOqACOD3K3Qm00wfhuZk="
   },
   {
     "pname": "Microsoft.TestPlatform.TestHost",
-    "version": "17.14.1",
-    "hash": "sha256-1cxHWcvHRD7orQ3EEEPPxVGEkTpxom1/zoICC9SInJs="
+    "version": "18.0.0",
+    "hash": "sha256-qAIX2Rqxrnh1xaYRjCbkkvvMm407oyKihqyVjURX5wY="
   },
   {
     "pname": "Myriad.Core",
@@ -346,18 +346,18 @@
   },
   {
     "pname": "WoofWare.Myriad.Plugins",
-    "version": "8.1.1",
-    "hash": "sha256-Cx7/+5+qc8lhxb0On/OW58PrabadMfbcNP1TvLZGHrY="
+    "version": "9.0.2",
+    "hash": "sha256-qSrNtRFMhqeZJGgWbTr5hPR1bi4WFpyX2/OABgDTzFM="
   },
   {
     "pname": "WoofWare.Myriad.Plugins.Attributes",
-    "version": "3.7.1",
-    "hash": "sha256-Mn0OVvC/AwTYg6+3MCKLkNKGGSdzLfBOaLapxHsUDCw="
+    "version": "3.7.3",
+    "hash": "sha256-scdokAtktZZ6K8c/eXm2DKtPzQPZrJLJ0cnu652uYuY="
   },
   {
     "pname": "WoofWare.PrattParser",
-    "version": "0.2.4",
-    "hash": "sha256-aNTa2C300jUCsQ+iVSoothbCvBWdg7OzCJknwG5HV6g="
+    "version": "0.2.5",
+    "hash": "sha256-6+74AMxVIBa5rYO34Hlm02zPtRSvpcvUA6cqeYB3WoQ="
   },
   {
     "pname": "WoofWare.Whippet.Fantomas",
