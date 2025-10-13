@@ -51,8 +51,8 @@
   },
   {
     "pname": "Microsoft.ApplicationInsights",
-    "version": "2.22.0",
-    "hash": "sha256-mUQ63atpT00r49ca50uZu2YCiLg3yd6r3HzTryqcuEA="
+    "version": "2.23.0",
+    "hash": "sha256-5sf3bg7CZZjHseK+F3foOchEhmVeioePxMZVvS6Rjb0="
   },
   {
     "pname": "Microsoft.AspNetCore.App.Ref",
@@ -156,33 +156,38 @@
   },
   {
     "pname": "Microsoft.Testing.Extensions.Telemetry",
-    "version": "1.5.3",
-    "hash": "sha256-bIXwPSa3jkr2b6xINOqMUs6/uj/r4oVFM7xq3uVIZDU="
+    "version": "1.9.0",
+    "hash": "sha256-JT91ThKLEyoRS/8ZJqZwlSTT7ofC2QhNqPFI3pYmMaw="
   },
   {
     "pname": "Microsoft.Testing.Extensions.TrxReport.Abstractions",
-    "version": "1.5.3",
-    "hash": "sha256-IfMRfcyaIKEMRtx326ICKtinDBEfGw/Sv8ZHawJ96Yc="
+    "version": "1.9.0",
+    "hash": "sha256-oscZOEKw7gM6eRdDrOS3x+CwqIvXWRmfmi0ugCxBRw0="
   },
   {
     "pname": "Microsoft.Testing.Extensions.VSTestBridge",
-    "version": "1.5.3",
-    "hash": "sha256-XpM/yFjhLSsuzyDV+xKubs4V1zVVYiV05E0+N4S1h0g="
+    "version": "1.9.0",
+    "hash": "sha256-CadXLWD093sUDaWhnppzD9LvpxSRqqt93ZEOFiIAPyw="
   },
   {
     "pname": "Microsoft.Testing.Platform",
-    "version": "1.5.3",
-    "hash": "sha256-y61Iih6w5D79dmrj2V675mcaeIiHoj1HSa1FRit2BLM="
+    "version": "1.9.0",
+    "hash": "sha256-6nzjoYbJOh7v/GB7d+TDuM0l/xglCshFX6KWjg7+cFI="
   },
   {
     "pname": "Microsoft.Testing.Platform.MSBuild",
-    "version": "1.5.3",
-    "hash": "sha256-YspvjE5Jfi587TAfsvfDVJXNrFOkx1B3y1CKV6m7YLY="
+    "version": "1.9.0",
+    "hash": "sha256-/bileP4b+9RZp8yjgS6eynXwc2mohyyzf6p/0LZJd8I="
+  },
+  {
+    "pname": "Microsoft.TestPlatform.AdapterUtilities",
+    "version": "17.13.0",
+    "hash": "sha256-Vr+3Tad/h/nk7f/5HMExn3HvCGFCarehFAzJSfCBaOc="
   },
   {
     "pname": "Microsoft.TestPlatform.ObjectModel",
-    "version": "17.12.0",
-    "hash": "sha256-3XBHBSuCxggAIlHXmKNQNlPqMqwFlM952Av6RrLw1/w="
+    "version": "17.13.0",
+    "hash": "sha256-6S0fjfj8vA+h6dJVNwLi6oZhYDO/I/6hBZaq2VTW+Uk="
   },
   {
     "pname": "Microsoft.TestPlatform.ObjectModel",
@@ -251,8 +256,8 @@
   },
   {
     "pname": "NUnit3TestAdapter",
-    "version": "5.0.0",
-    "hash": "sha256-7jZM4qAbIzne3AcdFfMbvbgogqpxvVe6q2S7Ls8xQy0="
+    "version": "5.2.0",
+    "hash": "sha256-ybTutL4VkX/fq61mS+O3Ruh+adic4fpv+MKgQ0IZvGg="
   },
   {
     "pname": "runtime.any.System.Runtime",
@@ -271,8 +276,8 @@
   },
   {
     "pname": "Spectre.Console",
-    "version": "0.51.1",
-    "hash": "sha256-FQAK07dEwEsNYVI1T3S488LHv8AXJ+ZeA9N2hPpWBoo="
+    "version": "0.52.0",
+    "hash": "sha256-enGa3do7uHQFJOGha+IJZB/rlYhZDvLYbNYgZ4B5V8g="
   },
   {
     "pname": "System.Collections.Immutable",
