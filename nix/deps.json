@@ -276,8 +276,8 @@
   },
   {
     "pname": "Spectre.Console",
-    "version": "0.52.0",
-    "hash": "sha256-enGa3do7uHQFJOGha+IJZB/rlYhZDvLYbNYgZ4B5V8g="
+    "version": "0.53.0",
+    "hash": "sha256-XnzZoDD32DZqK/tmPVaXaclJJzb25SyMLzQ7xX3XLQw="
   },
   {
     "pname": "System.Collections.Immutable",
