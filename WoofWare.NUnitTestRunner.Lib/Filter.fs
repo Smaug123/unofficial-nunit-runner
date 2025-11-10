@@ -163,7 +163,7 @@ module internal ParsedFilter =
 
         match token.Type with
         | TokenType.QuotedString ->
-            // +1 and -1, because the trivia contains the initial and terminal quote mark
+            // +1 to skip the initial quote; len includes the initial quote but excludes the terminal quote
             inputString.Substring (start + 1, len - 1)
             |> unescape
             |> ParsedFilter.String
