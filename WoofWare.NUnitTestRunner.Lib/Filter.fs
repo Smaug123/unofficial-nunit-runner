@@ -196,7 +196,12 @@ module internal ParsedFilter =
                 ConsumeBeforeInitialToken = false
                 ConsumeAfterFinalToken = false
                 BoundaryTokens = [ TokenType.CloseParen ]
-                Construct = List.exactlyOne
+                Construct =
+                    fun l ->
+                        match List.tryExactlyOne l with
+                        | None -> failwith "expected exactly one token in stream"
+                        | Some None -> failwith "expected parens to have contents"
+                        | Some (Some x) -> x
             }
 
     let parse (s : string) : ParsedFilter =
