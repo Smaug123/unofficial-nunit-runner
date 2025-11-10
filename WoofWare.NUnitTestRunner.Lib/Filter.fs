@@ -108,7 +108,8 @@ module internal Lexer =
                         i <- i + 1
                     | _ ->
                         yield Token.single TokenType.Not startI 1
-                        i <- i + 1
+                        // Don't advance i here - we only consumed the '!' character
+                        ()
                 | Token.SingleChar token, State.Awaiting ->
                     i <- i + 1
                     yield token
