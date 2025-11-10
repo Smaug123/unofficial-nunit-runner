@@ -108,7 +108,8 @@ module internal Lexer =
                         i <- i + 1
                     | _ ->
                         yield Token.single TokenType.Not startI 1
-                        i <- i + 1
+                        // Don't advance i here - we only consumed the '!' character
+                        ()
                 | Token.SingleChar token, State.Awaiting ->
                     i <- i + 1
                     yield token
@@ -162,7 +163,7 @@ module internal ParsedFilter =
 
         match token.Type with
         | TokenType.QuotedString ->
-            // +1 and -1, because the trivia contains the initial and terminal quote mark
+            // +1 to skip the initial quote; len includes the initial quote but excludes the terminal quote
             inputString.Substring (start + 1, len - 1)
             |> unescape
             |> ParsedFilter.String

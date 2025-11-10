@@ -123,3 +123,15 @@ module TestFilter =
     [<TestCaseSource(nameof xmlExamples)>]
     let ``XML examples`` (example : string, expected : Filter) =
         Filter.parse example |> shouldEqual expected
+
+    let negationExamples =
+        [
+            "!Name=foo", Filter.Not (Filter.Name (Match.Exact "foo"))
+            "!FullyQualifiedName=bar", Filter.Not (Filter.FullyQualifiedName (Match.Exact "bar"))
+            "!TestCategory=baz", Filter.Not (Filter.TestCategory (Match.Exact "baz"))
+        ]
+        |> List.map TestCaseData
+
+    [<TestCaseSource(nameof negationExamples)>]
+    let ``Negation examples`` (example : string, expected : Filter) =
+        Filter.parse example |> shouldEqual expected
