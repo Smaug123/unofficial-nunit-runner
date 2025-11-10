@@ -21,8 +21,8 @@
   },
   {
     "pname": "FsCheck",
-    "version": "3.3.1",
-    "hash": "sha256-k65ksdOSOGz+meRUUND+yuqJtm5ChaKuaxmRIdKzx2Y="
+    "version": "3.3.2",
+    "hash": "sha256-3ydyTGpqySynjbcWbmFVeCBnT3KDH3miPSJYJlyxrGs="
   },
   {
     "pname": "fsharp-analyzers",
@@ -211,8 +211,8 @@
   },
   {
     "pname": "Nerdbank.GitVersioning",
-    "version": "3.8.118",
-    "hash": "sha256-Hmyy0ZKOmwN4zIhI4+MqoN8geZNc1sd033aZJ6APrO8="
+    "version": "3.9.50",
+    "hash": "sha256-BiBfXwr8ob2HTaFk2L5TwAgtvd/EPoqudSI9nhAjQPI="
   },
   {
     "pname": "Newtonsoft.Json",
@@ -361,8 +361,8 @@
   },
   {
     "pname": "WoofWare.PrattParser",
-    "version": "0.2.5",
-    "hash": "sha256-6+74AMxVIBa5rYO34Hlm02zPtRSvpcvUA6cqeYB3WoQ="
+    "version": "0.3.1",
+    "hash": "sha256-y1m9gTNH1ECDHSFpjWBDkJz7uAQmzp64eGIW3d7hoZQ="
   },
   {
     "pname": "WoofWare.Whippet.Fantomas",
