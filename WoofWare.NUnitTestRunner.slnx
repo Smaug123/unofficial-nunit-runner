@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="Consumer/Consumer.fsproj" />
+  <Project Path="FailingConsumer/FailingConsumer.fsproj" />
+  <Project Path="WoofWare.NUnitTestRunner.Lib/WoofWare.NUnitTestRunner.Lib.fsproj" />
+  <Project Path="WoofWare.NUnitTestRunner.StartupHook/WoofWare.NUnitTestRunner.StartupHook.csproj" />
+  <Project Path="WoofWare.NUnitTestRunner.StartupHookLogic/WoofWare.NUnitTestRunner.StartupHookLogic.csproj" />
+  <Project Path="WoofWare.NUnitTestRunner/WoofWare.NUnitTestRunner.fsproj" />
+  <Project Path="WoofWare.NUnitTestRunner/WoofWare.NUnitTestRunner.Test/WoofWare.NUnitTestRunner.Test.fsproj" />
+</Solution>
