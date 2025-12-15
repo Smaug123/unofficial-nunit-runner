@@ -209,12 +209,12 @@ jobs:
     - name: Pack
       run: nix develop --command dotnet pack --configuration Release
     - name: Upload NuGet artifact (lib)
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: nuget-package-lib
         path: WoofWare.NUnitTestRunner.Lib/bin/Release/WoofWare.NUnitTestRunner.Lib.*.nupkg
     - name: Upload NuGet artifact (tool)
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: nuget-package-tool
         path: WoofWare.NUnitTestRunner/bin/Release/WoofWare.NUnitTestRunner.*.nupkg
