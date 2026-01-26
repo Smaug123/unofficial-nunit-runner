@@ -29,9 +29,9 @@ jobs:
       with:
         fetch-depth: 0 # so that NerdBank.GitVersioning has access to history
     - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@1e3c5df3156622df83bb8f5c467619557d02e284
+      uses: DeterminateSystems/nix-installer-action@58e64ed13a4f3f90ba0cba819752b6df4b548da8
     - name: Enable Nix cache
-      uses: DeterminateSystems/magic-nix-cache-action@18f387d6764e62a1ef95201d3ad9d594a2b0a455
+      uses: DeterminateSystems/magic-nix-cache-action@b4ad0b1e587499958543d6e793cd46510a21e7c2
     - name: Restore dependencies
       run: nix develop --command dotnet restore
     - name: Build
@@ -47,9 +47,9 @@ jobs:
       with:
         fetch-depth: 0 # so that NerdBank.GitVersioning has access to history
     - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@1e3c5df3156622df83bb8f5c467619557d02e284
+      uses: DeterminateSystems/nix-installer-action@58e64ed13a4f3f90ba0cba819752b6df4b548da8
     - name: Enable Nix cache
-      uses: DeterminateSystems/magic-nix-cache-action@18f387d6764e62a1ef95201d3ad9d594a2b0a455
+      uses: DeterminateSystems/magic-nix-cache-action@b4ad0b1e587499958543d6e793cd46510a21e7c2
     - name: Restore dependencies
       run: nix develop --command dotnet restore
     - name: Build
@@ -83,9 +83,9 @@ jobs:
       with:
         fetch-depth: 0 # so that NerdBank.GitVersioning has access to history
     - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@1e3c5df3156622df83bb8f5c467619557d02e284
+      uses: DeterminateSystems/nix-installer-action@58e64ed13a4f3f90ba0cba819752b6df4b548da8
     - name: Enable Nix cache
-      uses: DeterminateSystems/magic-nix-cache-action@18f387d6764e62a1ef95201d3ad9d594a2b0a455
+      uses: DeterminateSystems/magic-nix-cache-action@b4ad0b1e587499958543d6e793cd46510a21e7c2
     - name: Restore dependencies
       run: nix develop --command dotnet restore
     - name: Build
@@ -110,9 +110,9 @@ jobs:
         with:
           fetch-depth: 0 # so that NerdBank.GitVersioning has access to history
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@1e3c5df3156622df83bb8f5c467619557d02e284
+        uses: DeterminateSystems/nix-installer-action@58e64ed13a4f3f90ba0cba819752b6df4b548da8
       - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@18f387d6764e62a1ef95201d3ad9d594a2b0a455
+        uses: DeterminateSystems/magic-nix-cache-action@b4ad0b1e587499958543d6e793cd46510a21e7c2
       - name: Prepare analyzers
         run: nix develop --command dotnet restore analyzers/analyzers.fsproj
       - name: Build project
@@ -126,9 +126,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@1e3c5df3156622df83bb8f5c467619557d02e284
+        uses: DeterminateSystems/nix-installer-action@58e64ed13a4f3f90ba0cba819752b6df4b548da8
       - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@18f387d6764e62a1ef95201d3ad9d594a2b0a455
+        uses: DeterminateSystems/magic-nix-cache-action@b4ad0b1e587499958543d6e793cd46510a21e7c2
       - name: Build
         run: nix build
       - name: Reproducibility check
@@ -140,9 +140,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@1e3c5df3156622df83bb8f5c467619557d02e284
+        uses: DeterminateSystems/nix-installer-action@58e64ed13a4f3f90ba0cba819752b6df4b548da8
       - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@18f387d6764e62a1ef95201d3ad9d594a2b0a455
+        uses: DeterminateSystems/magic-nix-cache-action@b4ad0b1e587499958543d6e793cd46510a21e7c2
       - name: Run Fantomas
         run: nix run .#fantomas -- --check .
 
@@ -152,9 +152,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@1e3c5df3156622df83bb8f5c467619557d02e284
+        uses: DeterminateSystems/nix-installer-action@58e64ed13a4f3f90ba0cba819752b6df4b548da8
       - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@18f387d6764e62a1ef95201d3ad9d594a2b0a455
+        uses: DeterminateSystems/magic-nix-cache-action@b4ad0b1e587499958543d6e793cd46510a21e7c2
       - name: Run Alejandra
         run: nix develop --command alejandra --check .
 
@@ -164,9 +164,9 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@1e3c5df3156622df83bb8f5c467619557d02e284
+        uses: DeterminateSystems/nix-installer-action@58e64ed13a4f3f90ba0cba819752b6df4b548da8
       - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@18f387d6764e62a1ef95201d3ad9d594a2b0a455
+        uses: DeterminateSystems/magic-nix-cache-action@b4ad0b1e587499958543d6e793cd46510a21e7c2
       - name: Run link checker
         run: nix develop --command markdown-link-check README.md
 
@@ -176,9 +176,9 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@1e3c5df3156622df83bb8f5c467619557d02e284
+        uses: DeterminateSystems/nix-installer-action@58e64ed13a4f3f90ba0cba819752b6df4b548da8
       - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@18f387d6764e62a1ef95201d3ad9d594a2b0a455
+        uses: DeterminateSystems/magic-nix-cache-action@b4ad0b1e587499958543d6e793cd46510a21e7c2
       - name: Flake check
         run: nix flake check
 
@@ -189,9 +189,9 @@ jobs:
       with:
         fetch-depth: 0 # so that NerdBank.GitVersioning has access to history
     - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@1e3c5df3156622df83bb8f5c467619557d02e284
+      uses: DeterminateSystems/nix-installer-action@58e64ed13a4f3f90ba0cba819752b6df4b548da8
     - name: Enable Nix cache
-      uses: DeterminateSystems/magic-nix-cache-action@18f387d6764e62a1ef95201d3ad9d594a2b0a455
+      uses: DeterminateSystems/magic-nix-cache-action@b4ad0b1e587499958543d6e793cd46510a21e7c2
     - name: Restore dependencies
       run: nix develop --command dotnet restore
     - name: Build
@@ -254,7 +254,7 @@ jobs:
           name: nuget-package-lib
           path: packed
       - name: Attest Build Provenance
-        uses: actions/attest-build-provenance@00014ed6ed5efc5b1ab7f7f34a39eb55d41aa4f8 # v3.1.0
+        uses: actions/attest-build-provenance@96278af6caaf10aea03fd8d33a09a777ca52d62f # v3.2.0
         with:
           subject-path: "packed/*.nupkg"
 
@@ -273,7 +273,7 @@ jobs:
           name: nuget-package-tool
           path: packed
       - name: Attest Build Provenance
-        uses: actions/attest-build-provenance@00014ed6ed5efc5b1ab7f7f34a39eb55d41aa4f8 # v3.1.0
+        uses: actions/attest-build-provenance@96278af6caaf10aea03fd8d33a09a777ca52d62f # v3.2.0
         with:
           subject-path: "packed/*.nupkg"
 
@@ -289,9 +289,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@1e3c5df3156622df83bb8f5c467619557d02e284
+        uses: DeterminateSystems/nix-installer-action@58e64ed13a4f3f90ba0cba819752b6df4b548da8
       - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@18f387d6764e62a1ef95201d3ad9d594a2b0a455
+        uses: DeterminateSystems/magic-nix-cache-action@b4ad0b1e587499958543d6e793cd46510a21e7c2
       - name: Download NuGet artifact
         uses: actions/download-artifact@v7
         with:
@@ -325,9 +325,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@1e3c5df3156622df83bb8f5c467619557d02e284
+        uses: DeterminateSystems/nix-installer-action@58e64ed13a4f3f90ba0cba819752b6df4b548da8
       - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@18f387d6764e62a1ef95201d3ad9d594a2b0a455
+        uses: DeterminateSystems/magic-nix-cache-action@b4ad0b1e587499958543d6e793cd46510a21e7c2
       - name: Download NuGet artifact
         uses: actions/download-artifact@v7
         with:
