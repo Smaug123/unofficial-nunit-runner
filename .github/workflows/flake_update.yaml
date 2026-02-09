@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@58e64ed13a4f3f90ba0cba819752b6df4b548da8
+        uses: DeterminateSystems/nix-installer-action@a4f499a84c7bd15903c67fa79a1d98dd9b6d8c84
       - name: Enable Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@b4ad0b1e587499958543d6e793cd46510a21e7c2
 
