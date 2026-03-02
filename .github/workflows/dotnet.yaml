@@ -214,7 +214,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download NuGet artifact (lib)
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: nuget-package-lib
           path: packed-lib
@@ -222,7 +222,7 @@ jobs:
         # Verify that there is exactly one nupkg in the artifact that would be NuGet published
         run: if [[ $(find packed-lib -maxdepth 1 -name 'WoofWare.NUnitTestRunner.Lib.*.nupkg' -printf c | wc -c) -ne "1" ]]; then exit 1; fi
       - name: Download NuGet artifact (tool)
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: nuget-package-tool
           path: packed-tool
@@ -249,7 +249,7 @@ jobs:
       contents: read
     steps:
       - name: Download NuGet artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: nuget-package-lib
           path: packed
@@ -268,7 +268,7 @@ jobs:
       contents: read
     steps:
       - name: Download NuGet artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: nuget-package-tool
           path: packed
@@ -293,7 +293,7 @@ jobs:
       - name: Enable Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@cec65ff6f104850203b152861d3f9e5f1747885d
       - name: Download NuGet artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: nuget-package-lib
           path: packed
@@ -329,7 +329,7 @@ jobs:
       - name: Enable Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@cec65ff6f104850203b152861d3f9e5f1747885d
       - name: Download NuGet artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: nuget-package-tool
           path: packed
@@ -360,7 +360,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Download NuGet artifact (tool)
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{ matrix.artifact }}
       - name: Compute package path
@@ -396,7 +396,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Download NuGet artifact (tool)
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{ matrix.artifact }}
       - name: Compute package path
