@@ -14,9 +14,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@95f009f8cba987d36d7e3396d29de81b2883654a
+        uses: DeterminateSystems/nix-installer-action@d96bc962e61b3049ce8128d03d57a1144fa96539
       - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@20eea2e172f7f7487136e7a1a2f5b37aeb0e67bd
+        uses: DeterminateSystems/magic-nix-cache-action@cec65ff6f104850203b152861d3f9e5f1747885d
 
       - name: Update Nix flake
         run: 'nix flake update'
