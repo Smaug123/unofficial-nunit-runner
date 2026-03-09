@@ -57,7 +57,7 @@
     <PackageReference Include="WoofWare.PrattParser" Version="0.3.2" />
     <PackageReference Update="FSharp.Core" Version="6.0.1" />
     <PackageReference Include="WoofWare.DotnetRuntimeLocator" Version="0.1.12" />
-    <PackageReference Include="Myriad.SDK" Version="0.8.3" PrivateAssets="all" />
+    <PackageReference Include="Myriad.SDK" Version="0.85.0" PrivateAssets="all" />
     <PackageReference Include="WoofWare.Myriad.Plugins" Version="$(WoofWareMyriadPluginVersion)" PrivateAssets="all" />
   </ItemGroup>
 
