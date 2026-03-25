@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@d96bc962e61b3049ce8128d03d57a1144fa96539
+        uses: DeterminateSystems/nix-installer-action@9a59e15a74545c99a626ba594edcd0d02189e670
       - name: Enable Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@cec65ff6f104850203b152861d3f9e5f1747885d
 
@@ -32,7 +32,7 @@ jobs:
 
       - name: Create token
         id: generate-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           # https://github.com/actions/create-github-app-token/issues/136
           app-id: ${{ secrets.APP_ID }}
