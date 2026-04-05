@@ -63,7 +63,7 @@
           packages = [
             dotnet-sdk
             pkgs.alejandra
-            pkgs.nodePackages.markdown-link-check
+            pkgs.lychee
             pkgs.shellcheck
             pkgs.xmlstarlet
           ];
