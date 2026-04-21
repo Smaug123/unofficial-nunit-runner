@@ -31,7 +31,7 @@ jobs:
     - name: Install Nix
       uses: DeterminateSystems/nix-installer-action@92148bb48b9a0c5458c53dd0b368fbfbfbaa3210
     - name: Enable Nix cache
-      uses: DeterminateSystems/magic-nix-cache-action@1828eb4e5414b8dfe36daae53ea3e4b8c3fdec7a
+      uses: DeterminateSystems/magic-nix-cache-action@b4a9864e3a8ab8179be30f2e70fd71fe9996bb9d
     - name: Restore dependencies
       run: nix develop --command dotnet restore
     - name: Build
@@ -49,7 +49,7 @@ jobs:
     - name: Install Nix
       uses: DeterminateSystems/nix-installer-action@92148bb48b9a0c5458c53dd0b368fbfbfbaa3210
     - name: Enable Nix cache
-      uses: DeterminateSystems/magic-nix-cache-action@1828eb4e5414b8dfe36daae53ea3e4b8c3fdec7a
+      uses: DeterminateSystems/magic-nix-cache-action@b4a9864e3a8ab8179be30f2e70fd71fe9996bb9d
     - name: Restore dependencies
       run: nix develop --command dotnet restore
     - name: Build
@@ -85,7 +85,7 @@ jobs:
     - name: Install Nix
       uses: DeterminateSystems/nix-installer-action@92148bb48b9a0c5458c53dd0b368fbfbfbaa3210
     - name: Enable Nix cache
-      uses: DeterminateSystems/magic-nix-cache-action@1828eb4e5414b8dfe36daae53ea3e4b8c3fdec7a
+      uses: DeterminateSystems/magic-nix-cache-action@b4a9864e3a8ab8179be30f2e70fd71fe9996bb9d
     - name: Restore dependencies
       run: nix develop --command dotnet restore
     - name: Build
@@ -112,7 +112,7 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@92148bb48b9a0c5458c53dd0b368fbfbfbaa3210
       - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@1828eb4e5414b8dfe36daae53ea3e4b8c3fdec7a
+        uses: DeterminateSystems/magic-nix-cache-action@b4a9864e3a8ab8179be30f2e70fd71fe9996bb9d
       - name: Prepare analyzers
         run: nix develop --command dotnet restore analyzers/analyzers.fsproj
       - name: Build project
@@ -128,7 +128,7 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@92148bb48b9a0c5458c53dd0b368fbfbfbaa3210
       - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@1828eb4e5414b8dfe36daae53ea3e4b8c3fdec7a
+        uses: DeterminateSystems/magic-nix-cache-action@b4a9864e3a8ab8179be30f2e70fd71fe9996bb9d
       - name: Build
         run: nix build
       - name: Reproducibility check
@@ -142,7 +142,7 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@92148bb48b9a0c5458c53dd0b368fbfbfbaa3210
       - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@1828eb4e5414b8dfe36daae53ea3e4b8c3fdec7a
+        uses: DeterminateSystems/magic-nix-cache-action@b4a9864e3a8ab8179be30f2e70fd71fe9996bb9d
       - name: Run Fantomas
         run: nix run .#fantomas -- --check .
 
@@ -154,7 +154,7 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@92148bb48b9a0c5458c53dd0b368fbfbfbaa3210
       - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@1828eb4e5414b8dfe36daae53ea3e4b8c3fdec7a
+        uses: DeterminateSystems/magic-nix-cache-action@b4a9864e3a8ab8179be30f2e70fd71fe9996bb9d
       - name: Run Alejandra
         run: nix develop --command alejandra --check .
 
@@ -166,7 +166,7 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@92148bb48b9a0c5458c53dd0b368fbfbfbaa3210
       - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@1828eb4e5414b8dfe36daae53ea3e4b8c3fdec7a
+        uses: DeterminateSystems/magic-nix-cache-action@b4a9864e3a8ab8179be30f2e70fd71fe9996bb9d
       - name: Run link checker
         run: nix develop --command lychee README.md
 
@@ -178,7 +178,7 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@92148bb48b9a0c5458c53dd0b368fbfbfbaa3210
       - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@1828eb4e5414b8dfe36daae53ea3e4b8c3fdec7a
+        uses: DeterminateSystems/magic-nix-cache-action@b4a9864e3a8ab8179be30f2e70fd71fe9996bb9d
       - name: Flake check
         run: nix flake check
 
@@ -191,7 +191,7 @@ jobs:
     - name: Install Nix
       uses: DeterminateSystems/nix-installer-action@92148bb48b9a0c5458c53dd0b368fbfbfbaa3210
     - name: Enable Nix cache
-      uses: DeterminateSystems/magic-nix-cache-action@1828eb4e5414b8dfe36daae53ea3e4b8c3fdec7a
+      uses: DeterminateSystems/magic-nix-cache-action@b4a9864e3a8ab8179be30f2e70fd71fe9996bb9d
     - name: Restore dependencies
       run: nix develop --command dotnet restore
     - name: Build
@@ -291,7 +291,7 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@92148bb48b9a0c5458c53dd0b368fbfbfbaa3210
       - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@1828eb4e5414b8dfe36daae53ea3e4b8c3fdec7a
+        uses: DeterminateSystems/magic-nix-cache-action@b4a9864e3a8ab8179be30f2e70fd71fe9996bb9d
       - name: Download NuGet artifact
         uses: actions/download-artifact@v8
         with:
@@ -327,7 +327,7 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@92148bb48b9a0c5458c53dd0b368fbfbfbaa3210
       - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@1828eb4e5414b8dfe36daae53ea3e4b8c3fdec7a
+        uses: DeterminateSystems/magic-nix-cache-action@b4a9864e3a8ab8179be30f2e70fd71fe9996bb9d
       - name: Download NuGet artifact
         uses: actions/download-artifact@v8
         with:
