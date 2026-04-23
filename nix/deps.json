@@ -276,13 +276,13 @@
   },
   {
     "pname": "Spectre.Console",
-    "version": "0.55.0",
-    "hash": "sha256-YPW3qtPFW2Hud+y6vmZidrD8a42oDJefPW8MIwdb4rs="
+    "version": "0.55.2",
+    "hash": "sha256-PmvyqWWej8pT0X/J80Yr9ClMoO96zq7QlJme8AuQ6Tc="
   },
   {
     "pname": "Spectre.Console.Ansi",
-    "version": "0.55.0",
-    "hash": "sha256-6nV1xQurUlpKCPVkbBcn0YLTaF3vvFFRoCjV+NjYox8="
+    "version": "0.55.2",
+    "hash": "sha256-ha2TNW1IOgtkr1NUEs6sSlN6t+hwCEccUUiCGwEen9U="
   },
   {
     "pname": "System.Collections.Immutable",
