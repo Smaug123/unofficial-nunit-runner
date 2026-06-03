@@ -29,7 +29,7 @@ jobs:
       with:
         fetch-depth: 0 # so that NerdBank.GitVersioning has access to history
     - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@00199f951aeb9404028a6e4b95ad42546f73296a
+      uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f
     - name: Enable Nix cache
       uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d
     - name: Restore dependencies
@@ -47,7 +47,7 @@ jobs:
       with:
         fetch-depth: 0 # so that NerdBank.GitVersioning has access to history
     - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@00199f951aeb9404028a6e4b95ad42546f73296a
+      uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f
     - name: Enable Nix cache
       uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d
     - name: Restore dependencies
@@ -83,7 +83,7 @@ jobs:
       with:
         fetch-depth: 0 # so that NerdBank.GitVersioning has access to history
     - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@00199f951aeb9404028a6e4b95ad42546f73296a
+      uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f
     - name: Enable Nix cache
       uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d
     - name: Restore dependencies
@@ -110,7 +110,7 @@ jobs:
         with:
           fetch-depth: 0 # so that NerdBank.GitVersioning has access to history
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@00199f951aeb9404028a6e4b95ad42546f73296a
+        uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f
       - name: Enable Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d
       - name: Prepare analyzers
@@ -126,7 +126,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@00199f951aeb9404028a6e4b95ad42546f73296a
+        uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f
       - name: Enable Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d
       - name: Build
@@ -140,7 +140,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@00199f951aeb9404028a6e4b95ad42546f73296a
+        uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f
       - name: Enable Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d
       - name: Run Fantomas
@@ -152,7 +152,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@00199f951aeb9404028a6e4b95ad42546f73296a
+        uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f
       - name: Enable Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d
       - name: Run Alejandra
@@ -164,7 +164,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # master
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@00199f951aeb9404028a6e4b95ad42546f73296a
+        uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f
       - name: Enable Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d
       - name: Run link checker
@@ -176,7 +176,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # master
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@00199f951aeb9404028a6e4b95ad42546f73296a
+        uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f
       - name: Enable Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d
       - name: Flake check
@@ -189,7 +189,7 @@ jobs:
       with:
         fetch-depth: 0 # so that NerdBank.GitVersioning has access to history
     - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@00199f951aeb9404028a6e4b95ad42546f73296a
+      uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f
     - name: Enable Nix cache
       uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d
     - name: Restore dependencies
@@ -289,7 +289,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@00199f951aeb9404028a6e4b95ad42546f73296a
+        uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f
       - name: Enable Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d
       - name: Download NuGet artifact
@@ -325,7 +325,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@00199f951aeb9404028a6e4b95ad42546f73296a
+        uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f
       - name: Enable Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d
       - name: Download NuGet artifact
