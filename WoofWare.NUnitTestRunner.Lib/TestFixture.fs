@@ -840,7 +840,46 @@ module TestFixture =
                 | Modifier.Explicit None -> "test fixture marked Explicit"
 
             progress.OnTestFixtureSkipped tests.Name reason
-            Task.FromResult []
+
+            let result =
+                match modifier with
+                | Modifier.Explicit reason -> TestMemberSuccess.Explicit reason
+                | Modifier.Ignored reason -> TestMemberSuccess.Ignored reason
+
+            let now = DateTimeOffset.Now
+
+            // The tests didn't run, but they must still be reported (e.g. as NotExecuted in the TRX report),
+            // rather than silently omitted.
+            let skipped =
+                tests.Tests
+                |> List.map (fun test ->
+                    let metadata =
+                        {
+                            Total = TimeSpan.Zero
+                            Start = now
+                            End = now
+                            ComputerName = Environment.MachineName
+                            ExecutionId = Guid.NewGuid ()
+                            // No need to keep these test GUIDs stable: no point trying to run a skipped test
+                            // multiple times.
+                            TestId = Guid.NewGuid ()
+                            TestName = test.Name
+                            ClassName = test.Method.DeclaringType.FullName
+                            StdErr = None
+                            StdOut = None
+                        }
+
+                    test, result, metadata
+                )
+
+            Task.FromResult
+                [
+                    {
+                        Failed = []
+                        Success = skipped
+                        OtherFailures = []
+                    }
+                ]
         | None ->
 
         match tests.Parameters with
