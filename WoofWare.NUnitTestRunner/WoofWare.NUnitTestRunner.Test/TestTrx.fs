@@ -1,6 +1,7 @@
 namespace WoofWare.NUnitTestRunner.Test
 
 open System
+open FsCheck
 open WoofWare.NUnitTestRunner
 open NUnit.Framework
 open FsUnitTyped
@@ -234,3 +235,27 @@ NUnit Adapter 4.5.0.0: Test execution complete
             afterwards.OuterXml |> TrxReport.parse |> Result.get |> Option.get
 
         andParsedAgain |> reportShouldEqual original
+
+    [<Test>]
+    let ``Malformed XML produces an Error, not an exception`` () =
+        match TrxReport.parse "<" with
+        | Error _ -> ()
+        | Ok report -> failwith $"Unexpectedly parsed malformed XML: %O{report}"
+
+    [<Test>]
+    let ``A malformed adapterTypeName URI produces an Error, not an exception`` () =
+        let mangled =
+            (EmbeddedResource.read "Example1.trx").Replace ("executor://nunit3testexecutor/", "not a valid uri")
+
+        match TrxReport.parse mangled with
+        | Error _ -> ()
+        | Ok report -> failwith $"Unexpectedly parsed report with malformed URI: %O{report}"
+
+    [<Test>]
+    let ``Parsing arbitrary input does not throw`` () =
+        let property (s : string) =
+            match s with
+            | null -> ()
+            | s -> TrxReport.parse s |> ignore<Result<TrxReport, string>>
+
+        Check.QuickThrowOnFailure property
