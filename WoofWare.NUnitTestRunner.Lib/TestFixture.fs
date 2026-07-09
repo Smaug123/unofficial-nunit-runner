@@ -604,7 +604,7 @@ module TestFixture =
 
                                         match result with
                                         | Error failure ->
-                                            testFailures.Add (failure, report)
+                                            lock testFailures (fun () -> testFailures.Add (failure, report))
                                             progress.OnTestFailed test.Name failure
                                         | Ok result ->
                                             Interlocked.Increment testSuccess |> ignore<int>
