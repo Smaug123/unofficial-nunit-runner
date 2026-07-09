@@ -16,6 +16,20 @@ module SkippedFixture =
     let secondTest () : unit =
         failwith "should not run: fixture is skipped"
 
+    let sourceCases : int list = [ 1 ; 2 ]
+
+    let dataTest (i : int) : unit =
+        ignore i
+        failwith "should not run: fixture is skipped"
+
+    let sourceTest (i : int) : unit =
+        ignore i
+        failwith "should not run: fixture is skipped"
+
+    let valuesTest ([<Values(true, false)>] b : bool) : unit =
+        ignore b
+        failwith "should not run: fixture is skipped"
+
 [<TestFixture>]
 module TestSkippedFixtures =
 
@@ -29,19 +43,21 @@ module TestSkippedFixtures =
             member _.OnTestMemberSkipped _ = ()
         }
 
+    let private makeTestOfKind (kind : TestKind) (name : string) : SingleTestMethod =
+        {
+            Method = typeof<SkippedFixture.Marker>.DeclaringType.GetMethod name
+            Kind = kind
+            Modifiers = []
+            Categories = []
+            Repeat = None
+            Combinatorial = None
+            Parallelize = None
+        }
+
     let private makeFixture (modifier : Modifier) : TestFixture =
         let moduleType = typeof<SkippedFixture.Marker>.DeclaringType
 
-        let makeTest (name : string) : SingleTestMethod =
-            {
-                Method = moduleType.GetMethod name
-                Kind = TestKind.Single
-                Modifiers = []
-                Categories = []
-                Repeat = None
-                Combinatorial = None
-                Parallelize = None
-            }
+        let makeTest (name : string) : SingleTestMethod = makeTestOfKind TestKind.Single name
 
         { TestFixture.Empty moduleType None [ modifier ] [] with
             Tests =
@@ -123,6 +139,50 @@ module TestSkippedFixtures =
         |> shouldEqual [ nameof SkippedFixture.firstTest, TestMemberSuccess.Ignored (Some "broken") ]
 
         skipped |> Seq.toList |> shouldEqual [ nameof SkippedFixture.secondTest ]
+
+    [<Test>]
+    let ``A skipped fixture reports each individual test case of a data-driven test`` () =
+        let moduleType = typeof<SkippedFixture.Marker>.DeclaringType
+
+        let fixture =
+            { TestFixture.Empty moduleType None [ Modifier.Ignored (Some "broken") ] [] with
+                Tests =
+                    [
+                        makeTestOfKind TestKind.Single (nameof SkippedFixture.firstTest)
+                        makeTestOfKind (TestKind.Data [ [ box 1 ] ; [ box 2 ] ]) (nameof SkippedFixture.dataTest)
+                        makeTestOfKind
+                            (TestKind.Source [ nameof SkippedFixture.sourceCases ])
+                            (nameof SkippedFixture.sourceTest)
+                        makeTestOfKind TestKind.Single (nameof SkippedFixture.valuesTest)
+                    ]
+            }
+
+        use contexts = TestContexts.Empty ()
+        use par = new ParallelQueue (None, None)
+
+        let results =
+            (TestFixture.run contexts par noOpProgress (fun _ _ -> true) fixture).Result
+
+        let results = results |> List.exactlyOne
+        results.Failed |> shouldBeEmpty
+        results.OtherFailures |> shouldBeEmpty
+
+        for _, result, _ in results.Success do
+            result |> shouldEqual (TestMemberSuccess.Ignored (Some "broken"))
+
+        results.Success
+        |> List.map (fun (_, _, metadata) -> metadata.TestName)
+        |> List.sort
+        |> shouldEqual
+            [
+                "dataTest(1)"
+                "dataTest(2)"
+                "firstTest"
+                "sourceTest(1)"
+                "sourceTest(2)"
+                "valuesTest(False)"
+                "valuesTest(True)"
+            ]
 
     [<Test>]
     let ``A skipped parameterised fixture reports each of its tests once per parameter set`` () =

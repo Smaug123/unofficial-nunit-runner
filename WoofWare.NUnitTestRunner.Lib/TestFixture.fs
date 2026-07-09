@@ -64,6 +64,14 @@ type FixtureRunResults =
 [<RequireQualifiedAccess>]
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module TestFixture =
+    /// Human-readable name of one individual run of a test method with the given args, e.g. "myTest(1,hi)".
+    let private individualTestName (test : MethodInfo) (args : obj[]) : string =
+        if args.Length = 0 then
+            test.Name
+        else
+            let argsStr = args |> Seq.map string<obj> |> String.concat ","
+            $"%s{test.Name}(%s{argsStr})"
+
     /// It's possible for multiple things to fail about a test: e.g. the test failed and also the tear-down failed.
     ///
     /// This function does not throw.
@@ -173,12 +181,7 @@ module TestFixture =
             let sw = Stopwatch.StartNew ()
 
             let metadata () =
-                let name =
-                    if args.Length = 0 then
-                        test.Name
-                    else
-                        let argsStr = args |> Seq.map string<obj> |> String.concat ","
-                        $"%s{test.Name}(%s{argsStr})"
+                let name = individualTestName test args
 
                 {
                     End = DateTimeOffset.Now
@@ -273,6 +276,105 @@ module TestFixture =
         else
             Ok None
 
+    /// Enumerate the individual test cases this test method represents (not accounting for any Repeat):
+    /// for each case, an identifier for that case and the args to pass to the method.
+    ///
+    /// Note that this evaluates any TestCaseSource members, so it may run user code, and it may throw
+    /// (e.g. if a TestCaseSource member is missing or is not enumerable).
+    let private getIndividualTestCases (test : SingleTestMethod) : Result<(Guid * obj[]) list, TestMemberFailure> =
+        let values = getValues test
+
+        match values with
+        | Error e -> Error e
+        | Ok values ->
+            match test.Kind, values with
+            | TestKind.Data data, None -> data |> List.map (fun args -> Guid.NewGuid (), Array.ofList args) |> Ok
+            | TestKind.Data _, Some _ ->
+                [
+                    "Test has both the TestCase and Values attributes. Specify one or the other."
+                ]
+                |> TestMemberFailure.Malformed
+                |> Error
+            | TestKind.Single, None -> (Guid.NewGuid (), [||]) |> List.singleton |> Ok
+            | TestKind.Single, Some vals ->
+                let combinatorial =
+                    Option.defaultValue Combinatorial.Combinatorial test.Combinatorial
+
+                match combinatorial with
+                | Combinatorial.Combinatorial ->
+                    vals
+                    |> Seq.map (fun l -> l |> Seq.map (fun v -> v.Value) |> Seq.toList)
+                    |> Seq.toList
+                    |> List.combinations
+                    |> List.map (fun args -> Guid.NewGuid (), Array.ofList args)
+                    |> Ok
+                | Combinatorial.Sequential ->
+                    let maxLength = vals |> Seq.map (fun i -> i.Count) |> Seq.max
+
+                    List.init
+                        maxLength
+                        (fun i ->
+                            let args =
+                                vals
+                                |> Array.map (fun param -> if i >= param.Count then null else param.[i].Value)
+
+                            Guid.NewGuid (), args
+                        )
+                    |> Ok
+            | TestKind.Source _, Some _ ->
+                [
+                    "Test has both the TestCaseSource and Values attributes. Specify one or the other."
+                ]
+                |> TestMemberFailure.Malformed
+                |> Error
+            | TestKind.Source sources, None ->
+                [
+                    for source in sources do
+                        let args =
+                            test.Method.DeclaringType.GetProperty (
+                                source,
+                                BindingFlags.Public
+                                ||| BindingFlags.NonPublic
+                                ||| BindingFlags.Instance
+                                ||| BindingFlags.Static
+                            )
+
+                        // Might not be an IEnumerable of a reference type.
+                        // Concretely, `FSharpList<HttpStatusCode> :> IEnumerable<obj>` fails.
+                        for arg in args.GetValue (null : obj) :?> IEnumerable do
+                            yield
+                                Guid.NewGuid (),
+                                match arg with
+                                | null -> [| (null : obj) |]
+                                | :? Tuple<obj, obj> as (a, b) -> [| a ; b |]
+                                | :? Tuple<obj, obj, obj> as (a, b, c) -> [| a ; b ; c |]
+                                | :? Tuple<obj, obj, obj, obj> as (a, b, c, d) -> [| a ; b ; c ; d |]
+                                // NUnit convention: a source row which is an object array is the argument
+                                // list itself. (Array covariance means this also catches e.g. string[],
+                                // exactly as NUnit's own `is object[]` test does.)
+                                | :? (obj[]) as args -> args
+                                | arg ->
+                                    let argTy = arg.GetType ()
+
+                                    if argTy.FullName = "NUnit.Framework.TestCaseData" then
+                                        let argsMem =
+                                            argTy.GetMethod (
+                                                "get_Arguments",
+                                                BindingFlags.Public
+                                                ||| BindingFlags.Instance
+                                                ||| BindingFlags.FlattenHierarchy
+                                            )
+
+                                        if isNull argsMem then
+                                            failwith "Unexpectedly could not call `.Arguments` on TestCaseData"
+
+                                        // TODO: need to capture this stdout/stderr
+                                        (argsMem.Invoke (arg, [||]) |> unbox<obj[]>)
+                                    else
+                                        [| arg |]
+                ]
+                |> Ok
+
     /// This method should never throw: it only throws if there's a critical logic error in the runner.
     /// Exceptions from the units under test are wrapped up and passed out.
     let private runTestsFromMember
@@ -340,99 +442,7 @@ module TestFixture =
             (Ok result, failureMetadata) |> Task.FromResult |> List.singleton
         | None ->
 
-        let individualTests =
-            let values = getValues test
-
-            match values with
-            | Error e -> Error e
-            | Ok values ->
-                match test.Kind, values with
-                | TestKind.Data data, None -> data |> List.map (fun args -> Guid.NewGuid (), Array.ofList args) |> Ok
-                | TestKind.Data _, Some _ ->
-                    [
-                        "Test has both the TestCase and Values attributes. Specify one or the other."
-                    ]
-                    |> TestMemberFailure.Malformed
-                    |> Error
-                | TestKind.Single, None -> (Guid.NewGuid (), [||]) |> List.singleton |> Ok
-                | TestKind.Single, Some vals ->
-                    let combinatorial =
-                        Option.defaultValue Combinatorial.Combinatorial test.Combinatorial
-
-                    match combinatorial with
-                    | Combinatorial.Combinatorial ->
-                        vals
-                        |> Seq.map (fun l -> l |> Seq.map (fun v -> v.Value) |> Seq.toList)
-                        |> Seq.toList
-                        |> List.combinations
-                        |> List.map (fun args -> Guid.NewGuid (), Array.ofList args)
-                        |> Ok
-                    | Combinatorial.Sequential ->
-                        let maxLength = vals |> Seq.map (fun i -> i.Count) |> Seq.max
-
-                        List.init
-                            maxLength
-                            (fun i ->
-                                let args =
-                                    vals
-                                    |> Array.map (fun param -> if i >= param.Count then null else param.[i].Value)
-
-                                Guid.NewGuid (), args
-                            )
-                        |> Ok
-                | TestKind.Source _, Some _ ->
-                    [
-                        "Test has both the TestCaseSource and Values attributes. Specify one or the other."
-                    ]
-                    |> TestMemberFailure.Malformed
-                    |> Error
-                | TestKind.Source sources, None ->
-                    [
-                        for source in sources do
-                            let args =
-                                test.Method.DeclaringType.GetProperty (
-                                    source,
-                                    BindingFlags.Public
-                                    ||| BindingFlags.NonPublic
-                                    ||| BindingFlags.Instance
-                                    ||| BindingFlags.Static
-                                )
-
-                            // Might not be an IEnumerable of a reference type.
-                            // Concretely, `FSharpList<HttpStatusCode> :> IEnumerable<obj>` fails.
-                            for arg in args.GetValue (null : obj) :?> IEnumerable do
-                                yield
-                                    Guid.NewGuid (),
-                                    match arg with
-                                    | null -> [| (null : obj) |]
-                                    | :? Tuple<obj, obj> as (a, b) -> [| a ; b |]
-                                    | :? Tuple<obj, obj, obj> as (a, b, c) -> [| a ; b ; c |]
-                                    | :? Tuple<obj, obj, obj, obj> as (a, b, c, d) -> [| a ; b ; c ; d |]
-                                    // NUnit convention: a source row which is an object array is the argument
-                                    // list itself. (Array covariance means this also catches e.g. string[],
-                                    // exactly as NUnit's own `is object[]` test does.)
-                                    | :? (obj[]) as args -> args
-                                    | arg ->
-                                        let argTy = arg.GetType ()
-
-                                        if argTy.FullName = "NUnit.Framework.TestCaseData" then
-                                            let argsMem =
-                                                argTy.GetMethod (
-                                                    "get_Arguments",
-                                                    BindingFlags.Public
-                                                    ||| BindingFlags.Instance
-                                                    ||| BindingFlags.FlattenHierarchy
-                                                )
-
-                                            if isNull argsMem then
-                                                failwith "Unexpectedly could not call `.Arguments` on TestCaseData"
-
-                                            // TODO: need to capture this stdout/stderr
-                                            (argsMem.Invoke (arg, [||]) |> unbox<obj[]>)
-                                        else
-                                            [| arg |]
-                    ]
-                    |> Ok
+        let individualTests = getIndividualTestCases test
 
         match individualTests with
         | Error e ->
@@ -859,28 +869,48 @@ module TestFixture =
                 )
 
             // The selected tests didn't run, but they must still be reported (e.g. as NotExecuted in the
-            // TRX report), rather than silently omitted.
+            // TRX report), rather than silently omitted. Like NUnit, we report each individual test case,
+            // which entails evaluating TestCaseSource members even though the tests won't run.
             let skippedInstance () =
                 let skipped =
                     testsToReport
-                    |> List.map (fun test ->
-                        let metadata =
-                            {
-                                Total = TimeSpan.Zero
-                                Start = now
-                                End = now
-                                ComputerName = Environment.MachineName
-                                ExecutionId = Guid.NewGuid ()
-                                // No need to keep these test GUIDs stable: no point trying to run a skipped test
-                                // multiple times.
-                                TestId = Guid.NewGuid ()
-                                TestName = test.Name
-                                ClassName = test.Method.DeclaringType.FullName
-                                StdErr = None
-                                StdOut = None
-                            }
+                    |> List.collect (fun test ->
+                        let cases =
+                            // Enumeration runs user TestCaseSource code, which may fail arbitrarily; a
+                            // skipped fixture must never fail the run, so fall back to reporting the bare
+                            // test method.
+                            try
+                                match getIndividualTestCases test with
+                                | Ok cases ->
+                                    cases
+                                    |> List.map (fun (caseId, args) -> caseId, individualTestName test.Method args)
+                                | Error _ -> [ Guid.NewGuid (), test.Name ]
+                            with _ ->
+                                [ Guid.NewGuid (), test.Name ]
 
-                        test, result, metadata
+                        let count = test.Repeat |> Option.defaultValue 1
+
+                        Seq.init count (fun _ -> cases)
+                        |> Seq.concat
+                        |> Seq.map (fun (caseId, name) ->
+                            let metadata =
+                                {
+                                    Total = TimeSpan.Zero
+                                    Start = now
+                                    End = now
+                                    ComputerName = Environment.MachineName
+                                    ExecutionId = Guid.NewGuid ()
+                                    // Repeats of a case share its identifier, exactly as on the running path.
+                                    TestId = caseId
+                                    TestName = name
+                                    ClassName = test.Method.DeclaringType.FullName
+                                    StdErr = None
+                                    StdOut = None
+                                }
+
+                            test, result, metadata
+                        )
+                        |> Seq.toList
                     )
 
                 {
