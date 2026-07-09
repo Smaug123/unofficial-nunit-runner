@@ -9,6 +9,7 @@
     <ItemGroup>
         <Compile Include="EmbeddedResource.fs" />
         <Compile Include="TestFilter.fs" />
+        <Compile Include="TestFixtureRunner.fs" />
         <Compile Include="TestList.fs" />
         <Compile Include="TestSurface.fs" />
         <Compile Include="TestSynchronizationContext.fs" />
