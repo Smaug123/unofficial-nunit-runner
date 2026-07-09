@@ -408,6 +408,10 @@ module TestFixture =
                                     | :? Tuple<obj, obj> as (a, b) -> [| a ; b |]
                                     | :? Tuple<obj, obj, obj> as (a, b, c) -> [| a ; b ; c |]
                                     | :? Tuple<obj, obj, obj, obj> as (a, b, c, d) -> [| a ; b ; c ; d |]
+                                    // NUnit convention: a source row which is an object array is the argument
+                                    // list itself. (Array covariance means this also catches e.g. string[],
+                                    // exactly as NUnit's own `is object[]` test does.)
+                                    | :? (obj[]) as args -> args
                                     | arg ->
                                         let argTy = arg.GetType ()
 
