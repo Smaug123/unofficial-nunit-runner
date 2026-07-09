@@ -35,6 +35,17 @@ module TestCaseData =
     [<TestCaseSource(nameof optionalRaw)>]
     let ``Consume options, raw`` (s : string option) : unit = s |> shouldEqual s
 
+    let objectArraysSeen = ResizeArray ()
+
+    let objectArrayRawData = [ 3, "hi" ; -10, "bye" ]
+
+    let objectArraySource : obj[] list =
+        objectArrayRawData |> List.map (fun (i, s) -> [| box i ; box s |])
+
+    [<TestCaseSource(nameof objectArraySource)>]
+    let ``Consume object array rows`` (i : int, s : string) =
+        lock objectArraysSeen (fun () -> objectArraysSeen.Add (i, s))
+
     [<TestCase(30, 15, 44, false)>]
     let bug66 (i : int, j : int, k : int, l : bool) =
         i |> shouldEqual 30
@@ -53,3 +64,8 @@ module TestCaseData =
         |> Seq.toList
         |> List.sortBy (fun (a, _, _) -> a)
         |> shouldEqual ((dataSourceRaw @ dataSource2Raw) |> List.sortBy (fun (a, _, _) -> a))
+
+        objectArraysSeen
+        |> Seq.toList
+        |> List.sortBy fst
+        |> shouldEqual (objectArrayRawData |> List.sortBy fst)
