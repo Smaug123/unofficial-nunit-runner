@@ -641,7 +641,10 @@ type TrxTestMethod =
         let adapterTypeName =
             match attrs.TryGetValue "adapterTypeName" with
             | false, _ -> Error "Expected adapterTypeName attribute"
-            | true, v -> Uri v |> Ok
+            | true, v ->
+                match Uri.TryCreate (v, UriKind.Absolute) with
+                | true, uri -> Ok uri
+                | false, _ -> Error $"Could not parse adapterTypeName attribute as a URI: %s{v}"
 
         let className =
             match attrs.TryGetValue "className" with
@@ -1772,7 +1775,17 @@ module TrxReport =
     /// Parse the report. May instead return a human-readable description of why we couldn't parse.
     let parse (s : string) : Result<TrxReport, string> =
         let node = XmlDocument ()
-        node.LoadXml s
+
+        let loaded =
+            try
+                node.LoadXml s
+                Ok ()
+            with :? XmlException as e ->
+                Error $"Could not parse input as XML: %s{e.Message}"
+
+        match loaded with
+        | Error e -> Error e
+        | Ok () ->
 
         match node with
         | NodeWithNamedChild "TestRun" node -> TrxReport.ofXml node

@@ -499,6 +499,26 @@ module TestFixture =
         : FixtureRunResults Task
         =
         task {
+            let testsToRun =
+                tests.Tests
+                |> List.filter (fun test ->
+                    if filter tests test then
+                        true
+                    else
+                        progress.OnTestMemberSkipped test.Name
+                        false
+                )
+
+            if testsToRun.IsEmpty then
+                // No tests are selected, so the fixture's lifecycle methods must not run either.
+                return
+                    {
+                        Failed = []
+                        Success = []
+                        OtherFailures = []
+                    }
+            else
+
             let! running = par.StartTestFixture tests
             progress.OnTestFixtureStart name tests.Tests.Length
 
@@ -564,14 +584,7 @@ module TestFixture =
                     // Don't run any tests if setup failed.
                     Task.FromResult ()
                 | Ok _ ->
-                    tests.Tests
-                    |> Seq.filter (fun test ->
-                        if filter tests test then
-                            true
-                        else
-                            progress.OnTestMemberSkipped test.Name
-                            false
-                    )
+                    testsToRun
                     |> Seq.map (fun test ->
                         task {
                             let testSuccess = ref 0
@@ -595,7 +608,7 @@ module TestFixture =
 
                                         match result with
                                         | Error failure ->
-                                            testFailures.Add (failure, report)
+                                            lock testFailures (fun () -> testFailures.Add (failure, report))
                                             progress.OnTestFailed test.Name failure
                                         | Ok result ->
                                             Interlocked.Increment testSuccess |> ignore<int>
