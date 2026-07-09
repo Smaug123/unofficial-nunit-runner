@@ -87,3 +87,67 @@ module TestSkippedFixtures =
                 nameof SkippedFixture.firstTest, expected
                 nameof SkippedFixture.secondTest, expected
             ]
+
+    [<Test>]
+    let ``A skipped fixture only reports tests which pass the filter`` () =
+        let fixture = makeFixture (Modifier.Ignored (Some "broken"))
+
+        use contexts = TestContexts.Empty ()
+        use par = new ParallelQueue (None, None)
+
+        let skipped = ResizeArray ()
+
+        let progress =
+            { new ITestProgress with
+                member _.OnTestFixtureStart _ _ = ()
+                member _.OnTestFixtureSkipped _ _ = ()
+                member _.OnTestMemberStart _ = ()
+                member _.OnTestFailed _ _ = ()
+                member _.OnTestMemberFinished _ = ()
+
+                member _.OnTestMemberSkipped name =
+                    lock skipped (fun () -> skipped.Add name)
+            }
+
+        let filter (_ : TestFixture) (test : SingleTestMethod) =
+            test.Name = nameof SkippedFixture.firstTest
+
+        let results = (TestFixture.run contexts par progress filter fixture).Result
+
+        let results = results |> List.exactlyOne
+        results.Failed |> shouldBeEmpty
+        results.OtherFailures |> shouldBeEmpty
+
+        results.Success
+        |> List.map (fun (test, result, _) -> test.Name, result)
+        |> shouldEqual [ nameof SkippedFixture.firstTest, TestMemberSuccess.Ignored (Some "broken") ]
+
+        skipped |> Seq.toList |> shouldEqual [ nameof SkippedFixture.secondTest ]
+
+    [<Test>]
+    let ``A skipped parameterised fixture reports each of its tests once per parameter set`` () =
+        let fixture =
+            { makeFixture (Modifier.Explicit None) with
+                Parameters = [ [ box 1 ] ; [ box 2 ] ]
+            }
+
+        use contexts = TestContexts.Empty ()
+        use par = new ParallelQueue (None, None)
+
+        let results =
+            (TestFixture.run contexts par noOpProgress (fun _ _ -> true) fixture).Result
+
+        results |> shouldHaveLength 2
+
+        for result in results do
+            result.Failed |> shouldBeEmpty
+            result.OtherFailures |> shouldBeEmpty
+
+            result.Success
+            |> List.map (fun (test, result, _) -> test.Name, result)
+            |> List.sortBy fst
+            |> shouldEqual
+                [
+                    nameof SkippedFixture.firstTest, TestMemberSuccess.Explicit None
+                    nameof SkippedFixture.secondTest, TestMemberSuccess.Explicit None
+                ]

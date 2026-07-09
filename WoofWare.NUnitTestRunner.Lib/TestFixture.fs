@@ -848,38 +848,55 @@ module TestFixture =
 
             let now = DateTimeOffset.Now
 
-            // The tests didn't run, but they must still be reported (e.g. as NotExecuted in the TRX report),
-            // rather than silently omitted.
-            let skipped =
+            let testsToReport =
                 tests.Tests
-                |> List.map (fun test ->
-                    let metadata =
-                        {
-                            Total = TimeSpan.Zero
-                            Start = now
-                            End = now
-                            ComputerName = Environment.MachineName
-                            ExecutionId = Guid.NewGuid ()
-                            // No need to keep these test GUIDs stable: no point trying to run a skipped test
-                            // multiple times.
-                            TestId = Guid.NewGuid ()
-                            TestName = test.Name
-                            ClassName = test.Method.DeclaringType.FullName
-                            StdErr = None
-                            StdOut = None
-                        }
-
-                    test, result, metadata
+                |> List.filter (fun test ->
+                    if filter tests test then
+                        true
+                    else
+                        progress.OnTestMemberSkipped test.Name
+                        false
                 )
 
-            Task.FromResult
-                [
-                    {
-                        Failed = []
-                        Success = skipped
-                        OtherFailures = []
-                    }
-                ]
+            // The selected tests didn't run, but they must still be reported (e.g. as NotExecuted in the
+            // TRX report), rather than silently omitted.
+            let skippedInstance () =
+                let skipped =
+                    testsToReport
+                    |> List.map (fun test ->
+                        let metadata =
+                            {
+                                Total = TimeSpan.Zero
+                                Start = now
+                                End = now
+                                ComputerName = Environment.MachineName
+                                ExecutionId = Guid.NewGuid ()
+                                // No need to keep these test GUIDs stable: no point trying to run a skipped test
+                                // multiple times.
+                                TestId = Guid.NewGuid ()
+                                TestName = test.Name
+                                ClassName = test.Method.DeclaringType.FullName
+                                StdErr = None
+                                StdOut = None
+                            }
+
+                        test, result, metadata
+                    )
+
+                {
+                    Failed = []
+                    Success = skipped
+                    OtherFailures = []
+                }
+
+            // One skipped instance per parameterisation of the fixture, mirroring the runs which would
+            // have taken place had the fixture not been skipped.
+            let instanceCount =
+                match tests.Parameters with
+                | [] -> 1
+                | pars -> pars.Length
+
+            List.init instanceCount (fun _ -> skippedInstance ()) |> Task.FromResult
         | None ->
 
         match tests.Parameters with
