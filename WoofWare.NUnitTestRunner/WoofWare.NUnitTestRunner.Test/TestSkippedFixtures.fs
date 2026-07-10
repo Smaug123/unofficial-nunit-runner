@@ -185,6 +185,39 @@ module TestSkippedFixtures =
             ]
 
     [<Test>]
+    let ``An individually ignored data-driven test reports each of its cases`` () =
+        let moduleType = typeof<SkippedFixture.Marker>.DeclaringType
+
+        let fixture =
+            { TestFixture.Empty moduleType None [] [] with
+                Tests =
+                    [
+                        { makeTestOfKind (TestKind.Data [ [ box 1 ] ; [ box 2 ] ]) (nameof SkippedFixture.dataTest) with
+                            Modifiers = [ Modifier.Ignored (Some "broken") ]
+                        }
+                    ]
+            }
+
+        use contexts = TestContexts.Empty ()
+        use par = new ParallelQueue (None, None)
+
+        let results =
+            (TestFixture.run contexts par noOpProgress (fun _ _ -> true) fixture).Result
+
+        let results = results |> List.exactlyOne
+        results.Failed |> shouldBeEmpty
+        results.OtherFailures |> shouldBeEmpty
+
+        results.Success
+        |> List.map (fun (_, result, metadata) -> metadata.TestName, result)
+        |> List.sortBy fst
+        |> shouldEqual
+            [
+                "dataTest(1)", TestMemberSuccess.Ignored (Some "broken")
+                "dataTest(2)", TestMemberSuccess.Ignored (Some "broken")
+            ]
+
+    [<Test>]
     let ``A skipped parameterised fixture reports each of its tests once per parameter set`` () =
         let fixture =
             { makeFixture (Modifier.Explicit None) with
