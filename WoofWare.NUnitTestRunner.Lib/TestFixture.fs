@@ -65,9 +65,11 @@ type FixtureRunResults =
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module TestFixture =
     /// Invoke this user-supplied method, awaiting its result if it returns a Task or an F# Async of unit.
+    /// An F# Async result is started with the given cancellation token.
     ///
     /// This function does not throw: failures of the user's code are reported in the Error case.
     let internal runUserMethod
+        (ct : CancellationToken)
         (containingObject : obj)
         (args : obj[])
         (method : MethodInfo)
@@ -133,8 +135,16 @@ module TestFixture =
                         let startAsTask =
                             asyncModule.GetMethod("StartAsTask").MakeGenericMethod [| ty.GenericTypeArguments.[0] |]
 
+                        // Pass our token explicitly: with none supplied, StartAsTask would run the user's
+                        // async on the process-wide default token, which user code can cancel out from
+                        // under us. The option must be built reflectively because it's the FSharpOption
+                        // of the user's FSharp.Core, not ours.
+                        let cancellationToken =
+                            let optionTy = startAsTask.GetParameters().[2].ParameterType
+                            Activator.CreateInstance (optionTy, [| box ct |])
+
                         let started =
-                            startAsTask.Invoke ((null : obj), [| ret ; (null : obj) ; (null : obj) |])
+                            startAsTask.Invoke ((null : obj), [| ret ; (null : obj) ; cancellationToken |])
                             |> unbox<Task>
 
                         let! res = Async.AwaitTask started |> Async.Catch
@@ -153,6 +163,7 @@ module TestFixture =
     ///
     /// This function does not throw.
     let private runOne
+        (ct : CancellationToken)
         (outputId : OutputStreamId)
         (contexts : TestContexts)
         (setUp : MethodInfo list)
@@ -173,7 +184,7 @@ module TestFixture =
             | [] -> async.Return (Ok ())
             | head :: rest ->
                 async {
-                    let! result = runUserMethod containingObject args head
+                    let! result = runUserMethod ct containingObject args head
 
                     match result with
                     | Ok () -> return! runMethods wrap rest args
@@ -482,7 +493,16 @@ module TestFixture =
                         contexts.AsyncLocal.Value <- outputId
 
                         let! result, meta =
-                            runOne outputId contexts setUp tearDown testGuid test.Method containingObject args
+                            runOne
+                                par.CancellationToken
+                                outputId
+                                contexts
+                                setUp
+                                tearDown
+                                testGuid
+                                test.Method
+                                containingObject
+                                args
 
                         contexts.AsyncLocal.Value <- oldValue
                         progress.OnTestMemberFinished test.Name
@@ -570,7 +590,12 @@ module TestFixture =
                             contexts.AsyncLocal.Value <- newOutputs
 
                             let result =
-                                match runUserMethod containingObject [||] su |> Async.RunSynchronously with
+                                match
+                                    Async.RunSynchronously (
+                                        runUserMethod par.CancellationToken containingObject [||] su,
+                                        cancellationToken = par.CancellationToken
+                                    )
+                                with
                                 | Ok () -> None
                                 | Error err -> Some (err, endMetadata newOutputs)
 
@@ -650,7 +675,12 @@ module TestFixture =
                             contexts.AsyncLocal.Value <- outputs
 
                             let result =
-                                match runUserMethod containingObject [||] td |> Async.RunSynchronously with
+                                match
+                                    Async.RunSynchronously (
+                                        runUserMethod par.CancellationToken containingObject [||] td,
+                                        cancellationToken = par.CancellationToken
+                                    )
+                                with
                                 | Ok () -> None
                                 | Error err -> Some (err, endMetadata outputs)
 

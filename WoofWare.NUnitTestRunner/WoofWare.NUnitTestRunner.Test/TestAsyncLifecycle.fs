@@ -27,11 +27,13 @@ module ResultBearingFixture =
 
     let cancellingTest () : Async<unit> =
         async {
-            // This cancels the default token, which is what the runner hands to StartAsTask; our own task
-            // therefore completes through its cancellation continuation rather than by throwing.
+            // Hostile user code: this cancels the process-wide default token. The runner must not have
+            // anything running on that token.
             Async.CancelDefaultToken ()
             do! Async.Sleep 1000
         }
+
+    let sleepingTest () : Async<unit> = async { do! Async.Sleep 10000 }
 
 [<TestFixture>]
 module TestAsyncLifecycle =
@@ -114,16 +116,33 @@ module TestAsyncLifecycle =
         | other -> failwith $"Expected exactly one ReturnedNonUnit test failure, got: %O{other}"
 
     [<Test>]
-    let ``A user async which cancels itself is reported as a real exception`` () =
-        // We can't drive this through TestFixture.run: cancelling the default token also cancels the
-        // runner's own async machinery (which the runner starts without an explicit token), deadlocking
-        // the run. So test the invocation helper directly, running it under a token which the user's
-        // cancellation cannot touch.
-        let method = moduleType.GetMethod (nameof ResultBearingFixture.cancellingTest)
+    let ``Cancelling the default token from user code does not deadlock the runner`` () =
+        let fixture =
+            { TestFixture.Empty moduleType None [] [] with
+                Tests = [ makeTest (nameof ResultBearingFixture.cancellingTest) ]
+            }
+
+        let results = runFixture fixture
+
+        results.OtherFailures |> shouldBeEmpty
+        results.Failed |> shouldBeEmpty
+
+        // The runner's own machinery must not be running on the token the user cancelled, so the user's
+        // async just runs to completion.
+        results.Success
+        |> List.map (fun (test, result, _) -> test.Name, result)
+        |> shouldEqual [ nameof ResultBearingFixture.cancellingTest, TestMemberSuccess.Ok ]
+
+    [<Test>]
+    let ``A cancelled user async is reported as a real exception`` () =
+        let method = moduleType.GetMethod (nameof ResultBearingFixture.sleepingTest)
+
+        use cts = new CancellationTokenSource ()
+        cts.CancelAfter (TimeSpan.FromMilliseconds 50.0)
 
         let result =
             Async.RunSynchronously (
-                TestFixture.runUserMethod (null : obj) [||] method,
+                TestFixture.runUserMethod cts.Token (null : obj) [||] method,
                 cancellationToken = CancellationToken.None
             )
 
