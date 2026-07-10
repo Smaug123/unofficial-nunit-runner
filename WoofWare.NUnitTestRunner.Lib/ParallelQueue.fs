@@ -130,7 +130,6 @@ type private MailboxState =
 
 /// Run some things in parallel.
 /// TODO: actually implement the parallelism! Right now this just runs everything serially.
-/// TODO: consume the cancellation token
 type ParallelQueue
     (parallelism : int option, _scope : Parallelizable<AssemblyParallelScope> option, ?ct : CancellationToken)
     =
@@ -138,6 +137,14 @@ type ParallelQueue
         match parallelism with
         | None -> max (Environment.ProcessorCount / 2) 2
         | Some p -> p
+
+    // The runner's asyncs must never run on the shared default cancellation token: user code can cancel
+    // that token (Async.CancelDefaultToken), which would silently kill the runner's machinery and
+    // deadlock the run. Everything we start runs on this source instead.
+    let cts =
+        match ct with
+        | Some ct -> CancellationTokenSource.CreateLinkedTokenSource ct
+        | None -> new CancellationTokenSource ()
 
     let rec processTask (state : MailboxState) (m : MailboxProcessor<MailboxMessage>) =
         async {
@@ -338,7 +345,7 @@ type ParallelQueue
                                             m.Post MailboxMessage.Reconcile
                                             rc.Reply result
                                         }
-                                        |> Async.StartImmediate
+                                        |> fun comp -> Async.StartImmediate (comp, cancellationToken = cts.Token)
                                     ),
                                     ()
                                 )
@@ -359,8 +366,14 @@ type ParallelQueue
                 return! processTask state m
         }
 
-    let mb = new MailboxProcessor<_> (processTask MailboxState.Idle)
+    let mb =
+        new MailboxProcessor<_> (processTask MailboxState.Idle, cancellationToken = cts.Token)
+
     do mb.Start ()
+
+    /// The token on which all of this queue's asyncs run; cancelled only when the token supplied at
+    /// construction (if any) is cancelled. Run runner-side work on this, never on the default token.
+    member internal _.CancellationToken : CancellationToken = cts.Token
 
     /// Request to run the given async action, freely in parallel with other running tests.
     /// The resulting Task will return when the action has completed.
@@ -376,7 +389,7 @@ type ParallelQueue
             let! result =
                 (fun rc -> MailboxMessage.RunTestAsync (parent, scope, AsyncThunkCrate.make action rc, ec))
                 |> mb.PostAndAsyncReply
-                |> Async.StartAsTask
+                |> fun comp -> Async.StartAsTask (comp, cancellationToken = cts.Token)
 
             match result with
             | Ok o -> return o
@@ -399,7 +412,7 @@ type ParallelQueue
     member _.StartTestFixture (tf : TestFixture) : Task<TestFixtureRunningToken> =
         fun rc -> MailboxMessage.BeginTestFixture (tf, rc)
         |> mb.PostAndAsyncReply
-        |> Async.StartAsTask
+        |> fun comp -> Async.StartAsTask (comp, cancellationToken = cts.Token)
 
     /// Run the given one-time setup for the test fixture.
     member _.RunTestSetup (TestFixtureRunningToken parent) (action : unit -> 'a) : ('a * TestFixtureSetupToken) Task =
@@ -424,6 +437,7 @@ type ParallelQueue
                     )
                 )
                 |> mb.PostAndAsyncReply
+                |> fun comp -> Async.StartAsTask (comp, cancellationToken = cts.Token)
 
             match response with
             | Ok response -> return response, TestFixtureSetupToken parent
@@ -457,6 +471,7 @@ type ParallelQueue
                     )
                 )
                 |> mb.PostAndAsyncReply
+                |> fun comp -> Async.StartAsTask (comp, cancellationToken = cts.Token)
 
             match response with
             | Ok response -> return response, TestFixtureTearDownToken parent
@@ -468,10 +483,11 @@ type ParallelQueue
     member _.EndTestFixture (tf : TestFixtureTearDownToken) : Task<unit> =
         (fun rc -> MailboxMessage.EndTestFixture (tf, rc))
         |> mb.PostAndAsyncReply
-        |> Async.StartAsTask
+        |> fun comp -> Async.StartAsTask (comp, cancellationToken = cts.Token)
 
     interface IDisposable with
         member _.Dispose () =
             // Still race conditions, of course: people could still be submitting after we finish the sync.
             mb.PostAndReply MailboxMessage.Quit
             (mb :> IDisposable).Dispose ()
+            cts.Dispose ()
