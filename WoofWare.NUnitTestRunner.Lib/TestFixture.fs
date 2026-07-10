@@ -375,6 +375,25 @@ module TestFixture =
                 ]
                 |> Ok
 
+    /// The individual test cases of a test which is not going to be run, with human-readable names:
+    /// one entry per case per repeat, where repeats of a case share its identifier (exactly as on the
+    /// running path). Enumeration runs user TestCaseSource code, which may fail arbitrarily; a skipped
+    /// test must never fail the run, so in that case fall back to reporting the bare test method.
+    let private skippedTestCases (test : SingleTestMethod) : (Guid * string) list =
+        let cases =
+            try
+                match getIndividualTestCases test with
+                | Ok cases ->
+                    cases
+                    |> List.map (fun (caseId, args) -> caseId, individualTestName test.Method args)
+                | Error _ -> [ Guid.NewGuid (), test.Name ]
+            with _ ->
+                [ Guid.NewGuid (), test.Name ]
+
+        let count = test.Repeat |> Option.defaultValue 1
+
+        Seq.init count (fun _ -> cases) |> Seq.concat |> Seq.toList
+
     /// This method should never throw: it only throws if there's a critical logic error in the runner.
     /// Exceptions from the units under test are wrapped up and passed out.
     let private runTestsFromMember
@@ -424,22 +443,27 @@ module TestFixture =
 
         match resultPreRun with
         | Some result ->
-            let failureMetadata =
-                {
-                    Total = TimeSpan.Zero
-                    Start = DateTimeOffset.Now
-                    End = DateTimeOffset.Now
-                    ComputerName = Environment.MachineName
-                    ExecutionId = Guid.NewGuid ()
-                    // No need to keep these test GUIDs stable: no point trying to run an explicit test multiple times.
-                    TestId = Guid.NewGuid ()
-                    TestName = test.Name
-                    ClassName = test.Method.DeclaringType.FullName
-                    StdErr = None
-                    StdOut = None
-                }
+            // Like NUnit, report each individual test case of the skipped test.
+            let now = DateTimeOffset.Now
 
-            (Ok result, failureMetadata) |> Task.FromResult |> List.singleton
+            skippedTestCases test
+            |> List.map (fun (caseId, name) ->
+                let metadata =
+                    {
+                        Total = TimeSpan.Zero
+                        Start = now
+                        End = now
+                        ComputerName = Environment.MachineName
+                        ExecutionId = Guid.NewGuid ()
+                        TestId = caseId
+                        TestName = name
+                        ClassName = test.Method.DeclaringType.FullName
+                        StdErr = None
+                        StdOut = None
+                    }
+
+                (Ok result, metadata) |> Task.FromResult
+            )
         | None ->
 
         let individualTests = getIndividualTestCases test
@@ -875,24 +899,8 @@ module TestFixture =
                 let skipped =
                     testsToReport
                     |> List.collect (fun test ->
-                        let cases =
-                            // Enumeration runs user TestCaseSource code, which may fail arbitrarily; a
-                            // skipped fixture must never fail the run, so fall back to reporting the bare
-                            // test method.
-                            try
-                                match getIndividualTestCases test with
-                                | Ok cases ->
-                                    cases
-                                    |> List.map (fun (caseId, args) -> caseId, individualTestName test.Method args)
-                                | Error _ -> [ Guid.NewGuid (), test.Name ]
-                            with _ ->
-                                [ Guid.NewGuid (), test.Name ]
-
-                        let count = test.Repeat |> Option.defaultValue 1
-
-                        Seq.init count (fun _ -> cases)
-                        |> Seq.concat
-                        |> Seq.map (fun (caseId, name) ->
+                        skippedTestCases test
+                        |> List.map (fun (caseId, name) ->
                             let metadata =
                                 {
                                     Total = TimeSpan.Zero
@@ -900,7 +908,6 @@ module TestFixture =
                                     End = now
                                     ComputerName = Environment.MachineName
                                     ExecutionId = Guid.NewGuid ()
-                                    // Repeats of a case share its identifier, exactly as on the running path.
                                     TestId = caseId
                                     TestName = name
                                     ClassName = test.Method.DeclaringType.FullName
@@ -910,7 +917,6 @@ module TestFixture =
 
                             test, result, metadata
                         )
-                        |> Seq.toList
                     )
 
                 {
