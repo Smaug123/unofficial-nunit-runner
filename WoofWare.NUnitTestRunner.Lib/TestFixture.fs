@@ -67,13 +67,25 @@ module TestFixture =
     /// Invoke this user-supplied method, awaiting its result if it returns a Task or an F# Async of unit.
     ///
     /// This function does not throw: failures of the user's code are reported in the Error case.
-    let private runUserMethod
+    let internal runUserMethod
         (containingObject : obj)
         (args : obj[])
         (method : MethodInfo)
         : Async<Result<unit, UserMethodFailure>>
         =
         async {
+            // Like NUnit, reject a result-bearing Task-returning method without running it: nothing would
+            // observe its result. (F#'s `task { }` of unit compiles to Task<unit>, which we accept.)
+            let declaredReturn = method.ReturnType
+
+            if
+                declaredReturn.IsGenericType
+                && declaredReturn.GetGenericTypeDefinition () = typedefof<Task<unit>>
+                && declaredReturn.GenericTypeArguments.[0].FullName <> "Microsoft.FSharp.Core.Unit"
+            then
+                return Error (UserMethodFailure.ReturnedNonUnit (method.Name, box declaredReturn))
+            else
+
             let result =
                 try
                     method.Invoke (containingObject, args) |> Ok
@@ -129,7 +141,9 @@ module TestFixture =
 
                         match res with
                         | Choice1Of2 () -> return Ok ()
-                        | Choice2Of2 _ -> return Error (UserMethodFailure.Threw (method.Name, started.Exception))
+                        // Report the caught exception, not `started.Exception`: a cancelled task has
+                        // Exception = null, whereas the caught value is a real TaskCanceledException.
+                        | Choice2Of2 e -> return Error (UserMethodFailure.Threw (method.Name, e))
                     | _ -> return Error (UserMethodFailure.ReturnedNonUnit (method.Name, ret))
                 else
                     return Error (UserMethodFailure.ReturnedNonUnit (method.Name, ret))
