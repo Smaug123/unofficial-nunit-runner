@@ -356,8 +356,8 @@
   },
   {
     "pname": "WoofWare.Myriad.Plugins",
-    "version": "9.1.6",
-    "hash": "sha256-G6onDe4DGScj1lQO2jHR3UyrLs/NfoKfbKwpvN2xGr4="
+    "version": "10.0.2",
+    "hash": "sha256-BCZqUahzKTnbK1DDwf88dOUFKTZGMA7iEfNaxExqFw0="
   },
   {
     "pname": "WoofWare.Myriad.Plugins.Attributes",
@@ -371,7 +371,7 @@
   },
   {
     "pname": "WoofWare.Whippet.Fantomas",
-    "version": "0.7.1",
-    "hash": "sha256-Y9H42NjZx238Y73FaoPraJ9JqCOf5+2MAFetjPNlNXY="
+    "version": "0.7.3",
+    "hash": "sha256-g07oYDbVaFh9cRHg19+sJci8123lFE8g3hIQBrKfe1A="
   }
 ]
