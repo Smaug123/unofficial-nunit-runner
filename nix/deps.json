@@ -341,13 +341,13 @@
   },
   {
     "pname": "WoofWare.Myriad.Plugins",
-    "version": "9.1.6",
-    "hash": "sha256-G6onDe4DGScj1lQO2jHR3UyrLs/NfoKfbKwpvN2xGr4="
+    "version": "10.3.1",
+    "hash": "sha256-GYhJlcxkz+gbuZAyfm+8Po/4DPkLfl4A8n1ZLnQ01mk="
   },
   {
     "pname": "WoofWare.Myriad.Plugins.Attributes",
-    "version": "3.8.4",
-    "hash": "sha256-E5hshmHm3cHSJOTvN5lVSH8OScyENYPcYNTj4nAOUk4="
+    "version": "3.8.7",
+    "hash": "sha256-3vckt6VEgqe1DgAttAwyr5YcMROQ3lcfW5e8iy3uApM="
   },
   {
     "pname": "WoofWare.PrattParser",
@@ -356,7 +356,7 @@
   },
   {
     "pname": "WoofWare.Whippet.Fantomas",
-    "version": "0.7.1",
-    "hash": "sha256-Y9H42NjZx238Y73FaoPraJ9JqCOf5+2MAFetjPNlNXY="
+    "version": "0.7.3",
+    "hash": "sha256-g07oYDbVaFh9cRHg19+sJci8123lFE8g3hIQBrKfe1A="
   }
 ]
