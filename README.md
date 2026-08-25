@@ -1,5 +1,11 @@
 # Toy NUnit test runner
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="logos/dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="logos/light.svg">
+  <img alt="Project logo: minimalistic face of a cartoon Shiba Inu, drawn in outline, winking, with a tick for the closed eye and a partly-filled progress bar for a mouth." src="logos/light.svg" width="300">
+</picture>
+
 ## Filtering
 
 To supply special characters in a string, XML-encode them and `"quote"` the string; if you give a quoted string, we will XML-decode the string.
