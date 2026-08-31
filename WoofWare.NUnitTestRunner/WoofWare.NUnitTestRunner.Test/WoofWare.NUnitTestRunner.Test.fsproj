@@ -14,6 +14,7 @@
         <Compile Include="TestRunFiltering.fs" />
         <Compile Include="TestSurface.fs" />
         <Compile Include="TestSynchronizationContext.fs" />
+        <Compile Include="TestSkippedFixtures.fs" />
         <Compile Include="TestTrx.fs" />
         <EmbeddedResource Include="Example1.trx" />
     </ItemGroup>
