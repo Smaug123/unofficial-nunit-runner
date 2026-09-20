@@ -10,6 +10,7 @@
         <Compile Include="EmbeddedResource.fs" />
         <Compile Include="TestFilter.fs" />
         <Compile Include="TestFixtureRunner.fs" />
+        <Compile Include="TestAsyncLifecycle.fs" />
         <Compile Include="TestList.fs" />
         <Compile Include="TestRunFiltering.fs" />
         <Compile Include="TestSurface.fs" />
