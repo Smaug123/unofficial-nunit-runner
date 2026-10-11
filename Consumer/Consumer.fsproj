@@ -11,6 +11,7 @@
         <Compile Include="Inconclusive.fs" />
         <Compile Include="RunSubProcess.fs" />
         <Compile Include="TestAsync.fs" />
+        <Compile Include="TestAsyncSetUp.fs" />
         <Compile Include="TestExplicit.fs" />
         <Compile Include="TestNonParallel.fs" />
         <Compile Include="TestParallel.fs" />
