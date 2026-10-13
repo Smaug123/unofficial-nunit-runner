@@ -214,7 +214,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download NuGet artifact (lib)
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: nuget-package-lib
           path: packed-lib
@@ -222,7 +222,7 @@ jobs:
         # Verify that there is exactly one nupkg in the artifact that would be NuGet published
         run: if [[ $(find packed-lib -maxdepth 1 -name 'WoofWare.NUnitTestRunner.Lib.*.nupkg' -printf c | wc -c) -ne "1" ]]; then exit 1; fi
       - name: Download NuGet artifact (tool)
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: nuget-package-tool
           path: packed-tool
@@ -249,7 +249,7 @@ jobs:
       contents: read
     steps:
       - name: Download NuGet artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: nuget-package-lib
           path: packed
@@ -268,7 +268,7 @@ jobs:
       contents: read
     steps:
       - name: Download NuGet artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: nuget-package-tool
           path: packed
@@ -293,7 +293,7 @@ jobs:
       - name: Enable Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7
       - name: Download NuGet artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: nuget-package-lib
           path: packed
@@ -329,7 +329,7 @@ jobs:
       - name: Enable Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7
       - name: Download NuGet artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: nuget-package-tool
           path: packed
@@ -360,7 +360,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Download NuGet artifact (tool)
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: ${{ matrix.artifact }}
       - name: Compute package path
@@ -396,7 +396,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Download NuGet artifact (tool)
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: ${{ matrix.artifact }}
       - name: Compute package path
