@@ -64,6 +64,91 @@ type FixtureRunResults =
 [<RequireQualifiedAccess>]
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module TestFixture =
+    /// Invoke this user-supplied method, awaiting its result if it returns a Task or an F# Async of unit.
+    ///
+    /// This function does not throw: failures of the user's code are reported in the Error case.
+    let internal runUserMethod
+        (containingObject : obj)
+        (args : obj[])
+        (method : MethodInfo)
+        : Async<Result<unit, UserMethodFailure>>
+        =
+        async {
+            // Like NUnit, reject a result-bearing Task-returning method without running it: nothing would
+            // observe its result. (F#'s `task { }` of unit compiles to Task<unit>, which we accept.)
+            let declaredReturn = method.ReturnType
+
+            if
+                declaredReturn.IsGenericType
+                && declaredReturn.GetGenericTypeDefinition () = typedefof<Task<unit>>
+                && declaredReturn.GenericTypeArguments.[0].FullName <> "Microsoft.FSharp.Core.Unit"
+            then
+                return Error (UserMethodFailure.ReturnedNonUnit (method.Name, box declaredReturn))
+            else
+
+            let result =
+                try
+                    method.Invoke (containingObject, args) |> Ok
+                with
+                | :? TargetInvocationException as e -> Error (UserMethodFailure.Threw (method.Name, e.InnerException))
+                | :? TargetParameterCountException ->
+                    UserMethodFailure.BadParameters (
+                        method.Name,
+                        method.GetParameters () |> Array.map (fun pm -> pm.ParameterType),
+                        args
+                    )
+                    |> Error
+
+            match result with
+            | Error e -> return Error e
+            | Ok result ->
+
+            match result with
+            | :? unit -> return Ok ()
+            | :? Task as result ->
+                let mutable exc = None
+
+                try
+                    do! Async.AwaitTask result
+                with e ->
+                    exc <- Some e
+
+                match exc with
+                | None -> return Ok ()
+                | Some e -> return Error (UserMethodFailure.Threw (method.Name, e))
+            // We'd like to do this type-test:
+            // | :? Async<unit> as result ->
+            // but instead we have to do all this reflective nonsense, because FSharpAsync is not part
+            // of the .NET runtime, so is instead in a different AssemblyLoadContext to us!
+            // It's in the user-code context, not ours.
+            | ret ->
+                let ty = ret.GetType ()
+
+                if ty.Namespace = "Microsoft.FSharp.Control" && ty.Name = "FSharpAsync`1" then
+                    match ty.GenericTypeArguments |> Array.map (fun t -> t.FullName) with
+                    | [| "Microsoft.FSharp.Core.Unit" |] ->
+                        let asyncModule = ty.Assembly.GetType ("Microsoft.FSharp.Control.FSharpAsync")
+                        // let catch = asyncModule.GetMethod("Catch").MakeGenericMethod [| ty.GenericTypeArguments.[0] |]
+                        // let caught = catch.Invoke ((null: obj), [| ret |])
+                        let startAsTask =
+                            asyncModule.GetMethod("StartAsTask").MakeGenericMethod [| ty.GenericTypeArguments.[0] |]
+
+                        let started =
+                            startAsTask.Invoke ((null : obj), [| ret ; (null : obj) ; (null : obj) |])
+                            |> unbox<Task>
+
+                        let! res = Async.AwaitTask started |> Async.Catch
+
+                        match res with
+                        | Choice1Of2 () -> return Ok ()
+                        // Report the caught exception, not `started.Exception`: a cancelled task has
+                        // Exception = null, whereas the caught value is a real TaskCanceledException.
+                        | Choice2Of2 e -> return Error (UserMethodFailure.Threw (method.Name, e))
+                    | _ -> return Error (UserMethodFailure.ReturnedNonUnit (method.Name, ret))
+                else
+                    return Error (UserMethodFailure.ReturnedNonUnit (method.Name, ret))
+        }
+
     /// It's possible for multiple things to fail about a test: e.g. the test failed and also the tear-down failed.
     ///
     /// This function does not throw.
@@ -88,83 +173,11 @@ module TestFixture =
             | [] -> async.Return (Ok ())
             | head :: rest ->
                 async {
-                    let result =
-                        try
-                            head.Invoke (containingObject, args) |> Ok
-                        with
-                        | :? TargetInvocationException as e ->
-                            Error (UserMethodFailure.Threw (head.Name, e.InnerException))
-                        | :? TargetParameterCountException ->
-                            UserMethodFailure.BadParameters (
-                                head.Name,
-                                head.GetParameters () |> Array.map (fun pm -> pm.ParameterType),
-                                args
-                            )
-                            |> Error
+                    let! result = runUserMethod containingObject args head
 
-                    let! ct = Async.CancellationToken
-
-                    let! result =
-                        match result with
-                        | Error e -> async.Return (Error (wrap e))
-                        | Ok result ->
-                            match result with
-                            | :? unit -> runMethods wrap rest args
-                            | :? Task as result ->
-                                async {
-                                    let mutable exc = None
-
-                                    try
-                                        do! Async.AwaitTask result
-                                    with e ->
-                                        exc <- Some e
-
-                                    match exc with
-                                    | None -> return! runMethods wrap rest args
-                                    | Some e -> return Error (UserMethodFailure.Threw (head.Name, e) |> wrap)
-                                }
-                            // We'd like to do this type-test:
-                            // | :? Async<unit> as result ->
-                            // but instead we have to do all this reflective nonsense, because FSharpAsync is not part
-                            // of the .NET runtime, so is instead in a different AssemblyLoadContext to us!
-                            // It's in the user-code context, not ours.
-                            | ret ->
-                                let ty = ret.GetType ()
-
-                                if ty.Namespace = "Microsoft.FSharp.Control" && ty.Name = "FSharpAsync`1" then
-                                    match ty.GenericTypeArguments |> Array.map (fun t -> t.FullName) with
-                                    | [| "Microsoft.FSharp.Core.Unit" |] ->
-                                        let asyncModule = ty.Assembly.GetType ("Microsoft.FSharp.Control.FSharpAsync")
-                                        // let catch = asyncModule.GetMethod("Catch").MakeGenericMethod [| ty.GenericTypeArguments.[0] |]
-                                        // let caught = catch.Invoke ((null: obj), [| ret |])
-                                        let startAsTask =
-                                            asyncModule.GetMethod("StartAsTask").MakeGenericMethod
-                                                [| ty.GenericTypeArguments.[0] |]
-
-                                        let started =
-                                            startAsTask.Invoke ((null : obj), [| ret ; (null : obj) ; (null : obj) |])
-                                            |> unbox<Task>
-
-                                        async {
-                                            let! res = Async.AwaitTask started |> Async.Catch
-
-                                            match res with
-                                            | Choice1Of2 () -> return! runMethods wrap rest args
-                                            | Choice2Of2 e ->
-                                                return
-                                                    Error (
-                                                        UserMethodFailure.Threw (head.Name, started.Exception) |> wrap
-                                                    )
-                                        }
-                                    | _ ->
-                                        UserMethodFailure.ReturnedNonUnit (head.Name, ret)
-                                        |> wrap
-                                        |> Error
-                                        |> async.Return
-                                else
-                                    async.Return (UserMethodFailure.ReturnedNonUnit (head.Name, ret) |> wrap |> Error)
-
-                    return result
+                    match result with
+                    | Ok () -> return! runMethods wrap rest args
+                    | Error e -> return Error (wrap e)
                 }
 
         async {
@@ -557,13 +570,9 @@ module TestFixture =
                             contexts.AsyncLocal.Value <- newOutputs
 
                             let result =
-                                try
-                                    match su.Invoke (containingObject, [||]) with
-                                    | :? unit -> None
-                                    | ret ->
-                                        Some (UserMethodFailure.ReturnedNonUnit (su.Name, ret), endMetadata newOutputs)
-                                with :? TargetInvocationException as e ->
-                                    Some (UserMethodFailure.Threw (su.Name, e.InnerException), endMetadata newOutputs)
+                                match runUserMethod containingObject [||] su |> Async.RunSynchronously with
+                                | Ok () -> None
+                                | Error err -> Some (err, endMetadata newOutputs)
 
                             contexts.AsyncLocal.Value <- oldValue
 
@@ -641,13 +650,9 @@ module TestFixture =
                             contexts.AsyncLocal.Value <- outputs
 
                             let result =
-                                try
-                                    match td.Invoke (containingObject, [||]) with
-                                    | :? unit -> None
-                                    | ret ->
-                                        Some (UserMethodFailure.ReturnedNonUnit (td.Name, ret), endMetadata outputs)
-                                with :? TargetInvocationException as e ->
-                                    Some (UserMethodFailure.Threw (td.Name, e.InnerException), endMetadata outputs)
+                                match runUserMethod containingObject [||] td |> Async.RunSynchronously with
+                                | Ok () -> None
+                                | Error err -> Some (err, endMetadata outputs)
 
                             contexts.AsyncLocal.Value <- oldValue
 
